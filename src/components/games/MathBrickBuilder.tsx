@@ -3,7 +3,7 @@ import { ArrowLeft, HardDrive, PackagePlus, RotateCcw, Save, Trash2, Trophy, Vol
 import { Language, PlayerProfile } from '../../types/game';
 import { VoxelBlock } from '../../math/minecraftCurriculum';
 import { BRICK_CATALOG, BRICK_GROUPS, BrickGroupId, COMMON_BRICK_IDS, getBrickDimensions, getBrickPiece, SPECIAL_BRICK_IDS } from '../../math/brickCatalog';
-import { blockOccupiesCell, blocksOverlap, removePlacedBrick } from '../../math/brickBuilding';
+import { blockOccupiesCell, blocksOverlap, createStartingInventory, removePlacedBrick } from '../../math/brickBuilding';
 import { generateBrickMathQuestion, BrickMathQuestion } from '../../math/mathBrickCurriculum';
 import { sound } from '../../audio/soundManager';
 import { VoxelCanvas } from '../minecraft/VoxelCanvas';
@@ -28,6 +28,7 @@ interface SavedBuild {
 }
 
 interface BuilderState extends SavedBuild {
+  schemaVersion: 2;
   savedBuild?: SavedBuild;
 }
 
@@ -49,20 +50,11 @@ const COLORS = [
 ];
 const VALID_BLOCK_TYPES: BrickType[] = ['dirt', 'wood', 'cobblestone', 'iron', 'fence', 'cake', 'chest', 'chicken'];
 
-const INITIAL_STOCK: Record<string, number> = {
-  'brick-1x1': 2,
-  'brick-2x2': 3,
-  'brick-2x4': 3,
-  'plate-2x4': 4,
-  'tile-2x2': 2,
-  'slope-45-2x2': 2,
-};
-
 function emptyInventory(): Inventory {
-  return Object.fromEntries(BRICK_CATALOG.map(({ id }) => [id, INITIAL_STOCK[id] || 0]));
+  return createStartingInventory();
 }
 
-const emptyState = (): BuilderState => ({ blocks: [], inventory: emptyInventory() });
+const emptyState = (): BuilderState => ({ schemaVersion: 2, blocks: [], inventory: emptyInventory() });
 
 function readInventory(value: unknown): Inventory {
   const inventory = emptyInventory();
@@ -111,10 +103,17 @@ function readBuilderState(key: string): BuilderState {
     if (!stored) return emptyState();
     const parsed = JSON.parse(stored) as Partial<BuilderState>;
     const inventory = readInventory(parsed.inventory);
+    const savedInventory = parsed.savedBuild?.inventory ? readInventory(parsed.savedBuild.inventory) : undefined;
+    if (parsed.schemaVersion !== 2) {
+      BRICK_CATALOG.forEach(({ id }) => {
+        inventory[id] = Math.max(10, inventory[id] || 0);
+        if (savedInventory) savedInventory[id] = Math.max(10, savedInventory[id] || 0);
+      });
+    }
     const blocks = Array.isArray(parsed.blocks) ? parsed.blocks.map(readVoxelBlock).filter((block): block is VoxelBlock => !!block).slice(0, 400) : [];
     const savedBlocks = Array.isArray(parsed.savedBuild?.blocks) ? parsed.savedBuild.blocks.map(readVoxelBlock).filter((block): block is VoxelBlock => !!block).slice(0, 400) : undefined;
-    const savedInventory = parsed.savedBuild?.inventory ? readInventory(parsed.savedBuild.inventory) : undefined;
     return {
+      schemaVersion: 2,
       blocks,
       inventory,
       ...(savedBlocks && savedInventory ? { savedBuild: { blocks: savedBlocks, inventory: savedInventory } } : {}),
@@ -349,8 +348,8 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
         </button>
       </div>
 
-      <section className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-3 p-3 sm:p-4">
-        <div className="min-h-[440px] flex flex-col gap-3">
+      <section className="flex-1 min-h-0 grid grid-cols-1 grid-rows-[minmax(440px,auto)_auto] gap-3 p-3 sm:p-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:grid-rows-1">
+        <div className="min-w-0 min-h-[440px] flex flex-col gap-3">
           {mode === 'blueprint' && (
             <div className="rounded-2xl border border-cyan-500/40 bg-cyan-950/50 p-3 sm:p-4 flex items-center justify-between gap-3">
               <div>
@@ -364,7 +363,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
             </div>
           )}
 
-          <div className="flex-1 min-h-[390px]">
+          <div className="min-w-0 flex-1 min-h-[390px]">
             <VoxelCanvas
               blocks={state.blocks}
               activeBlockType={activePieceType}
@@ -380,11 +379,11 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
               lang={lang}
             />
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-800 bg-slate-900 px-3 py-2">
-            <p className="text-xs text-slate-400">{tool === 'build'
+          <div className="flex flex-col items-stretch gap-2 rounded-2xl border border-slate-800 bg-slate-900 px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <p className="min-w-0 text-xs text-slate-400">{tool === 'build'
               ? text('Klicken: Stein setzen · Ziehen: drehen · Shift+Ziehen: schwenken', 'Chạm: đặt khối · Kéo: xoay · Shift+kéo: di chuyển')
               : text('Klicke auf einen Stein, um ihn abzubauen. Er kommt zurück ins Lager.', 'Chạm vào khối để tháo và hoàn lại vào kho.')}</p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button onClick={() => setTool(tool === 'build' ? 'remove' : 'build')} className={`rounded-lg px-3 py-2 text-xs font-bold ${tool === 'remove' ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-200'}`}>
                 {tool === 'build' ? text('Stein entfernen', 'Tháo khối') : text('Weiterbauen', 'Tiếp tục xây')}
               </button>
@@ -395,7 +394,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
           </div>
         </div>
 
-        <aside className="flex flex-col gap-3">
+        <aside className="min-w-0 flex flex-col gap-3">
           <section className="rounded-2xl border border-slate-800 bg-slate-900 p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <h2 className="font-['Fredoka'] text-lg font-black">📦 {text('Steine & Teile', 'Gạch & chi tiết')}</h2>

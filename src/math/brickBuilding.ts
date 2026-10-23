@@ -1,7 +1,11 @@
 import { VoxelBlock } from './minecraftCurriculum';
-import { getBrickDimensions, getBrickPiece } from './brickCatalog';
+import { BRICK_CATALOG, getBrickDimensions, getBrickPiece } from './brickCatalog';
 
 export type BrickInventory = Record<string, number>;
+
+export function createStartingInventory(): BrickInventory {
+  return Object.fromEntries(BRICK_CATALOG.map(({ id }) => [id, 10]));
+}
 
 export function blocksOverlap(left: VoxelBlock, right: VoxelBlock): boolean {
   const leftSize = getBrickDimensions(left.pieceId, left.rotation);

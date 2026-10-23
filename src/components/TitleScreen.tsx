@@ -5,7 +5,6 @@ import {
   VolumeX,
   Globe,
   Award,
-  Sparkles,
   Star,
   Save,
   Users,
@@ -128,20 +127,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             </span>
           </div>
 
-          {/* Database Engine Indicator */}
-          <div
-            className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 px-2.5 py-1.5 rounded-2xl backdrop-blur text-xs font-mono"
-            title={`Active Engine: ${engineInfo?.engine || 'sqlite'} (${engineInfo?.databaseTarget || 'matheheld.db'})`}
-          >
-            <Database className="w-3.5 h-3.5 text-emerald-400" />
-            <span className={engineInfo?.engine === 'turso' ? 'text-cyan-300 font-bold' : 'text-amber-300 font-bold'}>
-              {engineInfo?.engine === 'turso' ? 'Turso' : 'SQLite'}
-            </span>
-          </div>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
           {/* Save Progress Button */}
           <button
             onClick={() => {
@@ -155,6 +140,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <Save className={`w-3.5 h-3.5 text-emerald-400 ${isSaving ? 'animate-spin' : ''}`} />
             <span>{isSaving ? t(lang, 'saving') : t(lang, 'saveProgress')}</span>
           </button>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 sm:gap-3">
 
           {/* Switch Player / Load Old Profile */}
           <button
@@ -392,9 +381,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
       {/* Flat Control-Hint Line Footer */}
       <footer className="relative z-10 px-4 py-2.5 bg-slate-950/90 border-t border-slate-800/80 text-center flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-slate-400">
         <span>{t(lang, 'controlsHint')}</span>
-        <span className="font-mono text-[11px] text-slate-500">
-          Engine: {engineInfo?.engine === 'turso' ? '⚡ Turso' : '🗄️ SQLite'} • {engineInfo?.databaseTarget}
-        </span>
       </footer>
     </div>
   );
