@@ -49,7 +49,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   }, [onStart]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-slate-950 flex flex-col justify-between select-none">
+    <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-y-auto overscroll-contain bg-slate-950 flex flex-col justify-between select-none p-2 sm:p-4">
       {/* Dynamic Animated Atmospheric Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Soft Cosmic Gradients */}
@@ -73,13 +73,13 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
       </div>
 
       {/* Top Bar Controls */}
-      <header className="relative z-10 px-6 py-4 flex items-center justify-between">
+      <header className="relative z-10 px-2.5 py-2 sm:px-6 sm:py-4 flex items-center justify-between gap-2 shrink-0">
         {/* German Curriculum & Pokemon Badge */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700/80 px-3 py-1.5 rounded-2xl backdrop-blur">
-            <span className="text-base">🇩🇪</span>
-            <span className="text-xs font-bold text-slate-300 tracking-wide">
-              {lang === 'de' ? 'Klasse 3 Grundschule' : 'Toán Lớp 3 Đức'}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl backdrop-blur">
+            <span className="text-sm sm:text-base">🇩🇪</span>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-300 tracking-wide">
+              {lang === 'de' ? 'Klasse 3' : 'Toán Lớp 3'}
             </span>
           </div>
 

@@ -232,61 +232,61 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
     hpPercentage > 50 ? 'bg-emerald-500' : hpPercentage > 20 ? 'bg-amber-400' : 'bg-rose-500';
 
   return (
-    <div className="relative w-full h-screen overflow-hidden flex flex-col bg-slate-950 select-none">
+    <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-hidden flex flex-col bg-slate-950 select-none">
       {/* Top Header Cluster */}
-      <header className="px-4 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between z-20">
-        <div className="flex items-center gap-2">
+      <header className="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between z-20 shrink-0 gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => {
               sound.playJump();
               onBack();
             }}
-            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
+            className="p-2 sm:p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={() => setIsPaused(true)}
-            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
+            className="p-2 sm:p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
           >
-            <Pause className="w-5 h-5" />
+            <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={() => setShowScratchpad(!showScratchpad)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
+            className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
           >
-            <PenTool className="w-4 h-4" />
+            <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">{t(lang, 'scratchpad')}</span>
           </button>
         </div>
 
         {/* Title & Pokédex Counter */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => {
               sound.playJump();
               setShowPokedex(true);
             }}
-            className="flex items-center gap-2 px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl border-2 border-red-400 shadow-md cursor-pointer transition font-bold text-xs"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl border-2 border-red-400 shadow-md cursor-pointer transition font-bold text-xs"
           >
-            <BookOpen className="w-4 h-4" />
+            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>Pokédex ({capturedList.length}/{POKEMON_ROSTER.length})</span>
           </button>
-        </div>
 
-        {/* Score Readout */}
-        <div className="bg-slate-800/90 border border-slate-700 px-3 py-1 rounded-xl text-right">
-          <div className="text-[10px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
-          <div className="text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
-            {score}
+          {/* Score Readout */}
+          <div className="bg-slate-800/90 border border-slate-700 px-2.5 py-1 rounded-xl text-right">
+            <div className="text-[9px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
+            <div className="text-sm sm:text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
+              {score}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Battle Stadium / Field */}
-      <div className="flex-1 relative flex flex-col justify-between p-4 sm:p-6 bg-gradient-to-b from-sky-950 via-emerald-950/40 to-slate-950 overflow-hidden">
+      {/* Main Battle Stadium / Field - Fully scrollable on mobile */}
+      <div className="flex-1 relative flex flex-col justify-start md:justify-between p-3 sm:p-6 pb-28 bg-gradient-to-b from-sky-950 via-emerald-950/40 to-slate-950 overflow-y-auto overscroll-contain gap-4">
         {/* Background Visual: Tall Grass & Battle Circles */}
         <div className="absolute inset-0 pointer-events-none opacity-20 flex items-center justify-center">
           <div className="w-[500px] h-[500px] rounded-full border-8 border-dashed border-emerald-400/40" />

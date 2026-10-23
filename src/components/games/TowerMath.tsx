@@ -88,65 +88,65 @@ export const TowerMath: React.FC<TowerMathProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden flex flex-col bg-slate-950 select-none">
+    <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-hidden flex flex-col bg-slate-950 select-none">
       {/* Header */}
-      <header className="px-4 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between z-20">
-        <div className="flex items-center gap-2">
+      <header className="px-3 py-2 sm:px-4 sm:py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between z-20 shrink-0 gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => {
               sound.playJump();
               onBack();
             }}
-            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
+            className="p-2 sm:p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={() => setIsPaused(true)}
-            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
+            className="p-2 sm:p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
           >
-            <Pause className="w-5 h-5" />
+            <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={() => setShowScratchpad(!showScratchpad)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
+            className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
           >
-            <PenTool className="w-4 h-4" />
+            <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">{t(lang, 'scratchpad')}</span>
           </button>
         </div>
 
         <div className="text-center">
-          <div className="text-xs text-amber-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-            <Building2 className="w-4 h-4" />
+          <div className="text-[11px] sm:text-xs text-amber-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
+            <Building2 className="w-3.5 h-3.5" />
             <span>
               {lang === 'de'
-                ? 'Turmbau: Schriftliches Rechnen'
-                : 'Xây tháp: Đặt tính rồi tính'}
+                ? 'Turmbau: Schriftlich'
+                : 'Xây tháp đặt tính'}
             </span>
           </div>
-          <div className="text-sm font-semibold text-slate-300">
-            {lang === 'de' ? `Turm-Etage: ${towerHeight}/5` : `Tầng tháp: ${towerHeight}/5`}
+          <div className="text-xs sm:text-sm font-semibold text-slate-300">
+            {lang === 'de' ? `Etage: ${towerHeight}/5` : `Tầng: ${towerHeight}/5`}
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="bg-slate-800/90 border border-slate-700 px-3 py-1 rounded-xl text-right">
-            <div className="text-[10px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
-            <div className="text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
+        <div className="flex items-center gap-2">
+          <div className="bg-slate-800/90 border border-slate-700 px-2.5 py-1 rounded-xl text-right">
+            <div className="text-[9px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
+            <div className="text-sm sm:text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
               {score}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gradient-to-b from-slate-900 via-indigo-950/40 to-slate-950 flex flex-col md:flex-row items-center justify-center gap-8">
-        {/* Left: The Math Castle Tower Graphic */}
-        <div className="flex flex-col items-center justify-end h-72 sm:h-96 w-44 bg-slate-900/60 rounded-3xl border-2 border-indigo-900/60 p-3 relative">
-          <div className="absolute top-3 text-xs text-indigo-300 font-bold uppercase">
+      {/* Main Content Area - Scrollable on mobile */}
+      <div className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-6 pb-28 bg-gradient-to-b from-slate-900 via-indigo-950/40 to-slate-950 flex flex-col md:flex-row items-center justify-start md:justify-center gap-6">
+        {/* Left: The Math Castle Tower Graphic (order-2 on mobile so table comes first) */}
+        <div className="order-2 md:order-1 flex flex-col items-center justify-end h-48 sm:h-80 w-full sm:w-44 max-w-xs bg-slate-900/60 rounded-3xl border-2 border-indigo-900/60 p-3 relative">
+          <div className="absolute top-2.5 text-xs text-indigo-300 font-bold uppercase">
             🏰 Mathe-Turm
           </div>
 
@@ -171,7 +171,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
         </div>
 
         {/* Right: The German Column Calculation Table (Stellenwertgitter) */}
-        <div className="w-full max-w-md bg-white rounded-3xl p-6 text-slate-900 shadow-2xl border-4 border-indigo-300 flex flex-col items-center font-['Fredoka']">
+        <div className="order-1 md:order-2 w-full max-w-md bg-white rounded-3xl p-5 sm:p-6 text-slate-900 shadow-2xl border-4 border-indigo-300 flex flex-col items-center font-['Fredoka']">
           {/* Header Row: H - Z - E */}
           <div className="grid grid-cols-4 gap-2 w-full text-center text-sm font-black mb-2">
             <div></div>

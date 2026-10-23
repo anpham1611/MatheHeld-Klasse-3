@@ -133,44 +133,44 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden flex flex-col bg-slate-950 select-none">
+    <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-hidden flex flex-col bg-slate-950 select-none">
       {/* Top HUD */}
-      <header className="px-4 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between z-20">
-        <div className="flex items-center gap-2">
+      <header className="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between z-20 shrink-0 gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => {
               sound.playJump();
               onBack();
             }}
-            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
+            className="p-2 sm:p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={() => setIsPaused(true)}
-            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
+            className="p-2 sm:p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer transition"
           >
-            <Pause className="w-5 h-5" />
+            <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={() => setShowScratchpad(!showScratchpad)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
+            className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
           >
-            <PenTool className="w-4 h-4" />
+            <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">{t(lang, 'scratchpad')}</span>
           </button>
         </div>
 
         {/* Fever Gauge */}
-        <div className="flex items-center gap-2 bg-slate-950/80 px-4 py-1.5 rounded-full border border-slate-800">
+        <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-950/80 px-2.5 sm:px-4 py-1.5 rounded-full border border-slate-800">
           <Flame
-            className={`w-5 h-5 ${
+            className={`w-4 h-4 sm:w-5 sm:h-5 ${
               isFever ? 'text-amber-400 animate-bounce' : 'text-slate-500'
             }`}
           />
-          <div className="w-24 sm:w-36 h-3 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-16 sm:w-36 h-2.5 sm:h-3 bg-slate-800 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
                 isFever
@@ -181,25 +181,25 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
             />
           </div>
           {isFever && (
-            <span className="text-[11px] font-black text-amber-300 animate-pulse hidden sm:inline">
+            <span className="text-[10px] sm:text-[11px] font-black text-amber-300 animate-pulse hidden sm:inline">
               2x FEUER!
             </span>
           )}
         </div>
 
         {/* Score & Streak */}
-        <div className="flex items-center gap-3">
-          <div className="bg-slate-800/90 border border-slate-700 px-3 py-1 rounded-xl text-right">
-            <div className="text-[10px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
-            <div className="text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
+        <div className="flex items-center gap-2">
+          <div className="bg-slate-800/90 border border-slate-700 px-2.5 py-1 rounded-xl text-right">
+            <div className="text-[9px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
+            <div className="text-sm sm:text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
               {score}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Arena Stage */}
-      <div className="flex-1 relative flex flex-col items-center justify-between p-4 sm:p-6 bg-gradient-to-b from-slate-900 via-indigo-950/60 to-slate-950">
+      {/* Arena Stage - Scrollable on mobile */}
+      <div className="flex-1 relative flex flex-col items-center justify-start md:justify-between p-3 sm:p-6 pb-28 bg-gradient-to-b from-slate-900 via-indigo-950/60 to-slate-950 overflow-y-auto overscroll-contain gap-4">
         {/* Arena Background Dojo Graphics */}
         <div className="absolute inset-0 opacity-15 pointer-events-none flex items-center justify-center">
           <div className="w-96 h-96 rounded-full border-8 border-dashed border-indigo-400/30 animate-spin-slow" />

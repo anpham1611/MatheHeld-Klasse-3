@@ -126,7 +126,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({ lang, onClose }) => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-84 sm:w-96 bg-white rounded-2xl shadow-2xl border-4 border-indigo-400 overflow-hidden flex flex-col text-slate-800 animate-in fade-in slide-in-from-bottom-6">
+    <div className="fixed bottom-3 right-3 left-3 sm:left-auto sm:right-6 sm:bottom-6 sm:w-96 max-w-[calc(100vw-24px)] z-50 bg-white rounded-2xl shadow-2xl border-4 border-indigo-400 overflow-hidden flex flex-col text-slate-800 animate-in fade-in slide-in-from-bottom-6">
       {/* Header */}
       <div className="bg-indigo-600 px-4 py-2.5 flex items-center justify-between text-white select-none">
         <div className="flex items-center gap-2 font-bold font-['Fredoka'] text-sm tracking-wide">

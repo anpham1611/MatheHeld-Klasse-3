@@ -100,7 +100,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-screen overflow-hidden bg-slate-950 font-['Nunito',sans-serif]">
+    <div className="w-full min-h-[100dvh] h-[100dvh] overflow-x-hidden bg-slate-950 font-['Nunito',sans-serif] flex flex-col">
       {screen === 'title' && (
         <TitleScreen
           lang={lang}

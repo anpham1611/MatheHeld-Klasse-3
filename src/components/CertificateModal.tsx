@@ -36,7 +36,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/90 overflow-y-auto p-4 sm:p-8 flex flex-col items-center">
+    <div className="fixed inset-0 z-50 bg-slate-950/90 overflow-y-auto overscroll-contain p-3 sm:p-8 pb-20 flex flex-col items-center">
       {/* Top Action Bar (hidden when printing) */}
       <div className="w-full max-w-4xl flex items-center justify-between mb-6 print:hidden">
         <button

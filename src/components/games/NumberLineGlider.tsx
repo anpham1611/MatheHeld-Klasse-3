@@ -488,52 +488,74 @@ export const NumberLineGlider: React.FC<NumberLineGliderProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden flex flex-col bg-slate-950 select-none">
-      {/* Top HUD Cluster (Low Occlusion, Tabular numbers) */}
-      <header className="absolute top-0 left-0 right-0 z-20 px-4 py-3 bg-gradient-to-b from-slate-950/90 to-transparent flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-2 pointer-events-auto">
-          <button
-            onClick={() => {
-              sound.playJump();
-              onBack();
-            }}
-            className="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer backdrop-blur transition"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+    <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-hidden flex flex-col bg-slate-950 select-none">
+      {/* Top HUD Cluster (Low Occlusion, Responsive) */}
+      <header className="absolute top-0 left-0 right-0 z-20 px-2.5 py-2 sm:px-4 sm:py-3 bg-gradient-to-b from-slate-950/95 via-slate-950/70 to-transparent flex flex-col sm:flex-row items-center justify-between pointer-events-none gap-2">
+        <div className="w-full sm:w-auto flex items-center justify-between pointer-events-auto gap-2">
+          {/* Action buttons */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={() => {
+                sound.playJump();
+                onBack();
+              }}
+              className="p-2 sm:p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer backdrop-blur transition"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
 
-          <button
-            onClick={() => setIsPaused(true)}
-            className="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer backdrop-blur transition"
-          >
-            <Pause className="w-5 h-5" />
-          </button>
+            <button
+              onClick={() => setIsPaused(true)}
+              className="p-2 sm:p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer backdrop-blur transition"
+            >
+              <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
 
-          <button
-            onClick={() => setShowScratchpad(!showScratchpad)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer backdrop-blur transition"
-          >
-            <PenTool className="w-4 h-4" />
-            <span className="hidden sm:inline">{t(lang, 'scratchpad')}</span>
-          </button>
+            <button
+              onClick={() => setShowScratchpad(!showScratchpad)}
+              className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer backdrop-blur transition"
+            >
+              <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">{t(lang, 'scratchpad')}</span>
+            </button>
+          </div>
+
+          {/* Mobile Right: Hearts & Score */}
+          <div className="flex sm:hidden items-center gap-2">
+            <div className="flex items-center gap-1 bg-slate-900/80 border border-slate-700/80 px-2 py-1 rounded-xl">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Heart
+                  key={i}
+                  className={`w-3.5 h-3.5 ${
+                    i < lives ? 'text-rose-500 fill-rose-500' : 'text-slate-600'
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="bg-slate-900/80 border border-slate-700/80 px-2 py-0.5 rounded-xl text-right">
+              <div className="text-xs font-black text-amber-400 tabular-nums font-['Fredoka']">
+                {score}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Current Mission Card */}
-        <div className="pointer-events-auto bg-slate-900/90 border-2 border-indigo-500/80 rounded-2xl px-4 py-2 text-center shadow-lg shadow-indigo-500/10 backdrop-blur max-w-md mx-2">
-          <div className="text-[11px] text-indigo-300 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>{lang === 'de' ? task.questionDe : task.questionVi}</span>
+        <div className="pointer-events-auto bg-slate-900/90 border-2 border-indigo-500/80 rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 text-center shadow-lg shadow-indigo-500/10 backdrop-blur w-full sm:max-w-md mx-auto">
+          <div className="text-[10px] sm:text-[11px] text-indigo-300 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
+            <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+            <span className="line-clamp-2">{lang === 'de' ? task.questionDe : task.questionVi}</span>
           </div>
 
           {/* Stellenwert Visual Blocks (H - Z - E breakdown) */}
-          <div className="flex items-center justify-center gap-2 mt-1 font-['Fredoka']">
-            <div className="bg-red-500/20 border border-red-500/40 text-red-300 px-2 py-0.5 rounded-lg text-xs font-bold">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-1 font-['Fredoka']">
+            <div className="bg-red-500/20 border border-red-500/40 text-red-300 px-1.5 sm:px-2 py-0.5 rounded-lg text-xs font-bold">
               {task.h} H
             </div>
-            <div className="bg-blue-500/20 border border-blue-500/40 text-blue-300 px-2 py-0.5 rounded-lg text-xs font-bold">
+            <div className="bg-blue-500/20 border border-blue-500/40 text-blue-300 px-1.5 sm:px-2 py-0.5 rounded-lg text-xs font-bold">
               {task.z} Z
             </div>
-            <div className="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2 py-0.5 rounded-lg text-xs font-bold">
+            <div className="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-1.5 sm:px-2 py-0.5 rounded-lg text-xs font-bold">
               {task.e} E
             </div>
 
@@ -547,14 +569,14 @@ export const NumberLineGlider: React.FC<NumberLineGliderProps> = ({
           </div>
 
           {showHint && (
-            <div className="text-[11px] text-amber-300 font-medium mt-1 animate-in fade-in">
+            <div className="text-[10px] sm:text-[11px] text-amber-300 font-medium mt-1 animate-in fade-in">
               💡 {lang === 'de' ? task.hintDe : task.hintVi}
             </div>
           )}
         </div>
 
-        {/* Stats Cluster */}
-        <div className="flex items-center gap-3 pointer-events-auto">
+        {/* Desktop Stats Cluster (hidden on mobile, shown on sm+) */}
+        <div className="hidden sm:flex items-center gap-3 pointer-events-auto shrink-0">
           {/* Hearts */}
           <div className="flex items-center gap-1 bg-slate-900/80 border border-slate-700/80 px-2.5 py-1.5 rounded-xl">
             {Array.from({ length: 3 }).map((_, i) => (
