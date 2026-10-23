@@ -200,7 +200,7 @@ export const EuroShop: React.FC<EuroShopProps> = ({
                 {formatEuro(task.paidCents)} - {formatEuro(task.totalCents)} =
               </span>
               <span className="font-black text-emerald-400 font-['Fredoka'] text-lg">
-                ? Rückgeld
+                {lang === 'de' ? '? Rückgeld' : '? Tiền thừa'}
               </span>
             </div>
 

@@ -147,7 +147,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
         {/* Left: The Math Castle Tower Graphic (order-2 on mobile so table comes first) */}
         <div className="order-2 md:order-1 flex flex-col items-center justify-end h-48 sm:h-80 w-full sm:w-44 max-w-xs bg-slate-900/60 rounded-3xl border-2 border-indigo-900/60 p-3 relative">
           <div className="absolute top-2.5 text-xs text-indigo-300 font-bold uppercase">
-            🏰 Mathe-Turm
+            {lang === 'de' ? '🏰 Mathe-Turm' : '🏰 Tháp Toán Học'}
           </div>
 
           {/* Tower Blocks stacked bottom to top */}
@@ -163,7 +163,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
                       : 'border-2 border-dashed border-slate-800 bg-slate-950/40 text-slate-600'
                   }`}
                 >
-                  {isBuilt ? `Etage ${idx + 1} ⭐` : `...`}
+                  {isBuilt ? (lang === 'de' ? `Etage ${idx + 1} ⭐` : `Tầng ${idx + 1} ⭐`) : `...`}
                 </div>
               );
             })}

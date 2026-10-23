@@ -103,20 +103,20 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 onClick={handleSaveName}
                 className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold cursor-pointer transition text-sm"
               >
-                Speichern
+                {lang === 'de' ? 'Speichern' : 'Lưu'}
               </button>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-3 mt-1 group">
               <span className="text-3xl sm:text-5xl font-black text-amber-950 font-serif tracking-wide border-b-2 border-amber-600 pb-1 px-4">
-                {player.name || 'Felix der Fuchs'}
+                {player.name || (lang === 'de' ? 'Leo der Fuchs' : 'Cáo Leo')}
               </span>
               <button
                 onClick={() => setIsEditing(true)}
                 className="text-xs bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold px-2 py-1 rounded-lg print:hidden cursor-pointer"
-                title="Name ändern"
+                title={lang === 'de' ? 'Name ändern' : 'Đổi tên'}
               >
-                ✏️ Ändern
+                ✏️ {lang === 'de' ? 'Ändern' : 'Đổi tên'}
               </button>
             </div>
           )}
@@ -132,37 +132,53 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 my-6">
           <div className="bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-sm text-center flex flex-col items-center">
             <span className="text-2xl mb-1">🚀</span>
-            <span className="font-bold text-xs text-amber-950">Zahlen bis 1000</span>
-            <span className="text-[10px] text-amber-700">H-Z-E Meister</span>
+            <span className="font-bold text-xs text-amber-950">
+              {lang === 'de' ? 'Zahlen bis 1000' : 'Số đến 1000'}
+            </span>
+            <span className="text-[10px] text-amber-700">
+              {lang === 'de' ? 'H-Z-E Meister' : 'Trăm - Chục - Đơn vị'}
+            </span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-1" />
           </div>
 
           <div className="bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-sm text-center flex flex-col items-center">
             <span className="text-2xl mb-1">⚡</span>
-            <span className="font-bold text-xs text-amber-950">1x1 & Division</span>
-            <span className="text-[10px] text-amber-700">Multiplikation</span>
+            <span className="font-bold text-xs text-amber-950">
+              {lang === 'de' ? '1x1 & Division' : 'Bảng 1x1 & Chia'}
+            </span>
+            <span className="text-[10px] text-amber-700">
+              {lang === 'de' ? 'Multiplikation' : 'Nhân chia chuẩn'}
+            </span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-1" />
           </div>
 
           <div className="bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-sm text-center flex flex-col items-center">
             <span className="text-2xl mb-1">💶</span>
             <span className="font-bold text-xs text-amber-950">Euro & Cent</span>
-            <span className="text-[10px] text-amber-700">Wechselgeld</span>
+            <span className="text-[10px] text-amber-700">
+              {lang === 'de' ? 'Wechselgeld' : 'Đếm tiền thừa'}
+            </span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-1" />
           </div>
 
           <div className="bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-sm text-center flex flex-col items-center">
             <span className="text-2xl mb-1">🏰</span>
-            <span className="font-bold text-xs text-amber-950">Schriftl. Rechnen</span>
-            <span className="text-[10px] text-amber-700">Mit Übertrag</span>
+            <span className="font-bold text-xs text-amber-950">
+              {lang === 'de' ? 'Schriftl. Rechnen' : 'Đặt tính rồi tính'}
+            </span>
+            <span className="text-[10px] text-amber-700">
+              {lang === 'de' ? 'Mit Übertrag' : 'Cộng trừ có nhớ'}
+            </span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-1" />
           </div>
 
           <div className="col-span-2 sm:col-span-1 bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-sm text-center flex flex-col items-center">
-            <span className="text-2xl mb-1">🔴</span>
-            <span className="font-bold text-xs text-amber-950">PokéMath</span>
+            <span className="text-2xl mb-1">🧱</span>
+            <span className="font-bold text-xs text-amber-950">
+              {lang === 'de' ? 'Minecraft 3D' : 'Khối Voxel 3D'}
+            </span>
             <span className="text-[10px] text-amber-700">
-              {player.capturedPokemon?.length || 1}/12 Gefangen
+              {lang === 'de' ? 'Fläche & Quests' : 'Hình học & Quests'}
             </span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-1" />
           </div>
@@ -175,9 +191,11 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               ⭐
             </div>
             <div>
-              <div className="text-xs text-amber-800 font-bold uppercase">{t(lang, 'stars')} gesammelt</div>
+              <div className="text-xs text-amber-800 font-bold uppercase">
+                {lang === 'de' ? 'Sterne gesammelt' : 'Sao đã tích luỹ'}
+              </div>
               <div className="text-lg font-black text-amber-950 font-['Fredoka']">
-                {player.stars} Sternstunden
+                {player.stars} {lang === 'de' ? 'Sternstunden' : 'Sao vàng'}
               </div>
             </div>
           </div>
@@ -185,7 +203,9 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           {/* Date & Signature */}
           <div className="flex items-center gap-8 text-center">
             <div>
-              <div className="text-xs text-amber-800 font-semibold mb-1">Datum:</div>
+              <div className="text-xs text-amber-800 font-semibold mb-1">
+                {lang === 'de' ? 'Datum:' : 'Ngày cấp:'}
+              </div>
               <div className="text-sm font-bold text-amber-950 border-b border-amber-400 pb-0.5 px-3">
                 {today}
               </div>
@@ -196,7 +216,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 {lang === 'de' ? 'Unterschrift Lehrkraft / Eltern:' : 'Chữ ký Giáo viên / Phụ huynh:'}
               </div>
               <div className="w-36 h-7 border-b border-amber-800 italic text-amber-800 text-sm font-serif flex items-end justify-center">
-                MatheHeld 3. Klasse
+                {lang === 'de' ? 'MatheHeld 3. Klasse' : 'Vua Toán Lớp 3'}
               </div>
             </div>
           </div>

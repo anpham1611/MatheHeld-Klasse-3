@@ -41,7 +41,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       icon: '🚀',
       bgGradient: 'from-blue-600 to-indigo-900',
       borderColor: 'border-blue-400',
-      badge: 'Zahlen bis 1000',
+      badge: lang === 'de' ? 'Zahlen bis 1000' : 'Số đến 1000',
       score: player.scores.number_line,
     },
     {
@@ -51,7 +51,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       icon: '⚡',
       bgGradient: 'from-amber-600 to-red-900',
       borderColor: 'border-amber-400',
-      badge: '1x1 & Division',
+      badge: lang === 'de' ? '1x1 & Division' : '1x1 & Phép chia',
       score: player.scores.einmaleins,
     },
     {
@@ -71,7 +71,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       icon: '🏰',
       bgGradient: 'from-purple-600 to-indigo-950',
       borderColor: 'border-purple-400',
-      badge: 'Schriftl. Rechnen',
+      badge: lang === 'de' ? 'Schriftl. Rechnen' : 'Đặt tính rồi tính',
       score: player.scores.tower_math,
     },
     {
@@ -81,7 +81,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       icon: '⚡🐭',
       bgGradient: 'from-red-600 via-amber-600 to-rose-950',
       borderColor: 'border-amber-300',
-      badge: '🔴 NEU: POKÉMON',
+      badge: lang === 'de' ? '🔴 NEU: POKÉMON' : '🔴 MỚI: POKÉMON',
       score: player.scores.pokemon || 0,
     },
   ];
@@ -233,10 +233,10 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               <div className="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs font-black text-white">
                 <span className="flex items-center gap-1 text-yellow-300">
                   <Sparkles className="w-4 h-4" />
-                  <span>3. Klasse Lehrplan</span>
+                  <span>{lang === 'de' ? '3. Klasse Lehrplan' : 'Chương trình Lớp 3'}</span>
                 </span>
                 <span className="group-hover:translate-x-1 transition-transform">
-                  Spielen ▶
+                  {lang === 'de' ? 'Spielen ▶' : 'Vào chơi ▶'}
                 </span>
               </div>
             </div>
@@ -246,7 +246,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
 
       {/* Footer Info */}
       <footer className="text-center py-2 text-xs text-slate-500 font-mono">
-        Grundschule Deutschland · Klasse 3 Mathematik
+        {lang === 'de' ? 'Grundschule Deutschland · Klasse 3 Mathematik' : 'Toán Lớp 3 · Tiêu Chuẩn Tiểu Học Quốc Tế'}
       </footer>
     </div>
   );

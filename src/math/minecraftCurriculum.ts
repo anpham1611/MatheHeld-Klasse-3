@@ -50,10 +50,10 @@ export interface MinecraftTask {
 }
 
 export const BLOCK_VALUES = {
-  dirt: { nameVi: 'Khối Đất (Dirt)', nameDe: 'Erde (Dirt)', value: 1, color: '#865439', label: '1 Đơn vị (E)' },
-  wood: { nameVi: 'Khối Gỗ (Wood)', nameDe: 'Holz (Wood)', value: 10, color: '#a07855', label: '10 Chục (Z)' },
-  cobblestone: { nameVi: 'Khối Đá (Cobblestone)', nameDe: 'Bruchstein', value: 100, color: '#828282', label: '100 Trăm (H)' },
-  iron: { nameVi: 'Khối Sắt (Iron Block)', nameDe: 'Eisenblock', value: 1000, color: '#e0e7ea', label: '1000 Nghìn (T)' },
+  dirt: { nameVi: 'Khối Đất (Dirt)', nameDe: 'Erde (Dirt)', value: 1, color: '#865439', labelVi: '1 Đơn vị (E)', labelDe: '1 Einer (E)' },
+  wood: { nameVi: 'Khối Gỗ (Wood)', nameDe: 'Holz (Wood)', value: 10, color: '#a07855', labelVi: '10 Chục (Z)', labelDe: '10 Zehner (Z)' },
+  cobblestone: { nameVi: 'Khối Đá (Cobblestone)', nameDe: 'Bruchstein (Stein)', value: 100, color: '#828282', labelVi: '100 Trăm (H)', labelDe: '100 Hunderter (H)' },
+  iron: { nameVi: 'Khối Sắt (Iron Block)', nameDe: 'Eisenblock', value: 1000, color: '#e0e7ea', labelVi: '1000 Nghìn (T)', labelDe: '1000 Tausender (T)' },
 };
 
 // Generates randomized, curriculum-aligned tasks

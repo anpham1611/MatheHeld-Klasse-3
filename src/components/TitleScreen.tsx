@@ -169,7 +169,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               strokeWidth="4"
               paintOrder="stroke fill"
             >
-              MATHEHELD
+              {lang === 'de' ? 'MATHEHELD' : 'VUA TOÁN HỌC'}
             </text>
             <text
               x="250"
@@ -181,7 +181,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               fill="url(#blueGrad)"
               letterSpacing="6"
             >
-              KLASSE 3 · GRUNDSCHULE
+              {lang === 'de' ? 'KLASSE 3 · GRUNDSCHULE' : 'LỚP 3 · TIỂU HỌC'}
             </text>
           </svg>
         </div>

@@ -212,9 +212,9 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
             </div>
             <div>
               <h1 className="text-sm sm:text-base font-black text-white font-['Fredoka'] tracking-wide flex items-center gap-1.5">
-                <span>Minecraft Math World</span>
+                <span>{lang === 'de' ? 'Minecraft Mathe-Welt' : 'Minecraft Math World'}</span>
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded uppercase font-mono">
-                  Lớp 3
+                  {lang === 'de' ? 'Klasse 3' : 'Lớp 3'}
                 </span>
               </h1>
             </div>
@@ -225,12 +225,12 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
         <div className="hidden md:flex items-center gap-3 bg-black/40 border border-slate-700 px-3.5 py-1.5 rounded-2xl">
           <div className="flex items-center gap-1 text-emerald-400 text-xs font-black">
             <span>🟢</span>
-            <span>{player.euroCoins} Ngọc / Vàng</span>
+            <span>{player.euroCoins} {lang === 'de' ? 'Smaragde' : 'Ngọc / Vàng'}</span>
           </div>
           <div className="h-3 w-px bg-slate-700" />
           <div className="flex items-center gap-1 text-yellow-400 text-xs font-black">
             <Star className="w-3.5 h-3.5 fill-yellow-400" />
-            <span>{player.stars} Sao</span>
+            <span>{player.stars} {lang === 'de' ? 'Sterne' : 'Sao'}</span>
           </div>
           <div className="h-3 w-px bg-slate-700" />
           <div className="flex items-center gap-1 text-amber-300 text-xs font-black">
@@ -248,7 +248,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
               setShowTeacherGuide(true);
             }}
             className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 rounded-xl text-xs font-black cursor-pointer transition shadow"
-            title="Sổ tay giáo viên / Teacher Guide"
+            title={lang === 'de' ? 'Leitfaden für Lehrkräfte & Eltern' : 'Sổ tay giáo viên / Teacher Guide'}
           >
             <BookOpen className="w-4 h-4 text-emerald-400" />
             <span className="hidden sm:inline">
@@ -263,7 +263,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
               setShowScratchpad(true);
             }}
             className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 rounded-xl text-xs font-bold cursor-pointer transition"
-            title="Bảng nháp tính toán"
+            title={lang === 'de' ? 'Schmierzettel / Notizen' : 'Bảng nháp tính toán'}
           >
             <PenTool className="w-4 h-4 text-indigo-400" />
             <span className="hidden sm:inline">{lang === 'de' ? 'Notizen' : 'Nháp'}</span>
@@ -389,31 +389,35 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-slate-900 p-2 rounded-lg border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Tổng số khối:</span>
+                      <span className="text-slate-400 block text-[10px]">
+                        {lang === 'de' ? 'Gesamtblöcke:' : 'Tổng số khối:'}
+                      </span>
                       <span className="text-base font-black text-white">{currentBlocks.length}</span>
                     </div>
 
                     <div className="bg-slate-900 p-2 rounded-lg border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Giá trị số (H-Z-E):</span>
+                      <span className="text-slate-400 block text-[10px]">
+                        {lang === 'de' ? 'Zahlenwert (T-H-Z-E):' : 'Giá trị số (H-Z-E):'}
+                      </span>
                       <span className="text-base font-black text-amber-400">{totalSandboxValue}</span>
                     </div>
                   </div>
 
                   <div className="text-[11px] text-slate-400 bg-slate-900/60 p-2 rounded-lg border border-slate-800/80">
                     <div className="flex justify-between py-0.5">
-                      <span>Sắt ({totalIron} × 1000):</span>
+                      <span>{lang === 'de' ? 'Eisen' : 'Sắt'} ({totalIron} × 1000):</span>
                       <span className="font-mono font-bold text-white">{totalIron * 1000}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
-                      <span>Đá ({totalCobble} × 100):</span>
+                      <span>{lang === 'de' ? 'Bruchstein' : 'Đá'} ({totalCobble} × 100):</span>
                       <span className="font-mono font-bold text-white">{totalCobble * 100}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
-                      <span>Gỗ ({totalWood} × 10):</span>
+                      <span>{lang === 'de' ? 'Holz' : 'Gỗ'} ({totalWood} × 10):</span>
                       <span className="font-mono font-bold text-white">{totalWood * 10}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
-                      <span>Đất ({totalDirt} × 1):</span>
+                      <span>{lang === 'de' ? 'Erde' : 'Đất'} ({totalDirt} × 1):</span>
                       <span className="font-mono font-bold text-white">{totalDirt * 1}</span>
                     </div>
                   </div>
@@ -451,7 +455,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                       setShowHint(!showHint);
                     }}
                     className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 cursor-pointer transition text-xs flex items-center gap-1 shrink-0"
-                    title="Gợi ý cách giải"
+                    title={lang === 'de' ? 'Rechen-Tipp anzeigen' : 'Gợi ý cách giải'}
                   >
                     <HelpCircle className="w-4 h-4" />
                     <span className="text-[11px] font-bold">{lang === 'de' ? 'Tipp' : 'Gợi ý'}</span>
@@ -540,7 +544,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                 <div className="text-[11px] text-slate-400 font-mono">
                   {streak > 1 && (
                     <span className="text-amber-400 font-bold">
-                      🔥 Chuỗi {streak} câu đúng!
+                      🔥 {lang === 'de' ? `Serie: ${streak} richtige Antworten!` : `Chuỗi ${streak} câu đúng!`}
                     </span>
                   )}
                 </div>

@@ -40,7 +40,7 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onCl
             <button
               onClick={handlePrint}
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold cursor-pointer transition shadow"
-              title="In giáo án / Print"
+              title={lang === 'de' ? 'Lehrplan drucken' : 'In giáo án / Print'}
             >
               <Printer className="w-4 h-4" />
               <span>{lang === 'de' ? 'Drucken' : 'In / Lưu'}</span>
@@ -129,7 +129,11 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onCl
         <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
           <div className="text-xs text-slate-400 flex items-center gap-2">
             <Clock className="w-4 h-4 text-emerald-400" />
-            <span>15m lý thuyết ➔ 20m thực hành ➔ 5m tổng kết</span>
+            <span>
+              {lang === 'de'
+                ? '15 Min Theorie ➔ 20 Min Spielpraxis ➔ 5 Min Reflexion'
+                : '15m lý thuyết ➔ 20m thực hành ➔ 5m tổng kết'}
+            </span>
           </div>
 
           <button

@@ -131,7 +131,9 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({ lang, onClose }) => {
       <div className="bg-indigo-600 px-4 py-2.5 flex items-center justify-between text-white select-none">
         <div className="flex items-center gap-2 font-bold font-['Fredoka'] text-sm tracking-wide">
           <span>📝 {t(lang, 'scratchpad')}</span>
-          <span className="text-xs bg-indigo-500 text-indigo-100 px-2 py-0.5 rounded-full font-normal">Kariert</span>
+          <span className="text-xs bg-indigo-500 text-indigo-100 px-2 py-0.5 rounded-full font-normal">
+            {lang === 'de' ? 'Kariert' : 'Ô ly'}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -160,7 +162,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({ lang, onClose }) => {
             }`}
           >
             <Pen className="w-3.5 h-3.5" />
-            <span>Stift</span>
+            <span>{lang === 'de' ? 'Stift' : 'Bút'}</span>
           </button>
           <button
             onClick={() => setTool('eraser')}
@@ -169,7 +171,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({ lang, onClose }) => {
             }`}
           >
             <Eraser className="w-3.5 h-3.5" />
-            <span>Radierer</span>
+            <span>{lang === 'de' ? 'Radierer' : 'Tẩy'}</span>
           </button>
         </div>
 

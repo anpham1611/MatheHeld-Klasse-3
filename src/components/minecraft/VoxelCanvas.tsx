@@ -411,7 +411,15 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
             setIsNight(!isNight);
           }}
           className="p-1.5 hover:bg-white/20 rounded-lg cursor-pointer transition"
-          title={isNight ? 'Chuyển Ban Ngày (Day)' : 'Chuyển Ban Đêm (Night)'}
+          title={
+            isNight
+              ? lang === 'de'
+                ? 'Tag-Modus aktivieren'
+                : 'Chuyển Ban Ngày (Day)'
+              : lang === 'de'
+              ? 'Nacht-Modus aktivieren'
+              : 'Chuyển Ban Đêm (Night)'
+          }
         >
           {isNight ? <Sun className="w-4 h-4 text-yellow-300" /> : <Moon className="w-4 h-4 text-indigo-300" />}
         </button>
