@@ -14,6 +14,7 @@ import { CertificateModal } from './components/CertificateModal';
 import { PlayerSwitchModal } from './components/PlayerSwitchModal';
 import { GameScoresModal } from './components/GameScoresModal';
 import { loadPlayerFromDb, savePlayerToDb, fetchDbStatus } from './services/playerService';
+import { scoreAfterGame } from './math/gameScore';
 
 const STORAGE_KEY = 'matheheld_klasse3_profile_v1';
 
@@ -148,7 +149,7 @@ export default function App() {
 
       const newScores = {
         ...prev.scores,
-        [modeKey]: Math.max(prev.scores[modeKey] || 0, scoreAchieved),
+        [modeKey]: scoreAfterGame(prev.scores, modeKey, scoreAchieved),
       };
 
       const updatedPlayer: PlayerProfile = {

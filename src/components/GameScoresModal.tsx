@@ -157,7 +157,9 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
                   <span>{g.score} Pkt</span>
                 </div>
                 <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
-                  {t(lang, 'bestScore')}
+                  {g.key === 'logic_game'
+                    ? (lang === 'de' ? 'Gesamtpunkte' : 'Tổng điểm')
+                    : t(lang, 'bestScore')}
                 </span>
               </div>
             </div>

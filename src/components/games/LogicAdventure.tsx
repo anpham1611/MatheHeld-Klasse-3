@@ -27,6 +27,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   const [feedback, setFeedback] = useState<'correct' | 'tryAgain' | null>(null);
   const [answered, setAnswered] = useState(false);
   const [complete, setComplete] = useState(false);
+  const [startingTotal, setStartingTotal] = useState(player.scores.logic_game || 0);
   const advanceTimer = useRef<number | null>(null);
   const puzzle = puzzles[round];
 
@@ -62,6 +63,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
 
   const restart = () => {
     if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current);
+    setStartingTotal(player.scores.logic_game || 0);
     setPuzzles(generateLogicRound(lang));
     setRound(0);
     setScore(0);
@@ -83,7 +85,9 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="text-center">
-          <p className="text-xs sm:text-sm font-extrabold text-violet-600">{player.name}</p>
+          <p className="text-xs sm:text-sm font-extrabold text-violet-600">
+            {player.name} · {text('Gesamtpunkte', 'Tổng điểm')}: {player.scores.logic_game || 0}
+          </p>
           <h1 className="text-xl sm:text-3xl font-black text-indigo-950 font-['Fredoka']">
             {text('Kleine Denker', 'Bé thông minh')} 🧩
           </h1>
@@ -107,7 +111,8 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
             {text('Du hast 20 Rätsel gelöst. Toll gemacht!', 'Bé đã giải 20 câu đố. Giỏi lắm!')}
           </p>
           <div className="my-6 text-4xl" aria-label={text('Drei Sterne', 'Ba ngôi sao')}>⭐ ⭐ ⭐</div>
-          <p className="mb-6 text-xl font-black text-violet-700">{score} {text('Punkte', 'điểm')}</p>
+          <p className="text-lg font-bold text-slate-600">{text('Punkte in dieser Runde', 'Điểm vòng này')}: {score}</p>
+          <p className="my-3 mb-6 text-xl font-black text-violet-700">{text('Gesamtpunkte', 'Tổng điểm')}: {startingTotal + score}</p>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={restart}
