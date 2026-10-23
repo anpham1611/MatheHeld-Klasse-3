@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { VoxelBlock } from '../../math/minecraftCurriculum';
 import { BrickCatalogItem, getBrickDimensions, getBrickPiece } from '../../math/brickCatalog';
+import { BaseGridSize, DEFAULT_BASE_GRID_SIZE, getBaseGridBounds } from '../../math/brickBuilding';
 import { sound } from '../../audio/soundManager';
 import { RotateCw, ZoomIn, ZoomOut, Sun, Moon, Sparkles, Plus, Trash2 } from 'lucide-react';
 
@@ -20,6 +21,7 @@ interface VoxelCanvasProps {
   onBlockPlace?: (block: VoxelBlock) => boolean | void;
   onBlockRemove?: (block: VoxelBlock) => boolean | void;
   lang?: 'de' | 'vi';
+  gridSize?: BaseGridSize;
 }
 
 function createBrickGeometry(piece: BrickCatalogItem): THREE.BufferGeometry {
@@ -208,6 +210,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
   onBlockPlace,
   onBlockRemove,
   lang = 'vi',
+  gridSize = DEFAULT_BASE_GRID_SIZE,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -264,6 +267,8 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     cameraRef.current = camera;
+    cameraAngleRef.current.radius = Math.max(cameraAngleRef.current.radius, gridSize * 0.8);
+    setZoomLevel(cameraAngleRef.current.radius);
     updateCameraPosition();
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
@@ -290,12 +295,12 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
     const celestialGeo = new THREE.BoxGeometry(2, 2, 0.5);
     const celestialMat = new THREE.MeshBasicMaterial({ color: isNight ? 0xffffff : 0xffeb3b });
     const celestial = new THREE.Mesh(celestialGeo, celestialMat);
-    celestial.position.set(20, 25, 20);
+    celestial.position.set(gridSize / 2 + 10, 25, gridSize / 2 + 10);
     celestial.lookAt(0, 0, 0);
     scene.add(celestial);
 
     // Ground platform (Minecraft Grass Island)
-    const islandGeo = new THREE.BoxGeometry(20, 1, 20);
+    const islandGeo = new THREE.BoxGeometry(gridSize, 1, gridSize);
     const islandTex = createBlockCanvasTexture('dirt');
     const islandMat = new THREE.MeshLambertMaterial({ map: islandTex });
     const islandMesh = new THREE.Mesh(islandGeo, islandMat);
@@ -304,7 +309,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
     scene.add(islandMesh);
 
     // Grid on ground
-    const grid = new THREE.GridHelper(20, 20, 0x4a7c29, 0x3d6621);
+    const grid = new THREE.GridHelper(gridSize, gridSize, 0x4a7c29, 0x3d6621);
     grid.position.y = 0.01;
     scene.add(grid);
     gridHelperRef.current = grid;
@@ -351,7 +356,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
       brickColorMaterialsRef.current.forEach((material) => material.dispose());
       brickColorMaterialsRef.current.clear();
     };
-  }, [updateCameraPosition, isNight]);
+  }, [updateCameraPosition, isNight, gridSize]);
 
   // Update block meshes when `blocks` prop changes
   useEffect(() => {
@@ -439,7 +444,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
 
       group.add(mesh);
     });
-  }, [blocks, showStuds, isNight]);
+  }, [blocks, showStuds, isNight, gridSize]);
 
   const placeBlockAtPointer = (clientX: number, clientY: number) => {
     const container = containerRef.current;
@@ -483,7 +488,8 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
       z = Math.round(point.z);
     }
 
-    if (x < -9 || z < -9 || x + newDimensions.width - 1 > 9 || z + newDimensions.depth - 1 > 9 || y < 0 || y + newDimensions.height > 39) return;
+    const bounds = getBaseGridBounds(gridSize);
+    if (x < bounds.min || z < bounds.min || x + newDimensions.width - 1 > bounds.max || z + newDimensions.depth - 1 > bounds.max || y < 0 || y + newDimensions.height > 39) return;
     const placed = onBlockPlace({ x, y, z, type: activeBlockType, pieceId: activePiece.id, rotation: activeRotation, brickColor: activeBrickColor });
     if (placed !== false) sound.playBlockPlace();
   };
@@ -549,7 +555,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
 
   // Zoom controls
   const handleZoom = (inOut: number) => {
-    const nextRadius = Math.max(8, Math.min(30, cameraAngleRef.current.radius + inOut * 2));
+    const nextRadius = Math.max(8, Math.min(gridSize * 1.5, cameraAngleRef.current.radius + inOut * 2));
     cameraAngleRef.current.radius = nextRadius;
     setZoomLevel(nextRadius);
     updateCameraPosition();
@@ -557,9 +563,9 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
 
   // Auto Reset Angle
   const handleResetView = () => {
-    cameraAngleRef.current = { theta: Math.PI / 4, phi: Math.PI / 5, radius: 16 };
+    cameraAngleRef.current = { theta: Math.PI / 4, phi: Math.PI / 5, radius: gridSize * 0.8 };
     cameraTargetRef.current.set(0, 1, 0);
-    setZoomLevel(16);
+    setZoomLevel(gridSize * 0.8);
     updateCameraPosition();
     sound.playJump();
   };

@@ -312,7 +312,7 @@ export async function getMathBrickBuild(rawName: string) {
   };
 }
 
-export async function saveMathBrickBuild(rawName: string, build: { blocks: unknown[]; inventory: Record<string, number> }): Promise<boolean> {
+export async function saveMathBrickBuild(rawName: string, build: { blocks: unknown[]; inventory: Record<string, number>; gridSize: number }): Promise<boolean> {
   const db = getDb();
   const name = rawName.trim();
   if (!name) return false;

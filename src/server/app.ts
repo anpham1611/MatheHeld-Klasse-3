@@ -9,7 +9,7 @@ import {
   savePlayerProfile,
 } from './db.js';
 import { BRICK_CATALOG, getBrickDimensions, getBrickPiece } from '../math/brickCatalog.js';
-import { blocksOverlap } from '../math/brickBuilding.js';
+import { BaseGridSize, blockFitsBaseGrid, blocksOverlap, DEFAULT_BASE_GRID_SIZE, isBaseGridSize } from '../math/brickBuilding.js';
 import type { VoxelBlock } from '../math/minecraftCurriculum.js';
 
 export const app = express();
@@ -19,9 +19,11 @@ const VALID_BLOCK_TYPES: VoxelBlock['type'][] = ['dirt', 'wood', 'cobblestone', 
 const VALID_BLOCK_COLORS = new Set(['#e53935', '#1e88e5', '#fdd835', '#43a047', '#f5f5f5', '#263238', '#fb8c00', '#8e24aa']);
 const VALID_ROTATIONS = new Set([0, 90, 180, 270]);
 
-function parseMathBrickBuild(value: unknown): { blocks: VoxelBlock[]; inventory: Record<string, number> } | null {
+function parseMathBrickBuild(value: unknown): { blocks: VoxelBlock[]; inventory: Record<string, number>; gridSize: BaseGridSize } | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  const source = value as { blocks?: unknown; inventory?: unknown };
+  const source = value as { blocks?: unknown; inventory?: unknown; gridSize?: unknown };
+  const gridSize = source.gridSize === undefined ? DEFAULT_BASE_GRID_SIZE : source.gridSize;
+  if (!isBaseGridSize(gridSize)) return null;
   if (!Array.isArray(source.blocks) || source.blocks.length > 400 || !source.inventory || typeof source.inventory !== 'object' || Array.isArray(source.inventory)) return null;
 
   const storedInventory = source.inventory as Record<string, unknown>;
@@ -56,14 +58,13 @@ function parseMathBrickBuild(value: unknown): { blocks: VoxelBlock[]; inventory:
       rotation: safeRotation as VoxelBlock['rotation'],
       ...(typeof brickColor === 'string' ? { brickColor } : {}),
     };
-    if (safeBlock.x < -9 || safeBlock.z < -9
-      || safeBlock.x + dimensions.width - 1 > 9 || safeBlock.z + dimensions.depth - 1 > 9
+    if (!blockFitsBaseGrid(safeBlock, gridSize)
       || safeBlock.y < 0 || safeBlock.y + dimensions.height > 39
       || blocks.some((placed) => blocksOverlap(placed, safeBlock))) return null;
     blocks.push(safeBlock);
   }
 
-  return { blocks, inventory };
+  return { blocks, inventory, gridSize };
 }
 
 let databaseInitialization: Promise<void> | undefined;

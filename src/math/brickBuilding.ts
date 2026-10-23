@@ -2,9 +2,29 @@ import { VoxelBlock } from './minecraftCurriculum';
 import { BRICK_CATALOG, getBrickDimensions, getBrickPiece } from './brickCatalog';
 
 export type BrickInventory = Record<string, number>;
+export const BASE_GRID_SIZES = [20, 30, 40] as const;
+export type BaseGridSize = typeof BASE_GRID_SIZES[number];
+export const DEFAULT_BASE_GRID_SIZE: BaseGridSize = 20;
+
+export function isBaseGridSize(value: unknown): value is BaseGridSize {
+  return BASE_GRID_SIZES.some((size) => size === value);
+}
+
+export function getBaseGridBounds(size: BaseGridSize) {
+  const max = Math.floor(size / 2) - 1;
+  return { min: -max, max };
+}
+
+export function blockFitsBaseGrid(block: VoxelBlock, size: BaseGridSize): boolean {
+  const bounds = getBaseGridBounds(size);
+  const dimensions = getBrickDimensions(block.pieceId, block.rotation);
+  return block.x >= bounds.min && block.z >= bounds.min
+    && block.x + dimensions.width - 1 <= bounds.max
+    && block.z + dimensions.depth - 1 <= bounds.max;
+}
 
 export function createStartingInventory(): BrickInventory {
-  return Object.fromEntries(BRICK_CATALOG.map(({ id }) => [id, 10]));
+  return Object.fromEntries(BRICK_CATALOG.map(({ id }) => [id, 2]));
 }
 
 export function blocksOverlap(left: VoxelBlock, right: VoxelBlock): boolean {

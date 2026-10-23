@@ -1,9 +1,11 @@
 import { PlayerProfile, GameScoreDetail, DbEngineInfo, SavedPlayerSummary } from '../types/game';
 import type { VoxelBlock } from '../math/minecraftCurriculum';
+import { BaseGridSize, DEFAULT_BASE_GRID_SIZE, isBaseGridSize } from '../math/brickBuilding';
 
 export interface SavedMathBrickBuild {
   blocks: VoxelBlock[];
   inventory: Record<string, number>;
+  gridSize: BaseGridSize;
 }
 
 export interface LoadPlayerResponse {
@@ -105,7 +107,12 @@ export async function loadMathBrickBuild(playerName: string): Promise<SavedMathB
   const response = await fetch(`/api/players/${encodeURIComponent(playerName.trim())}/mathbrick-build`);
   if (!response.ok) throw new Error(`Server returned ${response.status}`);
   const data = await response.json();
-  return data.savedBuild || null;
+  const build = data.savedBuild as Partial<SavedMathBrickBuild> | null;
+  if (!build) return null;
+  return {
+    ...build,
+    gridSize: isBaseGridSize(build.gridSize) ? build.gridSize : DEFAULT_BASE_GRID_SIZE,
+  } as SavedMathBrickBuild;
 }
 
 export async function saveMathBrickBuild(playerName: string, build: SavedMathBrickBuild): Promise<void> {

@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Download, HardDrive, PackagePlus, RotateCcw, Save, Trash2, Trophy, Volume2, VolumeX, X } from 'lucide-react';
 import { Language, PlayerProfile } from '../../types/game';
 import { VoxelBlock } from '../../math/minecraftCurriculum';
-import { BRICK_CATALOG, BRICK_GROUPS, BrickGroupId, COMMON_BRICK_IDS, getBrickDimensions, getBrickPiece, SPECIAL_BRICK_IDS } from '../../math/brickCatalog';
-import { blockOccupiesCell, blocksOverlap, createStartingInventory, removePlacedBrick } from '../../math/brickBuilding';
-import { generateBrickMathQuestion, BrickMathQuestion } from '../../math/mathBrickCurriculum';
+import { BRICK_CATALOG, BRICK_GROUPS, BrickGroupId, COMMON_BRICK_IDS, getBrickPiece, SPECIAL_BRICK_IDS } from '../../math/brickCatalog';
+import { BASE_GRID_SIZES, BaseGridSize, blockFitsBaseGrid, blockOccupiesCell, blocksOverlap, createStartingInventory, DEFAULT_BASE_GRID_SIZE, isBaseGridSize, removePlacedBrick } from '../../math/brickBuilding';
+import type { BrickMathQuestion } from '../../math/mathBrickCurriculum';
+import { generateLogicRound } from '../../math/logicPuzzles';
 import { sound } from '../../audio/soundManager';
 import { loadMathBrickBuild, saveMathBrickBuild } from '../../services/playerService';
 import { VoxelCanvas } from '../minecraft/VoxelCanvas';
@@ -26,10 +27,11 @@ type Rotation = 0 | 90 | 180 | 270;
 interface SavedBuild {
   blocks: VoxelBlock[];
   inventory: Inventory;
+  gridSize: BaseGridSize;
 }
 
 interface BuilderState extends SavedBuild {
-  schemaVersion: 2;
+  schemaVersion: 3;
   savedBuild?: SavedBuild;
 }
 
@@ -55,7 +57,7 @@ function emptyInventory(): Inventory {
   return createStartingInventory();
 }
 
-const emptyState = (): BuilderState => ({ schemaVersion: 2, blocks: [], inventory: emptyInventory() });
+const emptyState = (): BuilderState => ({ schemaVersion: 3, gridSize: DEFAULT_BASE_GRID_SIZE, blocks: [], inventory: emptyInventory() });
 
 function readInventory(value: unknown): Inventory {
   const inventory = emptyInventory();
@@ -80,7 +82,7 @@ function readInventory(value: unknown): Inventory {
   return inventory;
 }
 
-function readVoxelBlock(value: unknown): VoxelBlock | null {
+function readVoxelBlock(value: unknown, gridSize: BaseGridSize): VoxelBlock | null {
   if (!value || typeof value !== 'object') return null;
   const block = value as VoxelBlock;
   if (!Number.isInteger(block.x) || !Number.isInteger(block.y) || !Number.isInteger(block.z)
@@ -90,12 +92,11 @@ function readVoxelBlock(value: unknown): VoxelBlock | null {
     fence: 'panel-wall-1x4', cake: 'tile-1x1', chest: 'gear-2x2', chicken: 'animal-2x2',
   };
   const pieceId = block.pieceId || legacyPieceIds[block.type] || 'brick-1x1';
-  const dimensions = getBrickDimensions(pieceId, block.rotation);
-  if (!getBrickPiece(pieceId) || block.x < -9 || block.z < -9
-    || block.x + dimensions.width - 1 > 9 || block.z + dimensions.depth - 1 > 9
-    || block.y < 0 || block.y + dimensions.height > 39) return null;
+  if (!getBrickPiece(pieceId)) return null;
   const brickColor = COLORS.some((color) => color.hex === block.brickColor) ? block.brickColor : undefined;
-  return { ...block, pieceId, rotation: block.rotation || 0, brickColor };
+  const safeBlock: VoxelBlock = { ...block, pieceId, rotation: (block.rotation || 0) as Rotation, brickColor };
+  if (!blockFitsBaseGrid(safeBlock, gridSize) || safeBlock.y < 0 || safeBlock.y + getBrickPiece(pieceId)!.height > 39) return null;
+  return safeBlock;
 }
 
 function readBuilderState(key: string): BuilderState {
@@ -103,25 +104,42 @@ function readBuilderState(key: string): BuilderState {
     const stored = localStorage.getItem(key);
     if (!stored) return emptyState();
     const parsed = JSON.parse(stored) as Partial<BuilderState>;
+    const gridSize = isBaseGridSize(parsed.gridSize) ? parsed.gridSize : DEFAULT_BASE_GRID_SIZE;
+    const savedGridSize = isBaseGridSize(parsed.savedBuild?.gridSize) ? parsed.savedBuild.gridSize : DEFAULT_BASE_GRID_SIZE;
     const inventory = readInventory(parsed.inventory);
     const savedInventory = parsed.savedBuild?.inventory ? readInventory(parsed.savedBuild.inventory) : undefined;
-    if (parsed.schemaVersion !== 2) {
+    if (parsed.schemaVersion !== 3) {
       BRICK_CATALOG.forEach(({ id }) => {
         inventory[id] = Math.max(2, inventory[id] || 0);
         if (savedInventory) savedInventory[id] = Math.max(2, savedInventory[id] || 0);
       });
     }
-    const blocks = Array.isArray(parsed.blocks) ? parsed.blocks.map(readVoxelBlock).filter((block): block is VoxelBlock => !!block).slice(0, 400) : [];
-    const savedBlocks = Array.isArray(parsed.savedBuild?.blocks) ? parsed.savedBuild.blocks.map(readVoxelBlock).filter((block): block is VoxelBlock => !!block).slice(0, 400) : undefined;
+    const blocks = Array.isArray(parsed.blocks) ? parsed.blocks.map((block) => readVoxelBlock(block, gridSize)).filter((block): block is VoxelBlock => !!block).slice(0, 400) : [];
+    const savedBlocks = Array.isArray(parsed.savedBuild?.blocks) ? parsed.savedBuild.blocks.map((block) => readVoxelBlock(block, savedGridSize)).filter((block): block is VoxelBlock => !!block).slice(0, 400) : undefined;
     return {
-      schemaVersion: 2,
+      schemaVersion: 3,
+      gridSize,
       blocks,
       inventory,
-      ...(savedBlocks && savedInventory ? { savedBuild: { blocks: savedBlocks, inventory: savedInventory } } : {}),
+      ...(savedBlocks && savedInventory ? { savedBuild: { blocks: savedBlocks, inventory: savedInventory, gridSize: savedGridSize } } : {}),
     };
   } catch {
     return emptyState();
   }
+}
+
+function generateBrickLogicQuestion(lang: Language, hard: boolean): BrickMathQuestion {
+  const puzzle = generateLogicRound(lang, hard ? 2 : 1)[0];
+  const displayChoice = (choice: (typeof puzzle.choices)[number]) => choice.label ? `${choice.art} ${choice.label}` : choice.art;
+  const correctChoice = puzzle.choices.find((choice) => choice.correct);
+  if (!correctChoice) throw new Error(`Logic puzzle ${puzzle.topicId} has no correct answer`);
+  return {
+    kind: 'pattern',
+    prompt: puzzle.prompt,
+    visual: puzzle.visual,
+    answer: displayChoice(correctChoice),
+    options: puzzle.choices.map(displayChoice),
+  };
 }
 
 export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
@@ -242,7 +260,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
   };
 
   const saveBuild = async () => {
-    const savedBuild = { blocks: state.blocks, inventory: state.inventory };
+    const savedBuild = { blocks: state.blocks, inventory: state.inventory, gridSize: state.gridSize };
     saveVersionRef.current += 1;
     setState((current) => ({
       ...current,
@@ -297,7 +315,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
   };
 
   const startChallenge = (hard = false) => {
-    const question = generateBrickMathQuestion(lang, hard);
+    const question = generateBrickLogicQuestion(lang, hard);
     setChallenge({ question, hard, ...(hard ? { rareReward: selectedRare } : {}) });
     setAnswerFeedback(null);
     setNotice('');
@@ -377,6 +395,15 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
     setNotice('');
   };
 
+  const resizeBaseGrid = (gridSize: BaseGridSize) => {
+    if (!state.blocks.every((block) => blockFitsBaseGrid(block, gridSize))) {
+      setNotice(text('Einige Steine passen nicht in dieses kleinere Raster.', 'Một số khối không vừa với lưới nhỏ hơn này.'));
+      return;
+    }
+    setState((current) => ({ ...current, gridSize }));
+    setNotice('');
+  };
+
   return (
     <main className="h-[100dvh] min-h-[620px] overflow-y-auto bg-slate-950 text-slate-100 font-['Nunito',sans-serif] flex flex-col">
       <header className="shrink-0 flex items-center justify-between gap-3 border-b border-cyan-500/30 bg-slate-900 px-3 py-2.5 sm:px-5">
@@ -434,6 +461,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
               removalEnabled={tool === 'remove'}
               allowPan
               showStuds
+              gridSize={state.gridSize}
               onBlockPlace={handlePlaceBlock}
               onBlockRemove={handleRemoveBlock}
               lang={lang}
@@ -462,6 +490,17 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
               <span className="rounded-full bg-slate-800 px-2.5 py-1 text-xs font-black text-cyan-200">{blockCount} {text('frei', 'còn')}</span>
             </div>
             <p className="mt-1 text-xs text-slate-400">{text('Wähle Teil und Farbe. Größenangaben sind Noppen.', 'Chọn chi tiết và màu. Kích thước tính theo núm gạch.')}</p>
+            <label className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold">
+              <span>{text('Grundraster', 'Lưới nền')}</span>
+              <select
+                value={state.gridSize}
+                onChange={(event) => resizeBaseGrid(Number(event.target.value) as BaseGridSize)}
+                className="rounded-lg border border-slate-600 bg-slate-900 px-2 py-1.5 text-white"
+                aria-label={text('Größe des Grundrasters', 'Kích thước lưới nền')}
+              >
+                {BASE_GRID_SIZES.map((size) => <option key={size} value={size}>{size} × {size}</option>)}
+              </select>
+            </label>
             <div className="mt-3 flex gap-1 overflow-x-auto pb-1">
               {BRICK_GROUPS.map((group) => (
                 <button key={group.id} onClick={() => setActiveGroup(group.id)} className={`shrink-0 rounded-lg px-2 py-1.5 text-[10px] font-black ${activeGroup === group.id ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-slate-300'}`}>
@@ -540,10 +579,10 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
               </div>
               <button onClick={() => setChallenge(null)} className="rounded-lg bg-slate-800 p-2" aria-label={text('Schließen', 'Đóng')}><X className="h-5 w-5" /></button>
             </div>
-            <div className="my-5 rounded-2xl border border-slate-700 bg-slate-950 p-4 text-center text-2xl leading-relaxed sm:text-4xl">{challenge.question.visual}</div>
+            <div className={`my-5 rounded-2xl border border-slate-700 bg-slate-950 p-4 text-center font-black leading-relaxed whitespace-pre-line break-words ${challenge.question.visual.length > 24 ? 'text-lg sm:text-2xl' : 'text-2xl sm:text-4xl'}`}>{challenge.question.visual}</div>
             <div className="grid grid-cols-2 gap-3">
               {challenge.question.options.map((option, index) => (
-                <button key={`${option}-${index}`} onClick={() => answerQuestion(option)} className="min-h-14 rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-lg font-black hover:border-cyan-400 hover:bg-slate-700">
+                <button key={`${option}-${index}`} onClick={() => answerQuestion(option)} className="min-h-14 break-words rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-base font-black hover:border-cyan-400 hover:bg-slate-700 sm:text-lg">
                   {option}
                 </button>
               ))}
