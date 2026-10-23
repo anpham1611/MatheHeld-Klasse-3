@@ -39,7 +39,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
 
 export default function App() {
   const [screen, setScreen] = useState<GameScreen>('title');
-  const [lang, setLang] = useState<Language>('vi');
+  const [lang, setLang] = useState<Language>('de');
   const [isMuted, setIsMuted] = useState(false);
 
   // Database & Engine state
