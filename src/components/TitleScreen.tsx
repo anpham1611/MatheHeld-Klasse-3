@@ -1,6 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Play, Volume2, VolumeX, Globe, Award, Sparkles, Star } from 'lucide-react';
-import { Language, CharacterAvatar, PlayerProfile } from '../types/game';
+import {
+  Play,
+  Volume2,
+  VolumeX,
+  Globe,
+  Award,
+  Sparkles,
+  Star,
+  Save,
+  Users,
+  Trophy,
+  Check,
+  Edit2,
+  Database,
+  Coins,
+} from 'lucide-react';
+import { Language, CharacterAvatar, PlayerProfile, DbEngineInfo } from '../types/game';
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
 
@@ -9,8 +24,15 @@ interface TitleScreenProps {
   onSetLang: (lang: Language) => void;
   player: PlayerProfile;
   onSelectAvatar: (avatar: CharacterAvatar) => void;
+  onUpdateName: (newName: string) => void;
   onStart: () => void;
   onOpenCertificate: () => void;
+  onOpenSwitchModal: () => void;
+  onOpenScoresModal: () => void;
+  onSaveProgress: () => Promise<void>;
+  isSaving: boolean;
+  saveMessage: string | null;
+  engineInfo: DbEngineInfo | null;
   isMuted: boolean;
   onToggleMute: () => void;
 }
@@ -28,16 +50,31 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   onSetLang,
   player,
   onSelectAvatar,
+  onUpdateName,
   onStart,
   onOpenCertificate,
+  onOpenSwitchModal,
+  onOpenScoresModal,
+  onSaveProgress,
+  isSaving,
+  saveMessage,
+  engineInfo,
   isMuted,
   onToggleMute,
 }) => {
-  const [pulse, setPulse] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(player.name);
 
   useEffect(() => {
-    // Keyboard listener: Space or Enter to start
+    setNameInput(player.name);
+  }, [player.name]);
+
+  useEffect(() => {
+    // Keyboard listener: Space or Enter to start (when not editing name input)
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName.toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea') return;
+
       if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault();
         sound.playJump();
@@ -48,16 +85,24 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onStart]);
 
+  const handleSaveName = () => {
+    const trimmed = nameInput.trim();
+    if (trimmed && trimmed !== player.name) {
+      sound.playCorrect();
+      onUpdateName(trimmed);
+    }
+    setIsEditingName(false);
+  };
+
   return (
     <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-y-auto overscroll-contain bg-slate-950 flex flex-col justify-between select-none p-2 sm:p-4">
       {/* Dynamic Animated Atmospheric Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Soft Cosmic Gradients */}
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/25 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl" />
         <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-rose-500/15 rounded-full blur-3xl" />
 
-        {/* Ambient floating math particles */}
+        {/* Ambient math floating elements */}
         <div className="absolute top-1/4 left-10 text-indigo-400/20 text-7xl font-['Fredoka'] animate-bounce">
           1000
         </div>
@@ -73,43 +118,80 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
       </div>
 
       {/* Top Bar Controls */}
-      <header className="relative z-10 px-2.5 py-2 sm:px-6 sm:py-4 flex items-center justify-between gap-2 shrink-0">
-        {/* German Curriculum & Pokemon Badge */}
+      <header className="relative z-10 px-2 py-2 sm:px-6 sm:py-3 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        {/* German Curriculum & Database Badge */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl backdrop-blur">
-            <span className="text-sm sm:text-base">🇩🇪</span>
-            <span className="text-[11px] sm:text-xs font-bold text-slate-300 tracking-wide">
+          <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-2.5 py-1.5 rounded-2xl backdrop-blur">
+            <span className="text-sm">🇩🇪</span>
+            <span className="text-xs font-bold text-slate-300 tracking-wide">
               {lang === 'de' ? 'Klasse 3' : 'Toán Lớp 3'}
             </span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 bg-emerald-600/30 border border-emerald-500/50 px-3 py-1.5 rounded-2xl backdrop-blur animate-pulse">
-            <span className="text-sm">🧱</span>
-            <span className="text-xs font-extrabold text-emerald-300">
-              {lang === 'de' ? 'Minecraft 3D Mathe!' : 'Minecraft Toán 3D!'}
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-1.5 bg-red-600/30 border border-red-500/50 px-3 py-1.5 rounded-2xl backdrop-blur">
-            <span className="text-sm">🔴</span>
-            <span className="text-xs font-extrabold text-amber-300">
-              {lang === 'de' ? 'PokéMath inklusive!' : 'Kèm PokéMath!'}
+          {/* Database Engine Indicator */}
+          <div
+            className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 px-2.5 py-1.5 rounded-2xl backdrop-blur text-xs font-mono"
+            title={`Active Engine: ${engineInfo?.engine || 'sqlite'} (${engineInfo?.databaseTarget || 'matheheld.db'})`}
+          >
+            <Database className="w-3.5 h-3.5 text-emerald-400" />
+            <span className={engineInfo?.engine === 'turso' ? 'text-cyan-300 font-bold' : 'text-amber-300 font-bold'}>
+              {engineInfo?.engine === 'turso' ? 'Turso' : 'SQLite'}
             </span>
           </div>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-3">
-          {/* Certificate / Diploma Quick Access */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Save Progress Button */}
+          <button
+            onClick={() => {
+              sound.playCorrect();
+              onSaveProgress();
+            }}
+            disabled={isSaving}
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-emerald-600/25 hover:bg-emerald-600/35 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur shadow-sm active:scale-95"
+            title={t(lang, 'saveProgress')}
+          >
+            <Save className={`w-3.5 h-3.5 text-emerald-400 ${isSaving ? 'animate-spin' : ''}`} />
+            <span>{isSaving ? t(lang, 'saving') : t(lang, 'saveProgress')}</span>
+          </button>
+
+          {/* Switch Player / Load Old Profile */}
+          <button
+            onClick={() => {
+              sound.playJump();
+              onOpenSwitchModal();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-indigo-600/25 hover:bg-indigo-600/35 text-indigo-300 border border-indigo-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur shadow-sm active:scale-95"
+            title={t(lang, 'switchPlayer')}
+          >
+            <Users className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline">{t(lang, 'changeHero')}</span>
+          </button>
+
+          {/* Individual Game Scores */}
+          <button
+            onClick={() => {
+              sound.playJump();
+              onOpenScoresModal();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur shadow-sm active:scale-95"
+            title={t(lang, 'gameScoresTitle')}
+          >
+            <Trophy className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden md:inline">{t(lang, 'gameScoresTitle')}</span>
+          </button>
+
+          {/* Certificate */}
           <button
             onClick={() => {
               sound.playJump();
               onOpenCertificate();
             }}
-            className="flex items-center gap-1.5 px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur"
+            className="p-2 sm:px-3 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur"
+            title={t(lang, 'certificateTitle')}
           >
             <Award className="w-4 h-4 text-amber-400" />
-            <span className="hidden sm:inline">{t(lang, 'certificateTitle')}</span>
           </button>
 
           {/* Language Switcher */}
@@ -118,11 +200,11 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               sound.playJump();
               onSetLang(lang === 'de' ? 'vi' : 'de');
             }}
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-800/80 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:py-2 bg-slate-800/80 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur"
             title={t(lang, 'languageToggle')}
           >
-            <Globe className="w-4 h-4 text-indigo-400" />
-            <span>{lang === 'de' ? 'Tiếng Việt' : 'Deutsch'}</span>
+            <Globe className="w-3.5 h-3.5 text-indigo-400" />
+            <span>{lang === 'de' ? 'VI' : 'DE'}</span>
           </button>
 
           {/* Sound Toggle */}
@@ -131,7 +213,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               sound.playJump();
               onToggleMute();
             }}
-            className="p-2.5 bg-slate-800/80 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded-xl cursor-pointer transition backdrop-blur"
+            className="p-2 sm:p-2 bg-slate-800/80 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded-xl cursor-pointer transition backdrop-blur"
             title={isMuted ? t(lang, 'soundOn') : t(lang, 'soundOff')}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
@@ -139,11 +221,24 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
         </div>
       </header>
 
+      {/* Save / Status Toast Notification */}
+      {saveMessage && (
+        <div className="relative z-20 mx-auto max-w-md w-full px-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="bg-emerald-950/90 border border-emerald-500/60 text-emerald-200 px-4 py-2 rounded-2xl shadow-xl flex items-center justify-between gap-3 text-xs sm:text-sm backdrop-blur">
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="font-bold">{saveMessage}</span>
+            </div>
+            <span className="text-[10px] text-emerald-400 font-mono">SQLite/Turso</span>
+          </div>
+        </div>
+      )}
+
       {/* Hero Centerpiece & Title Lockup */}
-      <main className="relative z-10 flex flex-col items-center justify-center px-4 text-center my-auto">
-        {/* Bespoke Inline SVG Title Lockup */}
-        <div className="mb-4">
-          <svg className="w-72 sm:w-96 md:w-[480px] h-auto mx-auto drop-shadow-2xl" viewBox="0 0 500 120">
+      <main className="relative z-10 flex flex-col items-center justify-center px-4 text-center my-auto py-2">
+        {/* Title Lockup */}
+        <div className="mb-2">
+          <svg className="w-64 sm:w-88 md:w-[440px] h-auto mx-auto drop-shadow-2xl" viewBox="0 0 500 115">
             <defs>
               <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#fef08a" />
@@ -155,14 +250,13 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
                 <stop offset="100%" stopColor="#a855f7" />
               </linearGradient>
             </defs>
-            {/* Title Text */}
             <text
               x="250"
-              y="55"
+              y="52"
               textAnchor="middle"
               fontFamily="Fredoka, sans-serif"
               fontWeight="900"
-              fontSize="52"
+              fontSize="50"
               fill="url(#goldGrad)"
               letterSpacing="2"
               stroke="#78350f"
@@ -173,11 +267,11 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             </text>
             <text
               x="250"
-              y="100"
+              y="95"
               textAnchor="middle"
               fontFamily="Fredoka, sans-serif"
               fontWeight="800"
-              fontSize="28"
+              fontSize="26"
               fill="url(#blueGrad)"
               letterSpacing="6"
             >
@@ -186,22 +280,75 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           </svg>
         </div>
 
-        <p className="text-slate-300 text-sm sm:text-base max-w-md mx-auto mb-6 font-medium">
+        <p className="text-slate-300 text-xs sm:text-sm max-w-md mx-auto mb-4 font-medium">
           {t(lang, 'appSubtitle')}
         </p>
 
-        {/* Hero Character Display */}
-        <div className="relative mb-6 group">
-          <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-3xl bg-gradient-to-tr from-indigo-600 via-amber-500 to-yellow-400 p-1 shadow-2xl shadow-amber-500/20 transform hover:scale-105 transition duration-300">
-            <div className="w-full h-full bg-slate-900 rounded-[22px] flex items-center justify-center text-7xl select-none relative overflow-hidden">
+        {/* Hero Character Display & Interactive Profile Card */}
+        <div className="relative mb-5 group flex flex-col items-center">
+          {/* Avatar Big Preview */}
+          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-tr from-indigo-600 via-amber-500 to-yellow-400 p-1 shadow-2xl shadow-amber-500/20 transform hover:scale-105 transition duration-300">
+            <div className="w-full h-full bg-slate-900 rounded-[22px] flex items-center justify-center text-6xl select-none relative overflow-hidden">
               <span className="animate-bounce">{AVATARS.find((a) => a.id === player.avatar)?.emoji || '🦊'}</span>
-              <div className="absolute -bottom-1 text-[11px] font-bold text-amber-300 bg-slate-950/80 px-2 py-0.5 rounded-full border border-amber-500/30">
-                {lang === 'de' ? 'Wähle deinen Helden' : 'Chọn nhân vật'}
+              <div className="absolute -bottom-1 text-[10px] font-bold text-amber-300 bg-slate-950/80 px-2 py-0.5 rounded-full border border-amber-500/30">
+                {lang === 'de' ? 'Dein Held' : 'Nhân vật của bạn'}
               </div>
             </div>
           </div>
 
-          {/* Quick Avatar Selector */}
+          {/* Interactive Player Name (Edit & Save on Main Screen) */}
+          <div className="mt-3 flex items-center justify-center gap-2">
+            {isEditingName ? (
+              <div className="flex items-center gap-1.5 bg-slate-900 border-2 border-amber-400 rounded-xl px-2 py-1 shadow-lg">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveName();
+                    if (e.key === 'Escape') setIsEditingName(false);
+                  }}
+                  autoFocus
+                  maxLength={20}
+                  className="bg-transparent text-white font-extrabold text-sm focus:outline-none w-36 font-['Fredoka']"
+                />
+                <button
+                  onClick={handleSaveName}
+                  className="p-1 bg-amber-500 text-slate-950 rounded-lg hover:bg-amber-400 transition cursor-pointer"
+                  title="Lưu tên"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-700 hover:border-amber-400/80 px-3 py-1.5 rounded-xl backdrop-blur transition">
+                <span className="text-white font-extrabold text-base font-['Fredoka'] tracking-wide">
+                  {player.name}
+                </span>
+                <button
+                  onClick={() => setIsEditingName(true)}
+                  className="p-1 hover:text-amber-300 text-slate-400 transition cursor-pointer"
+                  title="Đổi tên / Name ändern"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Player Stats Badges */}
+          <div className="flex items-center gap-3 mt-2 text-xs font-bold">
+            <span className="flex items-center gap-1 text-yellow-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-yellow-500/30">
+              <Star className="w-3.5 h-3.5 fill-yellow-400" />
+              {player.stars}
+            </span>
+            <span className="flex items-center gap-1 text-amber-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-amber-500/30">
+              <Coins className="w-3.5 h-3.5" />
+              {player.euroCoins}
+            </span>
+          </div>
+
+          {/* Avatar Selector (Fox, Owl, Bunny, Bear, Dragon) */}
           <div className="flex items-center justify-center gap-2 mt-3">
             {AVATARS.map((av) => (
               <button
@@ -224,13 +371,13 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
         </div>
 
         {/* Primary Start CTA */}
-        <div className="space-y-3 w-full max-w-xs">
+        <div className="space-y-2.5 w-full max-w-xs">
           <button
             onClick={() => {
               sound.playJump();
               onStart();
             }}
-            className="w-full py-4 px-6 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xl rounded-2xl shadow-xl shadow-amber-500/30 flex items-center justify-center gap-3 cursor-pointer transform active:scale-95 transition tracking-wide font-['Fredoka'] group"
+            className="w-full py-3.5 sm:py-4 px-6 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xl rounded-2xl shadow-xl shadow-amber-500/30 flex items-center justify-center gap-3 cursor-pointer transform active:scale-95 transition tracking-wide font-['Fredoka'] group"
           >
             <Play className="w-6 h-6 fill-current text-slate-950 group-hover:scale-110 transition-transform" />
             <span>{t(lang, 'startAdventure')}</span>
@@ -243,10 +390,11 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
       </main>
 
       {/* Flat Control-Hint Line Footer */}
-      <footer className="relative z-10 px-4 py-3 bg-slate-950/90 border-t border-slate-800/80 text-center">
-        <p className="text-xs text-slate-400 font-mono tracking-tight">
-          {t(lang, 'controlsHint')}
-        </p>
+      <footer className="relative z-10 px-4 py-2.5 bg-slate-950/90 border-t border-slate-800/80 text-center flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-slate-400">
+        <span>{t(lang, 'controlsHint')}</span>
+        <span className="font-mono text-[11px] text-slate-500">
+          Engine: {engineInfo?.engine === 'turso' ? '⚡ Turso' : '🗄️ SQLite'} • {engineInfo?.databaseTarget}
+        </span>
       </footer>
     </div>
   );

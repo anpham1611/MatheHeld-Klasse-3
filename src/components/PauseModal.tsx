@@ -1,5 +1,5 @@
-import React from 'react';
-import { Play, RotateCcw, Home, Volume2, VolumeX } from 'lucide-react';
+import React, { useState } from 'react';
+import { Play, RotateCcw, Home, Volume2, VolumeX, Save, Check } from 'lucide-react';
 import { Language } from '../types/game';
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
@@ -9,6 +9,7 @@ interface PauseModalProps {
   onResume: () => void;
   onRestart: () => void;
   onQuit: () => void;
+  onSave?: () => Promise<void>;
   isMuted: boolean;
   onToggleMute: () => void;
 }
@@ -18,9 +19,26 @@ export const PauseModal: React.FC<PauseModalProps> = ({
   onResume,
   onRestart,
   onQuit,
+  onSave,
   isMuted,
   onToggleMute,
 }) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+
+  const handleSave = async () => {
+    if (!onSave || isSaving) return;
+    setIsSaving(true);
+    sound.playCorrect();
+    try {
+      await onSave();
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2500);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-slate-900 border-4 border-amber-400 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl relative">
@@ -46,6 +64,30 @@ export const PauseModal: React.FC<PauseModalProps> = ({
             <Play className="w-5 h-5 fill-current" />
             <span>{t(lang, 'resume')}</span>
           </button>
+
+          {onSave && (
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className={`w-full py-3 px-4 rounded-2xl border flex items-center justify-center gap-2 text-base font-bold cursor-pointer transform active:scale-95 transition ${
+                justSaved
+                  ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50'
+                  : 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border-emerald-500/30'
+              }`}
+            >
+              {justSaved ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>{t(lang, 'savedSuccess')}</span>
+                </>
+              ) : (
+                <>
+                  <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
+                  <span>{isSaving ? t(lang, 'saving') : t(lang, 'saveProgress')}</span>
+                </>
+              )}
+            </button>
+          )}
 
           <button
             onClick={() => {

@@ -1,6 +1,19 @@
 import React from 'react';
-import { ArrowLeft, Star, Trophy, Award, Sparkles, Volume2, VolumeX, Globe } from 'lucide-react';
-import { GameScreen, Language, PlayerProfile } from '../types/game';
+import {
+  ArrowLeft,
+  Star,
+  Trophy,
+  Award,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  Globe,
+  Save,
+  Users,
+  Check,
+  Coins,
+} from 'lucide-react';
+import { GameScreen, Language, PlayerProfile, CharacterAvatar, DbEngineInfo } from '../types/game';
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
 
@@ -10,9 +23,23 @@ interface WorldSelectProps {
   player: PlayerProfile;
   onSelectWorld: (world: GameScreen) => void;
   onBackToTitle: () => void;
+  onSaveProgress: () => Promise<void>;
+  isSaving: boolean;
+  saveMessage: string | null;
+  onOpenScoresModal: () => void;
+  onOpenSwitchModal: () => void;
+  engineInfo: DbEngineInfo | null;
   isMuted: boolean;
   onToggleMute: () => void;
 }
+
+const AVATAR_EMOJIS: Record<CharacterAvatar, string> = {
+  fuchs: '🦊',
+  eule: '🦉',
+  hase: '🐰',
+  baer: '🐻',
+  drache: '🐲',
+};
 
 export const WorldSelect: React.FC<WorldSelectProps> = ({
   lang,
@@ -20,6 +47,12 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
   player,
   onSelectWorld,
   onBackToTitle,
+  onSaveProgress,
+  isSaving,
+  saveMessage,
+  onOpenScoresModal,
+  onOpenSwitchModal,
+  engineInfo,
   isMuted,
   onToggleMute,
 }) => {
@@ -88,26 +121,51 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
 
   return (
     <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-y-auto overscroll-contain bg-slate-950 flex flex-col justify-between p-3 sm:p-6 pb-20 select-none">
-      {/* Responsive Header: Never overflows on mobile */}
+      {/* Responsive Header */}
       <header className="flex flex-col gap-2.5 pb-3 border-b border-slate-800 w-full shrink-0">
-        <div className="flex items-center justify-between gap-2 w-full">
-          {/* Back button */}
-          <button
+        <div className="flex items-center justify-between gap-2 w-full flex-wrap">
+          {/* Left: Back button & Save Button */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                sound.playJump();
+                onBackToTitle();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs sm:text-sm font-bold cursor-pointer transition border border-slate-700 shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>{lang === 'de' ? 'Menü' : 'Menu'}</span>
+            </button>
+
+            {/* SAVE BUTTON AT MENU */}
+            <button
+              onClick={async () => {
+                sound.playCorrect();
+                await onSaveProgress();
+              }}
+              disabled={isSaving}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold rounded-xl text-xs sm:text-sm cursor-pointer transition shadow-md shadow-emerald-600/30 border border-emerald-400/40 active:scale-95 disabled:opacity-50 font-['Fredoka']"
+              title={t(lang, 'saveProgress')}
+            >
+              <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
+              <span>{isSaving ? t(lang, 'saving') : t(lang, 'saveProgress')}</span>
+            </button>
+          </div>
+
+          {/* Center: Player Stats Banner (clickable to switch player) */}
+          <div
             onClick={() => {
               sound.playJump();
-              onBackToTitle();
+              onOpenSwitchModal();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs sm:text-sm font-bold cursor-pointer transition border border-slate-700 shrink-0"
+            className="hidden md:flex items-center gap-3 bg-slate-900/90 hover:bg-slate-850 border border-slate-700 hover:border-amber-400/60 px-3.5 py-1.5 rounded-2xl shadow-inner cursor-pointer transition"
+            title={t(lang, 'switchPlayer')}
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{lang === 'de' ? 'Menü' : 'Menu'}</span>
-          </button>
-
-          {/* Desktop Player Stats Banner (md and up) */}
-          <div className="hidden md:flex items-center gap-3 bg-slate-900/90 border border-slate-700 px-3.5 py-1.5 rounded-2xl shadow-inner">
             <div className="flex items-center gap-1.5">
-              <span className="text-lg">🦊</span>
-              <span className="font-black text-white text-sm font-['Fredoka'] truncate max-w-[120px]">{player.name}</span>
+              <span className="text-lg">{AVATAR_EMOJIS[player.avatar] || '🦊'}</span>
+              <span className="font-black text-white text-sm font-['Fredoka'] truncate max-w-[120px]">
+                {player.name}
+              </span>
             </div>
             <div className="h-4 w-px bg-slate-700" />
             <div className="flex items-center gap-1 text-yellow-400 font-black text-xs">
@@ -115,25 +173,42 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               <span>{player.stars}</span>
             </div>
             <div className="flex items-center gap-1 text-amber-400 font-black text-xs">
-              <span>🪙</span>
+              <Coins className="w-3.5 h-3.5" />
               <span>{player.euroCoins}</span>
             </div>
+            <span className="text-[10px] text-slate-400 font-mono">
+              ({engineInfo?.engine === 'turso' ? 'Turso' : 'SQLite'})
+            </span>
           </div>
 
-          {/* Utilities: Certificate, Language, Sound */}
+          {/* Right: Scores breakdown, Certificate, Language, Sound */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* View All Game Scores Modal */}
+            <button
+              onClick={() => {
+                sound.playJump();
+                onOpenScoresModal();
+              }}
+              className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition font-['Fredoka']"
+              title={t(lang, 'gameScoresTitle')}
+            >
+              <Trophy className="w-4 h-4 text-amber-400" />
+              <span className="hidden sm:inline">{lang === 'de' ? 'Spielstände' : 'Bảng điểm'}</span>
+            </button>
+
+            {/* Certificate */}
             <button
               onClick={() => {
                 sound.playJump();
                 onSelectWorld('certificate');
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition"
+              className="p-2 sm:px-3 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition"
               title={t(lang, 'certificateTitle')}
             >
               <Award className="w-4 h-4 text-amber-400" />
-              <span className="hidden sm:inline">{t(lang, 'certificateTitle')}</span>
             </button>
 
+            {/* Language */}
             <button
               onClick={() => {
                 sound.playJump();
@@ -146,6 +221,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               <span className="text-[11px] font-black">{lang === 'de' ? 'DE' : 'VI'}</span>
             </button>
 
+            {/* Sound */}
             <button
               onClick={() => {
                 sound.playJump();
@@ -159,23 +235,40 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
           </div>
         </div>
 
-        {/* Mobile Player Stats Banner (visible only on small screens) */}
-        <div className="flex md:hidden items-center justify-center gap-3 bg-slate-900/90 border border-slate-700/80 px-3 py-1 rounded-xl shadow-inner text-xs w-full max-w-xs mx-auto">
-          <div className="flex items-center gap-1">
-            <span>🦊</span>
-            <span className="font-bold text-white font-['Fredoka'] truncate max-w-[100px]">{player.name}</span>
+        {/* Mobile Player Stats Banner */}
+        <div
+          onClick={() => {
+            sound.playJump();
+            onOpenSwitchModal();
+          }}
+          className="flex md:hidden items-center justify-between gap-2 bg-slate-900/90 border border-slate-700/80 px-3 py-1.5 rounded-xl shadow-inner text-xs w-full cursor-pointer"
+        >
+          <div className="flex items-center gap-1.5">
+            <span>{AVATAR_EMOJIS[player.avatar] || '🦊'}</span>
+            <span className="font-bold text-white font-['Fredoka'] truncate max-w-[110px]">{player.name}</span>
           </div>
-          <div className="h-3 w-px bg-slate-700" />
-          <div className="flex items-center gap-1 text-yellow-400 font-bold">
-            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-            <span>{player.stars}</span>
-          </div>
-          <div className="h-3 w-px bg-slate-700" />
-          <div className="flex items-center gap-1 text-amber-400 font-bold">
-            <span>🪙</span>
-            <span>{player.euroCoins}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 text-yellow-400 font-bold">
+              <Star className="w-3 h-3 fill-yellow-400" />
+              <span>{player.stars}</span>
+            </div>
+            <div className="flex items-center gap-1 text-amber-400 font-bold">
+              <Coins className="w-3 h-3" />
+              <span>{player.euroCoins}</span>
+            </div>
           </div>
         </div>
+
+        {/* Save confirmation banner */}
+        {saveMessage && (
+          <div className="animate-in fade-in slide-in-from-top-1 duration-200 bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs px-3 py-1.5 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="font-bold">{saveMessage}</span>
+            </div>
+            <span className="text-[10px] text-emerald-400 font-mono">SQLite / Turso DB</span>
+          </div>
+        )}
       </header>
 
       {/* Main World Selection Grid */}
@@ -247,6 +340,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       {/* Footer Info */}
       <footer className="text-center py-2 text-xs text-slate-500 font-mono">
         {lang === 'de' ? 'Grundschule Deutschland · Klasse 3 Mathematik' : 'Toán Lớp 3 · Tiêu Chuẩn Tiểu Học Quốc Tế'}
+        {' • '}{engineInfo?.engine === 'turso' ? '⚡ Turso Cloud' : '🗄️ SQLite'}
       </footer>
     </div>
   );

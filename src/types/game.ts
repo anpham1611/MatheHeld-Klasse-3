@@ -34,6 +34,36 @@ export interface PlayerProfile {
   totalProblemsSolved: number;
 }
 
+export interface GameScoreDetail {
+  gameKey: string;
+  highScore: number;
+  timesPlayed: number;
+  problemsSolved: number;
+  starsEarned: number;
+  coinsEarned: number;
+  levelReached: number;
+  details?: Record<string, any>;
+  updatedAt?: string;
+}
+
+export interface DbEngineInfo {
+  engine: 'sqlite' | 'turso';
+  configuredEngine: string;
+  hasTursoUrl: boolean;
+  databaseTarget: string;
+}
+
+export interface SavedPlayerSummary {
+  id: number;
+  name: string;
+  avatar: CharacterAvatar;
+  stars: number;
+  euroCoins: number;
+  totalProblemsSolved: number;
+  bestGameScore: number;
+  updatedAt: string;
+}
+
 export interface SoundSettings {
   muted: boolean;
   sfxVolume: number;
@@ -41,3 +71,4 @@ export interface SoundSettings {
 }
 
 export type MathTopic = 'stellenwert' | 'einmaleins' | 'division' | 'euro' | 'schriftlich';
+
