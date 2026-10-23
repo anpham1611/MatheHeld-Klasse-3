@@ -1,4 +1,10 @@
 import { PlayerProfile, GameScoreDetail, DbEngineInfo, SavedPlayerSummary } from '../types/game';
+import type { VoxelBlock } from '../math/minecraftCurriculum';
+
+export interface SavedMathBrickBuild {
+  blocks: VoxelBlock[];
+  inventory: Record<string, number>;
+}
 
 export interface LoadPlayerResponse {
   exists: boolean;
@@ -92,6 +98,25 @@ export async function savePlayerToDb(
       success: false,
       error: err.message,
     };
+  }
+}
+
+export async function loadMathBrickBuild(playerName: string): Promise<SavedMathBrickBuild | null> {
+  const response = await fetch(`/api/players/${encodeURIComponent(playerName.trim())}/mathbrick-build`);
+  if (!response.ok) throw new Error(`Server returned ${response.status}`);
+  const data = await response.json();
+  return data.savedBuild || null;
+}
+
+export async function saveMathBrickBuild(playerName: string, build: SavedMathBrickBuild): Promise<void> {
+  const response = await fetch(`/api/players/${encodeURIComponent(playerName.trim())}/mathbrick-build`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(build),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.error || `Server returned ${response.status}`);
   }
 }
 

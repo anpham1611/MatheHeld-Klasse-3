@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowLeft, HardDrive, PackagePlus, RotateCcw, Save, Trash2, Trophy, Volume2, VolumeX, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Download, HardDrive, PackagePlus, RotateCcw, Save, Trash2, Trophy, Volume2, VolumeX, X } from 'lucide-react';
 import { Language, PlayerProfile } from '../../types/game';
 import { VoxelBlock } from '../../math/minecraftCurriculum';
 import { BRICK_CATALOG, BRICK_GROUPS, BrickGroupId, COMMON_BRICK_IDS, getBrickDimensions, getBrickPiece, SPECIAL_BRICK_IDS } from '../../math/brickCatalog';
 import { blockOccupiesCell, blocksOverlap, createStartingInventory, removePlacedBrick } from '../../math/brickBuilding';
 import { generateBrickMathQuestion, BrickMathQuestion } from '../../math/mathBrickCurriculum';
 import { sound } from '../../audio/soundManager';
+import { loadMathBrickBuild, saveMathBrickBuild } from '../../services/playerService';
 import { VoxelCanvas } from '../minecraft/VoxelCanvas';
 
 interface MathBrickBuilderProps {
@@ -147,6 +148,10 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
   const [mode, setMode] = useState<GameMode>('sandbox');
   const [blueprintComplete, setBlueprintComplete] = useState(false);
   const [score, setScore] = useState(player.scores.mathbrick || 0);
+  const [isSavingBuild, setIsSavingBuild] = useState(false);
+  const [isExportingImage, setIsExportingImage] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const saveVersionRef = useRef(0);
   const activePiece = getBrickPiece(activePieceId)!;
   const activePieceType = activePiece.material;
 
@@ -157,6 +162,23 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
       setNotice(text('Speicher voll. Baue weniger Steine.', 'Bộ nhớ đầy. Hãy xây ít khối hơn.'));
     }
   }, [state, storageKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const saveVersion = saveVersionRef.current;
+    const localSavedBuild = state.savedBuild;
+    loadMathBrickBuild(player.name).then(async (savedBuild) => {
+      if (cancelled || saveVersionRef.current !== saveVersion) return;
+      if (savedBuild) {
+        setState((current) => ({ ...current, savedBuild }));
+      } else if (localSavedBuild) {
+        await saveMathBrickBuild(player.name, localSavedBuild).catch(() => {});
+      }
+    }).catch(() => {
+      // Keep the local build available when the database is offline.
+    });
+    return () => { cancelled = true; };
+  }, [player.name]);
 
   const blockCount = Object.values(state.inventory).reduce((sum, amount) => sum + amount, 0);
 
@@ -219,13 +241,23 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
     sound.playBlockBreak();
   };
 
-  const saveBuild = () => {
+  const saveBuild = async () => {
+    const savedBuild = { blocks: state.blocks, inventory: state.inventory };
+    saveVersionRef.current += 1;
     setState((current) => ({
       ...current,
-      savedBuild: { blocks: current.blocks, inventory: current.inventory },
+      savedBuild,
     }));
-    sound.playCorrect();
-    setNotice(text('Bau und Sammlung gespeichert!', 'Đã lưu công trình và bộ sưu tập!'));
+    setIsSavingBuild(true);
+    try {
+      await saveMathBrickBuild(player.name, savedBuild);
+      sound.playCorrect();
+      setNotice(text('Bau und Sammlung in der Datenbank gespeichert!', 'Đã lưu công trình và bộ sưu tập vào cơ sở dữ liệu!'));
+    } catch {
+      setNotice(text('Lokal gespeichert. Datenbank gerade nicht erreichbar.', 'Đã lưu trên thiết bị. Hiện không kết nối được cơ sở dữ liệu.'));
+    } finally {
+      setIsSavingBuild(false);
+    }
   };
 
   const loadBuild = () => {
@@ -234,6 +266,34 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
     setBlueprintComplete(false);
     setNotice(text('Gespeicherter Bau geladen.', 'Đã tải công trình đã lưu.'));
     sound.playJump();
+  };
+
+  const exportBuildImage = async () => {
+    const canvas = viewportRef.current?.querySelector('canvas');
+    if (!canvas) {
+      setNotice(text('3D-Bild ist noch nicht bereit.', 'Ảnh 3D chưa sẵn sàng.'));
+      return;
+    }
+    setIsExportingImage(true);
+    try {
+      const image = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Image export failed')), 'image/png');
+      });
+      const imageUrl = URL.createObjectURL(image);
+      const link = document.createElement('a');
+      const safePlayerName = player.name.trim().replace(/[^\p{L}\p{N}-]+/gu, '-').replace(/^-|-$/g, '') || 'build';
+      link.href = imageUrl;
+      link.download = `mathbrick-${safePlayerName}.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(imageUrl), 1000);
+      setNotice(text('3D-Bild als PNG heruntergeladen.', 'Đã tải ảnh 3D dạng PNG.'));
+    } catch {
+      setNotice(text('Bild konnte nicht exportiert werden.', 'Không thể xuất ảnh.'));
+    } finally {
+      setIsExportingImage(false);
+    }
   };
 
   const startChallenge = (hard = false) => {
@@ -363,7 +423,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
             </div>
           )}
 
-          <div className="min-w-0 flex-1 min-h-[390px]">
+          <div ref={viewportRef} className="min-w-0 flex-1 min-h-[390px]">
             <VoxelCanvas
               blocks={state.blocks}
               activeBlockType={activePieceType}
@@ -390,6 +450,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
               {tool === 'build' && <button onClick={() => setActiveRotation(((activeRotation + 90) % 360) as Rotation)} className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-bold">{text('Drehen 90°', 'Xoay 90°')} ↻</button>}
               <button onClick={undoLastBlock} disabled={!state.blocks.length} className="flex items-center gap-1 rounded-lg bg-slate-800 px-3 py-2 text-xs font-bold disabled:opacity-40"><RotateCcw className="h-3.5 w-3.5" /> {text('Rückgängig', 'Hoàn tác')}</button>
               <button onClick={returnBlocksToInventory} disabled={!state.blocks.length} className="flex items-center gap-1 rounded-lg bg-rose-950 px-3 py-2 text-xs font-bold text-rose-200 disabled:opacity-40"><Trash2 className="h-3.5 w-3.5" /> {text('Alles abbauen', 'Tháo hết')}</button>
+              <button onClick={exportBuildImage} disabled={isExportingImage} className="flex items-center gap-1 rounded-lg bg-cyan-900 px-3 py-2 text-xs font-bold text-cyan-100 disabled:opacity-50"><Download className="h-3.5 w-3.5" /> {isExportingImage ? text('Exportiere…', 'Đang xuất…') : text('PNG speichern', 'Lưu ảnh PNG')}</button>
             </div>
           </div>
         </div>
@@ -458,7 +519,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
           <section className="rounded-2xl border border-slate-800 bg-slate-900 p-3">
             <h2 className="font-['Fredoka'] font-black">💾 {text('Bau speichern', 'Lưu công trình')}</h2>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button onClick={saveBuild} className="flex items-center justify-center gap-1 rounded-xl bg-slate-800 px-2 py-2.5 text-xs font-bold hover:bg-slate-700"><Save className="h-4 w-4" /> {text('Speichern', 'Lưu')}</button>
+              <button onClick={saveBuild} disabled={isSavingBuild} className="flex items-center justify-center gap-1 rounded-xl bg-slate-800 px-2 py-2.5 text-xs font-bold hover:bg-slate-700 disabled:opacity-50"><Save className="h-4 w-4" /> {isSavingBuild ? text('Speichere…', 'Đang lưu…') : text('In DB speichern', 'Lưu vào CSDL')}</button>
               <button onClick={loadBuild} disabled={!state.savedBuild} className="flex items-center justify-center gap-1 rounded-xl bg-slate-800 px-2 py-2.5 text-xs font-bold hover:bg-slate-700 disabled:opacity-40"><HardDrive className="h-4 w-4" /> {text('Laden', 'Tải')}</button>
             </div>
           </section>

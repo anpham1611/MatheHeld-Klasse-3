@@ -135,6 +135,15 @@ export async function initDatabase() {
     );
   `);
 
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS mathbrick_builds (
+      player_name TEXT PRIMARY KEY,
+      player_id INTEGER,
+      build_json TEXT NOT NULL,
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+
   // Seed default player if table is empty
   const countRes = await db.execute('SELECT COUNT(*) as count FROM players');
   const count = Number(countRes.rows[0]?.count || 0);
@@ -286,6 +295,45 @@ export async function listAllPlayers() {
     bestGameScore: Number(r.best_game_score || 0),
     updatedAt: String(r.updated_at || ''),
   }));
+}
+
+export async function getMathBrickBuild(rawName: string) {
+  const name = rawName.trim();
+  if (!name) return null;
+  const result = await getDb().execute({
+    sql: 'SELECT build_json, updated_at FROM mathbrick_builds WHERE LOWER(player_name) = LOWER(?) LIMIT 1',
+    args: [name],
+  });
+  if (result.rows.length === 0) return null;
+  const row = result.rows[0];
+  return {
+    savedBuild: JSON.parse(String(row.build_json)),
+    updatedAt: String(row.updated_at || ''),
+  };
+}
+
+export async function saveMathBrickBuild(rawName: string, build: { blocks: unknown[]; inventory: Record<string, number> }): Promise<boolean> {
+  const db = getDb();
+  const name = rawName.trim();
+  if (!name) return false;
+  const player = await db.execute({
+    sql: 'SELECT id, name FROM players WHERE LOWER(name) = LOWER(?) LIMIT 1',
+    args: [name],
+  });
+  if (player.rows.length === 0) return false;
+
+  const playerId = Number(player.rows[0].id);
+  const actualName = String(player.rows[0].name);
+  await db.execute({
+    sql: `INSERT INTO mathbrick_builds (player_name, player_id, build_json, updated_at)
+          VALUES (?, ?, ?, datetime('now'))
+          ON CONFLICT(player_name) DO UPDATE SET
+            player_id = excluded.player_id,
+            build_json = excluded.build_json,
+            updated_at = datetime('now')`,
+    args: [actualName, playerId, JSON.stringify(build)],
+  });
+  return true;
 }
 
 // Upsert player profile and game scores
