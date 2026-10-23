@@ -1,5 +1,5 @@
-import { VoxelBlock } from './minecraftCurriculum';
-import { BRICK_CATALOG, getBrickDimensions, getBrickPiece } from './brickCatalog';
+import type { VoxelBlock } from './minecraftCurriculum.js';
+import { BRICK_CATALOG, getBrickDimensions, getBrickPiece } from './brickCatalog.js';
 
 export type BrickInventory = Record<string, number>;
 export const BASE_GRID_SIZES = [20, 30, 40] as const;

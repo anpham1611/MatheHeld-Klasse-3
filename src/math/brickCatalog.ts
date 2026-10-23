@@ -1,4 +1,4 @@
-import { VoxelBlock } from './minecraftCurriculum';
+import type { VoxelBlock } from './minecraftCurriculum.js';
 
 export type BrickGroupId =
   | 'bricks'
