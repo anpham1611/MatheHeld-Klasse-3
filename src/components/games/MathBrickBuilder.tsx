@@ -348,7 +348,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
         </button>
       </div>
 
-      <section className="flex-1 min-h-0 grid grid-cols-1 grid-rows-[minmax(440px,auto)_auto] gap-3 p-3 sm:p-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:grid-rows-1">
+      <section className="flex flex-col gap-3 p-3 sm:p-4 lg:grid lg:flex-1 lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_340px] lg:grid-rows-1">
         <div className="min-w-0 min-h-[440px] flex flex-col gap-3">
           {mode === 'blueprint' && (
             <div className="rounded-2xl border border-cyan-500/40 bg-cyan-950/50 p-3 sm:p-4 flex items-center justify-between gap-3">
