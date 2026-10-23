@@ -1,0 +1,6 @@
+{
+  "name": "MatheHeld Klasse 3 - Das Zahlenabenteuer",
+  "description": "Spannendes Mathe-Lernspiel für Kinder der 3. Klasse Grundschule in Deutschland: Zahlenraum bis 1000, Einmaleins, Euro & Cent und Rechen-Duelle.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
