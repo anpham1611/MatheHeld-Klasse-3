@@ -9,6 +9,7 @@ import { EuroShop } from './components/games/EuroShop';
 import { TowerMath } from './components/games/TowerMath';
 import { PokemonArena } from './components/games/PokemonArena';
 import { MinecraftMathWorld } from './components/games/MinecraftMathWorld';
+import { LogicAdventure } from './components/games/LogicAdventure';
 import { CertificateModal } from './components/CertificateModal';
 import { PlayerSwitchModal } from './components/PlayerSwitchModal';
 import { GameScoresModal } from './components/GameScoresModal';
@@ -33,6 +34,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
     euro_shop: 380,
     tower_math: 250,
     pokemon: 150,
+    logic_game: 0,
   },
   totalProblemsSolved: 24,
 };
@@ -208,6 +210,7 @@ export default function App() {
             euro_shop: 0,
             tower_math: 0,
             pokemon: 0,
+            logic_game: 0,
           },
           totalProblemsSolved: 0,
         };
@@ -375,6 +378,19 @@ export default function App() {
           player={player}
           onUpdateStats={(stars, coins, score, caughtId) =>
             handleUpdateStats('pokemon', stars, coins, score, caughtId)
+          }
+          onBack={() => setScreen('world_map')}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+        />
+      )}
+
+      {screen === 'logic_game' && (
+        <LogicAdventure
+          lang={lang}
+          player={player}
+          onUpdateStats={(stars, coins, score) =>
+            handleUpdateStats('logic_game', stars, coins, score)
           }
           onBack={() => setScreen('world_map')}
           isMuted={isMuted}

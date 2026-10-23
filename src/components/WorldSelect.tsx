@@ -117,6 +117,16 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       badge: lang === 'de' ? '🔴 NEU: POKÉMON' : '🔴 MỚI: POKÉMON',
       score: player.scores.pokemon || 0,
     },
+    {
+      id: 'logic_game' as GameScreen,
+      title: t(lang, 'worldLogicTitle'),
+      desc: t(lang, 'worldLogicDesc'),
+      icon: '🧩🌈',
+      bgGradient: 'from-fuchsia-600 via-pink-700 to-rose-950',
+      borderColor: 'border-pink-300',
+      badge: lang === 'de' ? '🧠 20 BILDER-RÄTSEL' : '🧠 20 CÂU ĐỐ HÌNH',
+      score: player.scores.logic_game || 0,
+    },
   ];
 
   return (
@@ -326,7 +336,9 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               <div className="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs font-black text-white">
                 <span className="flex items-center gap-1 text-yellow-300">
                   <Sparkles className="w-4 h-4" />
-                  <span>{lang === 'de' ? '3. Klasse Lehrplan' : 'Chương trình Lớp 3'}</span>
+                  <span>{w.id === 'logic_game'
+                    ? (lang === 'de' ? 'Ab 3 Jahren' : 'Dành cho bé từ 3 tuổi')
+                    : (lang === 'de' ? '3. Klasse Lehrplan' : 'Chương trình Lớp 3')}</span>
                 </span>
                 <span className="group-hover:translate-x-1 transition-transform">
                   {lang === 'de' ? 'Spielen ▶' : 'Vào chơi ▶'}

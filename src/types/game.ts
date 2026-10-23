@@ -7,6 +7,7 @@ export type GameScreen =
   | 'euro_shop' 
   | 'tower_math' 
   | 'pokemon'
+  | 'logic_game'
   | 'certificate';
 
 export type Language = 'de' | 'vi';
@@ -30,6 +31,7 @@ export interface PlayerProfile {
     euro_shop: number;
     tower_math: number;
     pokemon?: number;
+    logic_game?: number;
   };
   totalProblemsSolved: number;
 }
@@ -71,4 +73,3 @@ export interface SoundSettings {
 }
 
 export type MathTopic = 'stellenwert' | 'einmaleins' | 'division' | 'euro' | 'schriftlich';
-

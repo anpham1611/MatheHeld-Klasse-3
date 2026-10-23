@@ -210,6 +210,7 @@ export async function getPlayerByName(rawName: string) {
     euro_shop: 0,
     tower_math: 0,
     pokemon: 0,
+    logic_game: 0,
   };
 
   const detailedGameScores: Record<string, any> = {};

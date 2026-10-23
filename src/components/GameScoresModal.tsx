@@ -78,6 +78,15 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
       timesPlayed: gameScores['pokemon']?.timesPlayed || (player.scores.pokemon ? 1 : 0),
       color: 'from-rose-600/30 to-red-950/40 border-rose-500/40 text-rose-300',
     },
+    {
+      key: 'logic_game',
+      name: lang === 'de' ? 'Kleine Denker: Logik-Abenteuer' : 'Bé thông minh: Phiêu lưu tư duy',
+      icon: '🧩🌈',
+      score: player.scores.logic_game || 0,
+      solved: gameScores['logic_game']?.problemsSolved || 0,
+      timesPlayed: gameScores['logic_game']?.timesPlayed || (player.scores.logic_game ? 1 : 0),
+      color: 'from-fuchsia-600/30 to-rose-950/40 border-pink-500/40 text-pink-300',
+    },
   ];
 
   return (
