@@ -11,6 +11,9 @@ export interface VoxelBlock {
   y: number;
   z: number;
   type: 'dirt' | 'wood' | 'cobblestone' | 'iron' | 'fence' | 'cake' | 'chest' | 'chicken';
+  pieceId?: string;
+  rotation?: 0 | 90 | 180 | 270;
+  brickColor?: string;
 }
 
 export interface MinecraftTask {

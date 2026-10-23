@@ -127,6 +127,16 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       badge: lang === 'de' ? '🧠 20 BILDER-RÄTSEL' : '🧠 20 CÂU ĐỐ HÌNH',
       score: player.scores.logic_game || 0,
     },
+    {
+      id: 'mathbrick' as GameScreen,
+      title: t(lang, 'worldMathBrickTitle'),
+      desc: t(lang, 'worldMathBrickDesc'),
+      icon: '🧱🛠️',
+      bgGradient: 'from-cyan-600 via-blue-800 to-slate-950',
+      borderColor: 'border-cyan-300',
+      badge: lang === 'de' ? '🧠 MATHE & 3D-BAUEN · 8+' : '🧠 TOÁN & XÂY 3D · 8+',
+      score: player.scores.mathbrick || 0,
+    },
   ];
 
   return (
@@ -338,6 +348,8 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                   <Sparkles className="w-4 h-4" />
                   <span>{w.id === 'logic_game'
                     ? (lang === 'de' ? 'Ab 3 Jahren' : 'Dành cho bé từ 3 tuổi')
+                    : w.id === 'mathbrick'
+                    ? (lang === 'de' ? 'Ab 8 Jahren · 3D-Bau' : 'Từ 8 tuổi · Xây dựng 3D')
                     : (lang === 'de' ? '3. Klasse Lehrplan' : 'Chương trình Lớp 3')}</span>
                 </span>
                 <span className="group-hover:translate-x-1 transition-transform">

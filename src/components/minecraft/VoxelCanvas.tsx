@@ -1,15 +1,68 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { VoxelBlock } from '../../math/minecraftCurriculum';
+import { BrickCatalogItem, getBrickDimensions, getBrickPiece } from '../../math/brickCatalog';
 import { sound } from '../../audio/soundManager';
 import { RotateCw, ZoomIn, ZoomOut, Sun, Moon, Sparkles, Plus, Trash2 } from 'lucide-react';
 
 interface VoxelCanvasProps {
   blocks: VoxelBlock[];
   editable?: boolean;
+  placementEnabled?: boolean;
+  removalEnabled?: boolean;
+  allowPan?: boolean;
+  showStuds?: boolean;
+  activePiece?: BrickCatalogItem;
+  activeRotation?: 0 | 90 | 180 | 270;
+  activeBrickColor?: string;
   activeBlockType?: VoxelBlock['type'];
   onBlocksChange?: (newBlocks: VoxelBlock[]) => void;
+  onBlockPlace?: (block: VoxelBlock) => boolean | void;
+  onBlockRemove?: (block: VoxelBlock) => boolean | void;
   lang?: 'de' | 'vi';
+}
+
+function createBrickGeometry(piece: BrickCatalogItem): THREE.BufferGeometry {
+  const width = piece.width;
+  const depth = piece.depth;
+  const height = piece.height / 3;
+
+  switch (piece.shape) {
+    case 'slope':
+    case 'wedge': {
+      const shape = new THREE.Shape();
+      const rise = Math.min(height, Math.tan((piece.angle || 45) * Math.PI / 180) * width);
+      shape.moveTo(-width / 2, -height / 2);
+      shape.lineTo(width / 2, -height / 2);
+      shape.lineTo(width / 2, height / 2);
+      shape.lineTo(-width / 2, height / 2 - rise);
+      shape.closePath();
+      const geometry = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, steps: 1 });
+      geometry.translate(0, 0, -depth / 2);
+      return geometry;
+    }
+    case 'axle':
+      return new THREE.CylinderGeometry(0.12, 0.12, Math.max(width, depth), 10);
+    case 'pin':
+      return new THREE.CylinderGeometry(0.2, 0.2, Math.max(0.33, height), 10);
+    case 'gear':
+      return new THREE.CylinderGeometry(Math.min(width, depth) * 0.44, Math.min(width, depth) * 0.44, Math.max(height, 0.2), 12);
+    case 'tire':
+      return new THREE.TorusGeometry(Math.min(width, depth) * 0.34, Math.min(width, depth) * 0.16, 8, 18);
+    case 'curved':
+      return new THREE.TorusGeometry(0.4, 0.1, 6, 16, Math.PI);
+    case 'leaf':
+      return new THREE.SphereGeometry(0.5, 8, 5);
+    case 'flower':
+      return new THREE.SphereGeometry(0.42, 8, 6);
+    case 'tree':
+      return new THREE.ConeGeometry(Math.min(width, depth) * 0.48, height, 8);
+    case 'animal':
+    case 'minifigure':
+      return new THREE.CapsuleGeometry(Math.min(width, depth) * 0.2, Math.max(height * 0.55, 0.2), 3, 8);
+    default:
+      return new THREE.BoxGeometry(width, height, depth);
+  }
 }
 
 // Procedural texture generator for crisp Minecraft pixel textures
@@ -143,8 +196,17 @@ function createBlockCanvasTexture(type: VoxelBlock['type']): THREE.CanvasTexture
 export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
   blocks,
   editable = false,
+  placementEnabled = false,
+  removalEnabled = false,
+  allowPan = false,
+  showStuds = false,
+  activePiece,
+  activeRotation = 0,
+  activeBrickColor,
   activeBlockType = 'dirt',
   onBlocksChange,
+  onBlockPlace,
+  onBlockRemove,
   lang = 'vi',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -156,14 +218,28 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
 
   // Rotation and Interaction state
   const isDraggingRef = useRef(false);
+  const isPanningRef = useRef(false);
+  const pointerStartRef = useRef({ x: 0, y: 0 });
+  const didMoveRef = useRef(false);
   const prevMousePosRef = useRef({ x: 0, y: 0 });
   const cameraAngleRef = useRef({ theta: Math.PI / 4, phi: Math.PI / 5, radius: 16 });
+  const cameraTargetRef = useRef(new THREE.Vector3(0, 1, 0));
+  const raycasterRef = useRef(new THREE.Raycaster());
 
   const [isNight, setIsNight] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(16);
 
   // Cache materials
   const materialsRef = useRef<Record<string, THREE.Material>>({});
+  const brickColorMaterialsRef = useRef(new Map<string, THREE.Material>());
+
+  const getBrickColorMaterial = (color: string) => {
+    const cached = brickColorMaterialsRef.current.get(color);
+    if (cached) return cached;
+    const material = new THREE.MeshLambertMaterial({ color });
+    brickColorMaterialsRef.current.set(color, material);
+    return material;
+  };
 
   const updateCameraPosition = useCallback(() => {
     if (!cameraRef.current) return;
@@ -171,7 +247,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
     cameraRef.current.position.x = radius * Math.sin(theta) * Math.cos(phi);
     cameraRef.current.position.y = radius * Math.sin(phi);
     cameraRef.current.position.z = radius * Math.cos(theta) * Math.cos(phi);
-    cameraRef.current.lookAt(0, 1, 0);
+    cameraRef.current.lookAt(cameraTargetRef.current);
   }, []);
 
   // Initialize Three.js Scene
@@ -245,6 +321,11 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
         map: createBlockCanvasTexture(t),
       });
     });
+    materialsRef.current.glass = new THREE.MeshLambertMaterial({
+      color: 0x8be9ff,
+      transparent: true,
+      opacity: 0.45,
+    });
 
     let animationId: number;
     const animate = () => {
@@ -267,6 +348,8 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
+      brickColorMaterialsRef.current.forEach((material) => material.dispose());
+      brickColorMaterialsRef.current.clear();
     };
   }, [updateCameraPosition, isNight]);
 
@@ -275,61 +358,193 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
     const group = blockGroupRef.current;
     if (!group) return;
 
-    // Clear previous children
-    while (group.children.length > 0) {
-      group.remove(group.children[0]);
-    }
+    const oldGeometries = new Set<THREE.BufferGeometry>();
+    group.traverse((object) => {
+      if (object instanceof THREE.Mesh) oldGeometries.add(object.geometry);
+    });
+    group.clear();
+    oldGeometries.forEach((geometry) => geometry.dispose());
 
     const boxGeo = new THREE.BoxGeometry(1, 1, 1);
     const fenceGeo = new THREE.BoxGeometry(0.3, 1, 0.3);
     const cakeGeo = new THREE.BoxGeometry(0.85, 0.5, 0.85);
     const chickenGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+    const studGeo = showStuds ? new THREE.CylinderGeometry(0.13, 0.13, 0.08, 8) : null;
 
     blocks.forEach((b) => {
-      let geo = boxGeo;
+      const piece = getBrickPiece(b.pieceId);
+      let geo = piece ? createBrickGeometry(piece) : boxGeo;
       let yOffset = 0.5;
 
-      if (b.type === 'fence') {
+      if (!piece && b.type === 'fence') {
         geo = fenceGeo;
-        yOffset = 0.5;
-      } else if (b.type === 'cake') {
+      } else if (!piece && b.type === 'cake') {
         geo = cakeGeo;
         yOffset = 0.25;
-      } else if (b.type === 'chicken') {
+      } else if (!piece && b.type === 'chicken') {
         geo = chickenGeo;
         yOffset = 0.3;
       }
 
-      const mat = materialsRef.current[b.type] || materialsRef.current['dirt'];
+      if (piece?.shape === 'axle') {
+        if (piece.width >= piece.depth) geo.rotateZ(Math.PI / 2);
+        else geo.rotateX(Math.PI / 2);
+      }
+
+      const mat = b.brickColor
+        ? getBrickColorMaterial(b.brickColor)
+        : piece?.id === 'panel-glass-2x4'
+          ? materialsRef.current.glass
+          : materialsRef.current[b.type] || materialsRef.current['dirt'];
       const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(b.x, b.y + yOffset, b.z);
+      if (piece?.shape === 'curved' || piece?.shape === 'leaf' || piece?.shape === 'flower') {
+        mesh.scale.set(piece.width, piece.height / 3, piece.depth);
+      }
+      if (piece) {
+        const dimensions = getBrickDimensions(piece.id, b.rotation);
+        mesh.position.set(
+          b.x + (dimensions.width - 1) / 2,
+          (b.y + piece.height / 2) / 3,
+          b.z + (dimensions.depth - 1) / 2,
+        );
+        mesh.rotation.y = (b.rotation || 0) * Math.PI / 180;
+      } else {
+        mesh.position.set(b.x, b.y + yOffset, b.z);
+      }
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       mesh.userData = { block: b };
 
+      if (studGeo && piece?.studs) {
+        const dimensions = getBrickDimensions(piece.id, b.rotation);
+        const studs = new THREE.InstancedMesh(studGeo, mat, piece.width * piece.depth);
+        const matrix = new THREE.Matrix4();
+        let index = 0;
+        for (let x = 0; x < piece.width; x++) {
+          for (let z = 0; z < piece.depth; z++) {
+            const localX = x - (piece.width - 1) / 2;
+            const localZ = z - (piece.depth - 1) / 2;
+            matrix.compose(
+              new THREE.Vector3(localX, piece.height / 6 + 0.04, localZ),
+              new THREE.Quaternion(),
+              new THREE.Vector3(1, 1, 1),
+            );
+            studs.setMatrixAt(index++, matrix);
+          }
+        }
+        studs.userData = { block: b };
+        studs.instanceMatrix.needsUpdate = true;
+        mesh.add(studs);
+      }
+
       group.add(mesh);
     });
-  }, [blocks]);
+  }, [blocks, showStuds, isNight]);
 
-  // Mouse & Touch Drag Handlers for rotating camera
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDraggingRef.current = true;
-    prevMousePosRef.current = { x: e.clientX, y: e.clientY };
+  const placeBlockAtPointer = (clientX: number, clientY: number) => {
+    const container = containerRef.current;
+    const camera = cameraRef.current;
+    const group = blockGroupRef.current;
+    if (!placementEnabled || !onBlockPlace || !activePiece || !container || !camera || !group) return;
+
+    const rect = container.getBoundingClientRect();
+    const pointer = new THREE.Vector2(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    const raycaster = raycasterRef.current;
+    raycaster.setFromCamera(pointer, camera);
+
+    let x: number;
+    let y: number;
+    let z: number;
+    const newDimensions = getBrickDimensions(activePiece.id, activeRotation);
+    const hit = raycaster.intersectObjects(group.children, true)[0];
+
+    if (hit?.face && hit.object.userData.block) {
+      const block = hit.object.userData.block as VoxelBlock;
+      const blockDimensions = block.pieceId
+        ? getBrickDimensions(block.pieceId, block.rotation)
+        : { width: 1, depth: 1, height: 3 };
+      const normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+      const offset = new THREE.Vector3();
+      if (Math.abs(normal.x) > Math.abs(normal.y) && Math.abs(normal.x) > Math.abs(normal.z)) offset.x = Math.sign(normal.x);
+      else if (Math.abs(normal.y) > Math.abs(normal.z)) offset.y = Math.sign(normal.y);
+      else offset.z = Math.sign(normal.z);
+      x = block.x + (offset.x > 0 ? blockDimensions.width : offset.x < 0 ? -newDimensions.width : 0);
+      y = block.y + (offset.y > 0 ? blockDimensions.height : offset.y < 0 ? -newDimensions.height : 0);
+      z = block.z + (offset.z > 0 ? blockDimensions.depth : offset.z < 0 ? -newDimensions.depth : 0);
+    } else {
+      const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      const point = raycaster.ray.intersectPlane(ground, new THREE.Vector3());
+      if (!point) return;
+      x = Math.round(point.x);
+      y = 0;
+      z = Math.round(point.z);
+    }
+
+    if (x < -9 || z < -9 || x + newDimensions.width - 1 > 9 || z + newDimensions.depth - 1 > 9 || y < 0 || y + newDimensions.height > 39) return;
+    const placed = onBlockPlace({ x, y, z, type: activeBlockType, pieceId: activePiece.id, rotation: activeRotation, brickColor: activeBrickColor });
+    if (placed !== false) sound.playBlockPlace();
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const removeBlockAtPointer = (clientX: number, clientY: number) => {
+    const container = containerRef.current;
+    const camera = cameraRef.current;
+    const group = blockGroupRef.current;
+    if (!removalEnabled || !onBlockRemove || !container || !camera || !group) return;
+
+    const rect = container.getBoundingClientRect();
+    const pointer = new THREE.Vector2(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    raycasterRef.current.setFromCamera(pointer, camera);
+    const hit = raycasterRef.current.intersectObjects(group.children, true)[0];
+    const block = hit?.object.userData.block as VoxelBlock | undefined;
+    if (block && onBlockRemove(block) !== false) sound.playBlockBreak();
+  };
+
+  // Drag to orbit; Shift-drag or right-drag to pan.
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    isDraggingRef.current = true;
+    isPanningRef.current = allowPan && (e.button === 2 || e.shiftKey);
+    didMoveRef.current = false;
+    pointerStartRef.current = { x: e.clientX, y: e.clientY };
+    prevMousePosRef.current = { x: e.clientX, y: e.clientY };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDraggingRef.current) return;
     const deltaX = e.clientX - prevMousePosRef.current.x;
     const deltaY = e.clientY - prevMousePosRef.current.y;
     prevMousePosRef.current = { x: e.clientX, y: e.clientY };
+    if (Math.hypot(e.clientX - pointerStartRef.current.x, e.clientY - pointerStartRef.current.y) > 4) didMoveRef.current = true;
 
-    cameraAngleRef.current.theta -= deltaX * 0.01;
-    cameraAngleRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2.2, cameraAngleRef.current.phi + deltaY * 0.01));
+    if (isPanningRef.current) {
+      cameraTargetRef.current.x -= deltaX * 0.025;
+      cameraTargetRef.current.z += deltaY * 0.025;
+    } else {
+      cameraAngleRef.current.theta -= deltaX * 0.01;
+      cameraAngleRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2.2, cameraAngleRef.current.phi + deltaY * 0.01));
+    }
     updateCameraPosition();
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    if (!didMoveRef.current && e.button !== 2) {
+      if (removalEnabled) removeBlockAtPointer(e.clientX, e.clientY);
+      else if (placementEnabled) placeBlockAtPointer(e.clientX, e.clientY);
+    }
     isDraggingRef.current = false;
+    isPanningRef.current = false;
+  };
+
+  const handlePointerCancel = () => {
+    isDraggingRef.current = false;
+    isPanningRef.current = false;
   };
 
   // Zoom controls
@@ -343,6 +558,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
   // Auto Reset Angle
   const handleResetView = () => {
     cameraAngleRef.current = { theta: Math.PI / 4, phi: Math.PI / 5, radius: 16 };
+    cameraTargetRef.current.set(0, 1, 0);
     setZoomLevel(16);
     updateCameraPosition();
     sound.playJump();
@@ -372,11 +588,12 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
       {/* 3D WebGL Canvas Viewport */}
       <div
         ref={containerRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        className="w-full flex-1 cursor-grab active:cursor-grabbing select-none touch-none"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+        onContextMenu={(e) => e.preventDefault()}
+        className={`w-full flex-1 select-none touch-none ${placementEnabled || removalEnabled ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'}`}
       />
 
       {/* Floating 3D Control Bar */}

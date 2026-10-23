@@ -10,6 +10,7 @@ import { TowerMath } from './components/games/TowerMath';
 import { PokemonArena } from './components/games/PokemonArena';
 import { MinecraftMathWorld } from './components/games/MinecraftMathWorld';
 import { LogicAdventure } from './components/games/LogicAdventure';
+import { MathBrickBuilder } from './components/games/MathBrickBuilder';
 import { CertificateModal } from './components/CertificateModal';
 import { PlayerSwitchModal } from './components/PlayerSwitchModal';
 import { GameScoresModal } from './components/GameScoresModal';
@@ -36,6 +37,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
     tower_math: 250,
     pokemon: 150,
     logic_game: 0,
+    mathbrick: 0,
   },
   totalProblemsSolved: 24,
 };
@@ -212,6 +214,7 @@ export default function App() {
             tower_math: 0,
             pokemon: 0,
             logic_game: 0,
+            mathbrick: 0,
           },
           totalProblemsSolved: 0,
         };
@@ -392,6 +395,19 @@ export default function App() {
           player={player}
           onUpdateStats={(stars, coins, score) =>
             handleUpdateStats('logic_game', stars, coins, score)
+          }
+          onBack={() => setScreen('world_map')}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+        />
+      )}
+
+      {screen === 'mathbrick' && (
+        <MathBrickBuilder
+          lang={lang}
+          player={player}
+          onUpdateStats={(stars, coins, score) =>
+            handleUpdateStats('mathbrick', stars, coins, score)
           }
           onBack={() => setScreen('world_map')}
           isMuted={isMuted}

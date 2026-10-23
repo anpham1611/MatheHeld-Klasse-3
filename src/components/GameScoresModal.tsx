@@ -87,6 +87,15 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
       timesPlayed: gameScores['logic_game']?.timesPlayed || (player.scores.logic_game ? 1 : 0),
       color: 'from-fuchsia-600/30 to-rose-950/40 border-pink-500/40 text-pink-300',
     },
+    {
+      key: 'mathbrick',
+      name: 'MathBrick Builder',
+      icon: '🧱🛠️',
+      score: player.scores.mathbrick || 0,
+      solved: gameScores['mathbrick']?.problemsSolved || 0,
+      timesPlayed: gameScores['mathbrick']?.timesPlayed || (player.scores.mathbrick ? 1 : 0),
+      color: 'from-cyan-600/30 to-slate-950/40 border-cyan-500/40 text-cyan-300',
+    },
   ];
 
   return (

@@ -8,6 +8,7 @@ export type GameScreen =
   | 'tower_math' 
   | 'pokemon'
   | 'logic_game'
+  | 'mathbrick'
   | 'certificate';
 
 export type Language = 'de' | 'vi';
@@ -32,6 +33,7 @@ export interface PlayerProfile {
     tower_math: number;
     pokemon?: number;
     logic_game?: number;
+    mathbrick?: number;
   };
   totalProblemsSolved: number;
 }
