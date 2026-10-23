@@ -106,8 +106,8 @@ function readBuilderState(key: string): BuilderState {
     const savedInventory = parsed.savedBuild?.inventory ? readInventory(parsed.savedBuild.inventory) : undefined;
     if (parsed.schemaVersion !== 2) {
       BRICK_CATALOG.forEach(({ id }) => {
-        inventory[id] = Math.max(10, inventory[id] || 0);
-        if (savedInventory) savedInventory[id] = Math.max(10, savedInventory[id] || 0);
+        inventory[id] = Math.max(2, inventory[id] || 0);
+        if (savedInventory) savedInventory[id] = Math.max(2, savedInventory[id] || 0);
       });
     }
     const blocks = Array.isArray(parsed.blocks) ? parsed.blocks.map(readVoxelBlock).filter((block): block is VoxelBlock => !!block).slice(0, 400) : [];

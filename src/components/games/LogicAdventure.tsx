@@ -37,6 +37,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   }, []);
 
   const startTier = (tier: number) => {
+    setStartingTotal(player.scores.logic_game || 0);
     setSelectedTier(tier);
     setPuzzles(generateLogicRound(lang, tier));
     setRound(0);
@@ -74,7 +75,6 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
 
   const restart = () => {
     if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current);
-    setStartingTotal(player.scores.logic_game || 0);
     startTier(selectedTier ?? 1);
   };
 

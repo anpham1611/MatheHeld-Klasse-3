@@ -442,10 +442,16 @@ const generators: Array<(lang: Language) => GeneratedLogicPuzzle> = [
     return { group: 2, prompt: word(lang, 'Welcher Buchstabe kommt als Nächstes?', 'Chữ cái nào tiếp theo?'), visual: `${sequence.join('  ·  ')}  ·  ?`, choices: choices({ art: answer, correct: true }, distractors.map((art) => ({ art }))) };
   },
   (lang) => {
-    const validRoutes = ['🟦 → 🟦 → 🏁', '🟦 → 🟦 → 🟦 → 🏁'];
-    const invalidRoutes = ['🟦 → 🟥 → 🏁', '🟥 → 🟦 → 🏁', '🟩 → 🟦 → 🏁'];
+    const pathColors = [
+      { de: 'blaue', vi: 'xanh dương', safe: '🟦', blocked: '🟥' },
+      { de: 'grüne', vi: 'xanh lá', safe: '🟩', blocked: '🟪' },
+      { de: 'gelbe', vi: 'vàng', safe: '🟨', blocked: '⬛' },
+    ];
+    const color = pick(pathColors);
+    const validRoutes = [`${color.safe} → ${color.safe} → 🏁`, `${color.safe} → ${color.safe} → ${color.safe} → 🏁`];
+    const invalidRoutes = [`${color.safe} → ${color.blocked} → 🏁`, `${color.blocked} → ${color.safe} → 🏁`, `${color.blocked} → ${color.blocked} → 🏁`];
     const answer = pick(validRoutes);
-    return { group: 0, prompt: word(lang, 'Gehe nur über blaue Felder. Welcher Weg klappt?', 'Chỉ đi qua ô màu xanh. Đường nào đúng?'), visual: '🟦 = sicher   🟥 = gesperrt', choices: choices({ art: answer, correct: true }, sample([...validRoutes.filter((route) => route !== answer), ...invalidRoutes], 3).map((art) => ({ art }))) };
+    return { group: 0, prompt: word(lang, `Gehe nur über ${color.de} Felder. Welcher Weg klappt?`, `Chỉ đi qua ô màu ${color.vi}. Đường nào đúng?`), visual: `${color.safe} = sicher   ${color.blocked} = gesperrt`, choices: choices({ art: answer, correct: true }, sample([...validRoutes.filter((route) => route !== answer), ...invalidRoutes], 3).map((art) => ({ art }))) };
   },
   (lang) => {
     const start = 1 + Math.floor(Math.random() * 9);
@@ -461,12 +467,19 @@ const generators: Array<(lang: Language) => GeneratedLogicPuzzle> = [
   },
   (lang) => {
     const candidates = [
-      { art: '🍓', fruit: true, red: true }, { art: '🍌', fruit: true, red: false },
-      { art: '🍎', fruit: true, red: true }, { art: '🚗', fruit: false, red: true },
-      { art: '🍇', fruit: true, red: false }, { art: '🐟', fruit: false, red: false },
+      { art: '🍓', fruit: true, color: 'red' }, { art: '🍌', fruit: true, color: 'yellow' },
+      { art: '🍎', fruit: true, color: 'red' }, { art: '🚗', fruit: false, color: 'red' },
+      { art: '🍇', fruit: true, color: 'purple' }, { art: '🍋', fruit: true, color: 'yellow' },
+      { art: '🐟', fruit: false, color: 'blue' }, { art: '🍊', fruit: true, color: 'orange' },
     ];
-    const target = pick(candidates.filter((item) => item.fruit && item.red));
-    return { group: 0, prompt: word(lang, 'Finde etwas, das eine Frucht UND rot ist.', 'Tìm thứ vừa là trái cây VÀ có màu đỏ.'), visual: '🍎∩🔴', choices: choices({ art: target.art, correct: true }, sample(candidates.filter((item) => item !== target && !(item.fruit && item.red)), 3).map((item) => ({ art: item.art }))) };
+    const color = pick([
+      { key: 'red', de: 'rot', vi: 'đỏ', emoji: '🔴' },
+      { key: 'yellow', de: 'gelb', vi: 'vàng', emoji: '🟡' },
+    ]);
+    const matches = candidates.filter((item) => item.fruit && item.color === color.key);
+    const target = pick(matches);
+    const distractors = sample(candidates.filter((item) => !(item.fruit && item.color === color.key)), 3);
+    return { group: 0, prompt: word(lang, `Finde etwas, das eine Frucht UND ${color.de} ist.`, `Tìm thứ vừa là trái cây VÀ có màu ${color.vi}.`), visual: `🍎 ∩ ${color.emoji}`, choices: choices({ art: target.art, correct: true }, distractors.map((item) => ({ art: item.art }))) };
   },
 ];
 
@@ -632,7 +645,7 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
         { de: 'Äpfel', vi: 'táo', art: '🍎' }, { de: 'Birnen', vi: 'lê', art: '🍐' },
         { de: 'Kirschen', vi: 'anh đào', art: '🍒' }, { de: 'Pflaumen', vi: 'mận', art: '🫐' },
       ], 2);
-      return textPuzzle(lang, group, `Alle Kisten sind falsch beschriftet: ${fruitA.de}, ${fruitB.de}, Gemischt. Aus welcher Kiste ziehst du zuerst?`, `Các hộp đều dán nhãn sai: ${fruitA.vi}, ${fruitB.vi}, Hỗn hợp. Bạn lấy thử từ hộp nào trước?`, `${fruitA.art}　${fruitB.art}　📦🌈\nAlle Etiketten falsch`, word(lang, 'Gemischt', 'Hỗn hợp'), [fruitA.de, fruitB.de, word(lang, 'Beliebige Kiste', 'Bất kỳ hộp nào')]);
+      return textPuzzle(lang, group, `Alle Kisten sind falsch beschriftet: ${fruitA.de}, ${fruitB.de}, Gemischt. Aus welcher Kiste ziehst du zuerst?`, `Các hộp đều dán nhãn sai: ${fruitA.vi}, ${fruitB.vi}, Hỗn hợp. Bạn lấy thử từ hộp nào trước?`, `${fruitA.art}　${fruitB.art}　📦🌈\nAlle Etiketten falsch`, word(lang, 'Gemischt', 'Hỗn hợp'), [word(lang, fruitA.de, fruitA.vi), word(lang, fruitB.de, fruitB.vi), word(lang, 'Beliebige Kiste', 'Bất kỳ hộp nào')]);
     }
     case 46: {
       const [first, second, third] = sample(['Mira', 'Leo', 'Tom', 'Nia', 'Kai'], 3);
@@ -662,7 +675,7 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     case 51: {
       const prime = pick([2, 3, 5, 7]);
       const answer = prime * prime;
-      return textPuzzle(lang, group, `Welche Zahl kleiner als 50 hat genau drei positive Teiler?`, `Số nào nhỏ hơn 50 có đúng ba ước số dương?`, `1 · ? · ${answer}`, String(answer), [String(prime), String(answer + 1), String(answer + prime)]);
+      return textPuzzle(lang, group, `Welche Zahl kleiner als 50 hat genau drei positive Teiler und ist durch ${prime} teilbar?`, `Số nào nhỏ hơn 50 có đúng ba ước số dương và chia hết cho ${prime}?`, `Teiler: 1 · ? · ${answer}`, String(answer), [String(prime), String(answer + 1), String(answer + prime)]);
     }
     case 52: {
       const length = 5 + Math.floor(Math.random() * 11);
@@ -726,7 +739,8 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     }
     case 63: {
       const a = 5 + Math.floor(Math.random() * 4);
-      return textPuzzle(lang, group, 'Jeder Buchstabe ist eine andere Ziffer. Löse A + A = BC.', 'Mỗi chữ là một chữ số khác nhau. Tìm A + A = BC.', 'A + A = BC', `A=${a}, B=1, C=${2 * a - 10}`, [`A=${a - 1}, B=1`, `A=${a}, B=2`, `A=${a + 1}, B=1`]);
+      const c = 2 * a - 10;
+      return textPuzzle(lang, group, `Jeder Buchstabe ist eine andere Ziffer. A liegt zwischen 5 und 8. C=${c}. Löse A + A = BC.`, `Mỗi chữ là một chữ số khác nhau. A nằm từ 5 đến 8. C=${c}. Tìm A + A = BC.`, `A + A = BC\nC = ${c}`, `A=${a}, B=1, C=${c}`, [`A=${a - 1}, B=1`, `A=${a}, B=2`, `A=${a + 1}, B=1`]);
     }
     case 64: {
       const [x, y, z] = sample(['p', 'q', 'r', 's'], 3);
@@ -747,7 +761,7 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     }
     case 66: {
       const switches = sample(['A', 'B', 'C'], 3);
-      return textPuzzle(lang, group, 'Drei Schalter steuern drei Lampen im Nebenraum. Du darfst den Raum nur einmal betreten. Welche Methode findet alle Zuordnungen?', 'Ba công tắc điều khiển ba bóng đèn ở phòng bên. Bạn chỉ được vào phòng một lần. Cách nào tìm được tất cả kết nối?', 'Schalter A · B · C → 💡 💡 💡', `${switches[0]} einschalten, warten, aus; ${switches[1]} einschalten; dann Licht und Wärme prüfen`, ['Alle gleichzeitig einschalten', 'Jeden Schalter einmal drücken', 'Nur Schalter C einschalten']);
+      return textPuzzle(lang, group, 'Drei Schalter steuern drei Lampen im Nebenraum. Du darfst den Raum nur einmal betreten. Welche Methode findet alle Zuordnungen?', 'Ba công tắc điều khiển ba bóng đèn ở phòng bên. Bạn chỉ được vào phòng một lần. Cách nào tìm được tất cả kết nối?', `Schalter ${switches.join(' · ')} → 💡 💡 💡`, `${switches[0]} einschalten, warten, aus; ${switches[1]} einschalten; dann Licht und Wärme prüfen`, ['Alle gleichzeitig einschalten', 'Jeden Schalter einmal drücken', 'Nur Schalter C einschalten']);
     }
     case 67: {
       const base = 2 + Math.floor(Math.random() * 5);
@@ -765,7 +779,7 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     case 69: {
       const reward = 2 + Math.floor(Math.random() * 4);
       const temptation = reward + 2 + Math.floor(Math.random() * 4);
-      return textPuzzle(lang, group, `Beim Gefangenendilemma: Kooperation gegen Kooperation bringt ${reward}, Verrat gegen Kooperation ${temptation}; gegen Verrat bringt Kooperation 0 und Verrat 1. Was ist der beste Einzelzug?`, `Trong thế lưỡng nan tù nhân: hai bên hợp tác được ${reward}; phản bội người hợp tác được ${temptation}; khi đối thủ phản bội, hợp tác được 0 và phản bội được 1. Nước đi cá nhân tốt nhất là gì?`, `Koop/Koop: ${reward} · Verrat/Koop: ${temptation} · Koop/Verrat: 0 · Verrat/Verrat: 1`, word(lang, 'Verraten', 'Phản bội'), [word(lang, 'Kooperieren', 'Hợp tác'), word(lang, 'Zufällig wählen', 'Chọn ngẫu nhiên'), word(lang, 'Aufgeben', 'Bỏ cuộc')]);
+      return textPuzzle(lang, group, `Beim Gefangenendilemma bringt Kooperation ${reward} Punkte. Verrat bringt dir ${temptation}, wenn die andere Person kooperiert. Was ist dann deine beste Antwort?`, `Trong thế lưỡng nan tù nhân, hợp tác được ${reward} điểm. Phản bội được ${temptation} điểm nếu người kia hợp tác. Khi đó phản ứng tốt nhất của bạn là gì?`, `Beide kooperieren: ${reward} · Du verrätst, andere kooperiert: ${temptation}`, word(lang, 'Verraten', 'Phản bội'), [word(lang, 'Kooperieren', 'Hợp tác'), word(lang, 'Zufällig wählen', 'Chọn ngẫu nhiên'), word(lang, 'Aufgeben', 'Bỏ cuộc')]);
     }
     case 70: {
       const values = [Math.random() < 0.5, Math.random() < 0.5, Math.random() < 0.5];
@@ -881,7 +895,7 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     case 89: {
       const mutual = 2 + Math.floor(Math.random() * 4);
       const temptation = mutual + 2 + Math.floor(Math.random() * 4);
-      return textPuzzle(lang, group, `Beide erhalten ${mutual} bei Kooperation. Wer allein verrät, erhält ${temptation}; wer verraten wird, 0. Was ist die dominante Einzelstrategie?`, `Cả hai được ${mutual} nếu hợp tác. Người phản bội một mình được ${temptation}; người bị phản bội được 0. Chiến lược cá nhân trội là gì?`, `Kooperation: ${mutual},${mutual}\nVerrat: ${temptation},0`, word(lang, 'Verraten', 'Phản bội'), [word(lang, 'Kooperieren', 'Hợp tác'), word(lang, 'Münze werfen', 'Tung đồng xu'), word(lang, 'Keine Strategie', 'Không có chiến lược')]);
+      return textPuzzle(lang, group, `Auszahlungen: beide kooperieren ${mutual}/${mutual}; allein verraten ${temptation}/0; beide verraten 1/1. Was ist für dich unabhängig vom anderen die dominante Strategie?`, `Điểm số: cả hai hợp tác ${mutual}/${mutual}; một người phản bội ${temptation}/0; cả hai phản bội 1/1. Chiến lược trội của bạn là gì, bất kể đối thủ chọn gì?`, `Koop/Koop: ${mutual}/${mutual} · Verrat/Koop: ${temptation}/0 · Koop/Verrat: 0/${temptation} · Verrat/Verrat: 1/1`, word(lang, 'Verraten', 'Phản bội'), [word(lang, 'Kooperieren', 'Hợp tác'), word(lang, 'Münze werfen', 'Tung đồng xu'), word(lang, 'Keine Strategie', 'Không có chiến lược')]);
     }
     case 90: {
       const names = sample(['Ari', 'Ben', 'Cem', 'Dia'], 3);
@@ -935,12 +949,14 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
       const answer = sum % 2 === 0 ? sum : sum - 1;
       return textPuzzle(lang, group, `Meta-Rätsel: Ein Code startet bei ${first}, addiert ${second}; falls die Summe ungerade ist, ziehe 1 ab. Welcher Code bleibt?`, `Câu đố meta: Mã bắt đầu bằng ${first}, cộng ${second}; nếu tổng lẻ thì trừ 1. Mã cuối là gì?`, `${first} + ${second} → gerade Zahl`, String(answer), [String(answer + 1), String(Math.max(0, answer - 1)), String(sum)]);
     }
-    default: return textPuzzle(lang, group, 'Wähle die richtige Lösung.', 'Chọn đáp án đúng.', '🧩', 'A', ['B', 'C', 'D']);
+    default: throw new Error(`Missing logic puzzle generator for topic ${topicId}`);
   }
 }
 
 export function generateLogicRound(lang: Language, tier = 1): LogicPuzzle[] {
+  if (!LOGIC_TIERS.some((item) => item.id === tier)) throw new RangeError(`Unknown logic tier: ${tier}`);
   const topics = LOGIC_TOPICS.filter((topic) => topic.tier === tier);
+  if (topics.length !== 20) throw new Error(`Logic tier ${tier} must contain exactly 20 topics`);
   return shuffle(topics.map((topic) => {
     const generate = topic.id <= generators.length ? generators[topic.id - 1] : undefined;
     return {
