@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Volume2, VolumeX } from 'lucide-react';
 import { Language, PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
+import { generateLogicRound, LOGIC_GROUPS } from '../../math/logicPuzzles';
 
 interface LogicAdventureProps {
   lang: Language;
@@ -12,51 +13,6 @@ interface LogicAdventureProps {
   onToggleMute: () => void;
 }
 
-interface Choice {
-  art: string;
-  label?: string;
-  correct?: boolean;
-  silhouette?: boolean;
-  sizes?: number[];
-}
-
-interface Puzzle {
-  group: number;
-  prompt: { de: string; vi: string };
-  visual: string;
-  choices: Choice[];
-}
-
-const PUZZLES: Puzzle[] = [
-  { group: 0, prompt: { de: 'Finde genau denselben Apfel!', vi: 'Tìm đúng quả táo giống hệt nhé!' }, visual: '🍎', choices: [{ art: '🍌' }, { art: '🍎', correct: true }, { art: '🍓' }, { art: '🥕' }] },
-  { group: 0, prompt: { de: 'Welcher Schatten gehört zum Löwen?', vi: 'Bóng nào là của sư tử?' }, visual: '🦁', choices: [{ art: '🐘', silhouette: true }, { art: '🦁', correct: true, silhouette: true }, { art: '🐒', silhouette: true }, { art: '🐦', silhouette: true }] },
-  { group: 0, prompt: { de: 'Was gehört in den roten Korb?', vi: 'Món nào nên vào giỏ màu đỏ?' }, visual: '🧺 🔴', choices: [{ art: '🍌' }, { art: '🍓', correct: true }, { art: '🧦' }, { art: '🧱' }] },
-  { group: 0, prompt: { de: 'Welche Form kommt aufs Hausdach?', vi: 'Hình nào làm mái nhà?' }, visual: '🏠', choices: [{ art: '⚪' }, { art: '🔺', correct: true }, { art: '🟦' }, { art: '⭐' }] },
-  { group: 0, prompt: { de: 'Was passt nicht zu den Fischen?', vi: 'Món nào không thuộc về các chú cá?' }, visual: '🐟 🐟 🐟', choices: [{ art: '🐠' }, { art: '🐟' }, { art: '🐡' }, { art: '🚗', correct: true }] },
-  { group: 1, prompt: { de: 'Wer ist größer?', vi: 'Con nào to hơn?' }, visual: '🐘  🐭', choices: [{ art: '🐘', correct: true }, { art: '🐭' }, { art: '🐜' }, { art: '🐞' }] },
-  { group: 1, prompt: { de: 'Finde den längsten Buntstift!', vi: 'Tìm cây bút chì dài nhất!' }, visual: '✏️', choices: [{ art: '━━━' }, { art: '━━━━━━━━', correct: true }, { art: '━━━━━' }] },
-  { group: 1, prompt: { de: 'Das Kätzchen sitzt auf dem Tisch. Wo ist es?', vi: 'Mèo con ngồi trên bàn. Mèo ở đâu?' }, visual: '🐱 ⬆️ 🟥', choices: [{ art: '🐱⬆️🟥', correct: true }, { art: '🐱⬇️🟥' }, { art: '🐱➡️🟥' }] },
-  { group: 1, prompt: { de: 'Welcher Fisch ist im Glas?', vi: 'Chú cá nào ở trong bát?' }, visual: '🐟 🥣', choices: [{ art: '🐟🥣', correct: true }, { art: '🐟↗️🥣' }, { art: '🐟🌿' }] },
-  { group: 1, prompt: { de: 'Finde die passende andere Hälfte!', vi: 'Tìm nửa còn lại phù hợp nhé!' }, visual: '🧸◐', choices: [{ art: '☀️' }, { art: '🍉' }, { art: '🧸', correct: true }, { art: '🐸' }] },
-  { group: 2, prompt: { de: 'Was kommt als Nächstes?', vi: 'Hình nào tiếp theo?' }, visual: '❤️🎈  💛🎈  ❤️🎈  💛🎈  ?', choices: [{ art: '💛🎈' }, { art: '❤️🎈', correct: true }, { art: '💙🎈' }] },
-  { group: 2, prompt: { de: 'Zähle die Äpfel!', vi: 'Bé hãy đếm số quả táo!' }, visual: '🍎 🍎 🍎 🍎', choices: [{ art: '2' }, { art: '4', correct: true }, { art: '3' }, { art: '5' }] },
-  { group: 2, prompt: { de: 'Welche Gruppe hat genau 3 Blumen?', vi: 'Nhóm nào có đúng 3 bông hoa?' }, visual: '3 🌼', choices: [{ art: '🌼🌼' }, { art: '🌼🌼🌼', correct: true }, { art: '🌼' }, { art: '🌼🌼🌼🌼' }] },
-  { group: 2, prompt: { de: 'Welches Bild passt zum Picknick?', vi: 'Món nào hợp với buổi dã ngoại?' }, visual: '🧺 🌳 ☀️  □', choices: [{ art: '🍎', correct: true }, { art: '🚗' }, { art: '🧦' }, { art: '🪥' }] },
-  { group: 2, prompt: { de: 'Welche Bärenreihe geht von klein nach groß?', vi: 'Dãy gấu nào từ nhỏ đến lớn?' }, visual: '🐻  klein → groß', choices: [{ art: '', sizes: [42, 32, 22] }, { art: '', sizes: [22, 32, 42], correct: true }, { art: '', sizes: [32, 42, 22] }] },
-  { group: 3, prompt: { de: 'Welches Baby gehört zur Henne?', vi: 'Gà con là con của mẹ nào?' }, visual: '🐔', choices: [{ art: '🐶' }, { art: '🐥', correct: true }, { art: '🐮' }, { art: '🐱' }] },
-  { group: 3, prompt: { de: 'Wo wohnt der Vogel?', vi: 'Chim sống ở đâu?' }, visual: '🐦', choices: [{ art: '🪺', correct: true }, { art: '🐝' }, { art: '🐠' }, { art: '🛏️' }] },
-  { group: 3, prompt: { de: 'Was frisst das Kaninchen?', vi: 'Thỏ thích ăn gì?' }, visual: '🐰', choices: [{ art: '🍌' }, { art: '🥕', correct: true }, { art: '🐟' }, { art: '🧀' }] },
-  { group: 3, prompt: { de: 'Es regnet! Was braucht das Kind?', vi: 'Trời mưa rồi! Bé cần gì?' }, visual: '🌧️', choices: [{ art: '🧥☂️', correct: true }, { art: '🩱🕶️' }, { art: '🧣🧤' }, { art: '👟⚽' }] },
-  { group: 3, prompt: { de: 'Die Hände sind schmutzig. Was kommt danach?', vi: 'Tay bị bẩn rồi. Bé nên làm gì tiếp?' }, visual: '🧒 🟤👐', choices: [{ art: '🚰🧼👐', correct: true }, { art: '🍰🥄' }, { art: '🛌💤' }, { art: '⚽🏃' }] },
-];
-
-const GROUPS = [
-  { de: 'Schauen & Sortieren', vi: 'Quan sát & phân loại', emoji: '👀' },
-  { de: 'Größe & Lage', vi: 'Kích thước & vị trí', emoji: '📏' },
-  { de: 'Muster & Zahlen', vi: 'Quy luật & số đếm', emoji: '🔢' },
-  { de: 'Tiere & Alltag', vi: 'Động vật & cuộc sống', emoji: '🐾' },
-];
-
 export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   lang,
   player,
@@ -65,19 +21,20 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   isMuted,
   onToggleMute,
 }) => {
+  const [puzzles, setPuzzles] = useState(() => generateLogicRound(lang));
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'tryAgain' | null>(null);
   const [answered, setAnswered] = useState(false);
   const [complete, setComplete] = useState(false);
   const advanceTimer = useRef<number | null>(null);
-  const puzzle = PUZZLES[round];
+  const puzzle = puzzles[round];
 
   useEffect(() => () => {
     if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current);
   }, []);
 
-  const choose = (choice: Choice) => {
+  const choose = (choice: (typeof puzzles)[number]['choices'][number]) => {
     if (answered) return;
     if (!choice.correct) {
       sound.playJump();
@@ -91,7 +48,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
     const nextScore = score + 100;
     setScore(nextScore);
     advanceTimer.current = window.setTimeout(() => {
-      if (round === PUZZLES.length - 1) {
+      if (round === puzzles.length - 1) {
         setComplete(true);
         sound.playFanfare();
         onUpdateStats(3, 15, nextScore);
@@ -105,6 +62,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
 
   const restart = () => {
     if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current);
+    setPuzzles(generateLogicRound(lang));
     setRound(0);
     setScore(0);
     setAnswered(false);
@@ -166,26 +124,26 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
           <div className="mb-4 rounded-2xl bg-white/80 p-3 sm:p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="font-black text-indigo-900">
-                {GROUPS[puzzle.group].emoji} {text(GROUPS[puzzle.group].de, GROUPS[puzzle.group].vi)}
+                {LOGIC_GROUPS[puzzle.group].emoji} {text(LOGIC_GROUPS[puzzle.group].de, LOGIC_GROUPS[puzzle.group].vi)}
               </span>
               <span className="font-black text-violet-700 tabular-nums">
-                {round + 1} / {PUZZLES.length}
+                {round + 1} / {puzzles.length}
               </span>
             </div>
             <div
               className="h-3 rounded-full bg-violet-100 overflow-hidden"
               role="progressbar"
               aria-valuemin={0}
-              aria-valuemax={PUZZLES.length}
-              aria-valuenow={round}
+              aria-valuemax={puzzles.length}
+              aria-valuenow={round + 1}
             >
-              <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 transition-all duration-300" style={{ width: `${(round / PUZZLES.length) * 100}%` }} />
+              <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 transition-all duration-300" style={{ width: `${((round + 1) / puzzles.length) * 100}%` }} />
             </div>
           </div>
 
           <div className="rounded-[2rem] border-4 border-white bg-white/90 p-4 sm:p-7 shadow-xl">
             <h2 className="text-center text-xl sm:text-3xl font-black text-indigo-950 font-['Fredoka']">
-              {text(puzzle.prompt.de, puzzle.prompt.vi)}
+              {puzzle.prompt}
             </h2>
             <div className="my-4 sm:my-6 min-h-24 flex items-center justify-center rounded-3xl bg-gradient-to-br from-sky-100 to-pink-100 px-3 py-4 text-5xl sm:text-7xl">
               <span aria-label={puzzle.visual}>{puzzle.visual}</span>
