@@ -25,6 +25,16 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
 }) => {
   const worlds = [
     {
+      id: 'minecraft' as GameScreen,
+      title: t(lang, 'worldMinecraftTitle'),
+      desc: t(lang, 'worldMinecraftDesc'),
+      icon: '🧱🟩',
+      bgGradient: 'from-emerald-600 via-teal-800 to-green-950',
+      borderColor: 'border-emerald-300',
+      badge: lang === 'de' ? '⭐ 3D VOXEL MINECRAFT' : '⭐ MINECRAFT TOÁN 3',
+      score: player.scores.minecraft || 0,
+    },
+    {
       id: 'number_line' as GameScreen,
       title: t(lang, 'world1Title'),
       desc: t(lang, 'world1Desc'),

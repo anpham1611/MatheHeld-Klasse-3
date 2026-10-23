@@ -8,6 +8,7 @@ import { EinmaleinsArena } from './components/games/EinmaleinsArena';
 import { EuroShop } from './components/games/EuroShop';
 import { TowerMath } from './components/games/TowerMath';
 import { PokemonArena } from './components/games/PokemonArena';
+import { MinecraftMathWorld } from './components/games/MinecraftMathWorld';
 import { CertificateModal } from './components/CertificateModal';
 
 const STORAGE_KEY = 'matheheld_klasse3_profile_v1';
@@ -23,6 +24,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
   equippedHat: 'standard',
   capturedPokemon: ['pikachu'],
   scores: {
+    minecraft: 320,
     number_line: 450,
     einmaleins: 620,
     euro_shop: 380,
@@ -121,6 +123,19 @@ export default function App() {
           player={player}
           onSelectWorld={(world) => setScreen(world)}
           onBackToTitle={() => setScreen('title')}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+        />
+      )}
+
+      {screen === 'minecraft' && (
+        <MinecraftMathWorld
+          lang={lang}
+          player={player}
+          onUpdateStats={(stars, coins, score) =>
+            handleUpdateStats('minecraft', stars, coins, score)
+          }
+          onBack={() => setScreen('world_map')}
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
         />

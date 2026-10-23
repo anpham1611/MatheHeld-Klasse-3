@@ -1,6 +1,7 @@
 export type GameScreen = 
   | 'title' 
   | 'world_map' 
+  | 'minecraft'
   | 'number_line' 
   | 'einmaleins' 
   | 'euro_shop' 
@@ -23,6 +24,7 @@ export interface PlayerProfile {
   equippedHat: string;
   capturedPokemon?: string[];
   scores: {
+    minecraft?: number;
     number_line: number;
     einmaleins: number;
     euro_shop: number;

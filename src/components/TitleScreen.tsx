@@ -83,7 +83,14 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             </span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 bg-red-600/30 border border-red-500/50 px-3 py-1.5 rounded-2xl backdrop-blur animate-pulse">
+          <div className="hidden sm:flex items-center gap-1.5 bg-emerald-600/30 border border-emerald-500/50 px-3 py-1.5 rounded-2xl backdrop-blur animate-pulse">
+            <span className="text-sm">🧱</span>
+            <span className="text-xs font-extrabold text-emerald-300">
+              {lang === 'de' ? 'Minecraft 3D Mathe!' : 'Minecraft Toán 3D!'}
+            </span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-1.5 bg-red-600/30 border border-red-500/50 px-3 py-1.5 rounded-2xl backdrop-blur">
             <span className="text-sm">🔴</span>
             <span className="text-xs font-extrabold text-amber-300">
               {lang === 'de' ? 'PokéMath inklusive!' : 'Kèm PokéMath!'}
