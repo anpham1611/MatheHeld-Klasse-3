@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Volume2, VolumeX } from 'lucide-react';
 import { Language, PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
-import { generateLogicRound, LOGIC_GROUPS } from '../../math/logicPuzzles';
+import { generateLogicRound, LOGIC_GROUPS, LOGIC_TIERS, type LogicPuzzle } from '../../math/logicPuzzles';
 
 interface LogicAdventureProps {
   lang: Language;
@@ -21,7 +21,8 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   isMuted,
   onToggleMute,
 }) => {
-  const [puzzles, setPuzzles] = useState(() => generateLogicRound(lang));
+  const [selectedTier, setSelectedTier] = useState<number | null>(null);
+  const [puzzles, setPuzzles] = useState<LogicPuzzle[]>([]);
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'tryAgain' | null>(null);
@@ -34,6 +35,16 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   useEffect(() => () => {
     if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current);
   }, []);
+
+  const startTier = (tier: number) => {
+    setSelectedTier(tier);
+    setPuzzles(generateLogicRound(lang, tier));
+    setRound(0);
+    setScore(0);
+    setAnswered(false);
+    setFeedback(null);
+    setComplete(false);
+  };
 
   const choose = (choice: (typeof puzzles)[number]['choices'][number]) => {
     if (answered) return;
@@ -64,12 +75,14 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   const restart = () => {
     if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current);
     setStartingTotal(player.scores.logic_game || 0);
-    setPuzzles(generateLogicRound(lang));
-    setRound(0);
-    setScore(0);
-    setAnswered(false);
-    setFeedback(null);
+    startTier(selectedTier ?? 1);
+  };
+
+  const chooseAnotherTier = () => {
+    setSelectedTier(null);
+    setPuzzles([]);
     setComplete(false);
+    setFeedback(null);
   };
 
   const text = (de: string, vi: string) => lang === 'de' ? de : vi;
@@ -113,15 +126,44 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
           <div className="my-6 text-4xl" aria-label={text('Drei Sterne', 'Ba ngôi sao')}>⭐ ⭐ ⭐</div>
           <p className="text-lg font-bold text-slate-600">{text('Punkte in dieser Runde', 'Điểm vòng này')}: {score}</p>
           <p className="my-3 mb-6 text-xl font-black text-violet-700">{text('Gesamtpunkte', 'Tổng điểm')}: {startingTotal + score}</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <button
               onClick={restart}
               className="rounded-2xl bg-violet-600 px-4 py-4 text-lg font-black text-white shadow-lg hover:bg-violet-500 active:scale-95"
             >{text('Nochmal spielen', 'Chơi lại')}</button>
             <button
+              onClick={chooseAnotherTier}
+              className="rounded-2xl bg-sky-500 px-4 py-4 text-lg font-black text-white shadow-lg hover:bg-sky-400 active:scale-95"
+            >{text('Stufe wechseln', 'Đổi cấp độ')}</button>
+            <button
               onClick={onBack}
               className="rounded-2xl bg-amber-400 px-4 py-4 text-lg font-black text-amber-950 shadow-lg hover:bg-amber-300 active:scale-95"
             >{text('Zur Karte', 'Về bản đồ')}</button>
+          </div>
+        </section>
+      ) : selectedTier === null ? (
+        <section className="max-w-3xl mx-auto mt-8 rounded-[2rem] border-4 border-white bg-white/90 p-5 sm:p-8 shadow-xl">
+          <h2 className="text-center text-2xl sm:text-3xl font-black text-indigo-950 font-['Fredoka']">
+            {text('Wähle eine Rätselstufe', 'Chọn cấp độ câu đố')}
+          </h2>
+          <p className="mt-2 mb-5 text-center font-bold text-slate-600">
+            {text('Jede Stufe enthält 20 verschiedene Themen.', 'Mỗi cấp có 20 chủ đề khác nhau.')}
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {LOGIC_TIERS.map((tier) => (
+              <button
+                key={tier.id}
+                onClick={() => startTier(tier.id)}
+                className="rounded-2xl border-4 border-violet-100 bg-gradient-to-br from-sky-50 to-pink-100 p-4 text-left shadow-sm transition hover:border-violet-300 hover:-translate-y-1"
+              >
+                <span className="block text-sm font-black uppercase tracking-wide text-violet-600">
+                  {text('Stufe', 'Cấp')} {tier.id}
+                </span>
+                <span className="block text-xl font-black text-indigo-950">
+                  {text(tier.de, tier.vi)}
+                </span>
+              </button>
+            ))}
           </div>
         </section>
       ) : (
@@ -129,7 +171,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
           <div className="mb-4 rounded-2xl bg-white/80 p-3 sm:p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="font-black text-indigo-900">
-                {LOGIC_GROUPS[puzzle.group].emoji} {text(LOGIC_GROUPS[puzzle.group].de, LOGIC_GROUPS[puzzle.group].vi)}
+                {LOGIC_GROUPS[puzzle.group].emoji} {text(LOGIC_GROUPS[puzzle.group].de, LOGIC_GROUPS[puzzle.group].vi)} · {puzzle.topicName}
               </span>
               <span className="font-black text-violet-700 tabular-nums">
                 {round + 1} / {puzzles.length}
@@ -150,7 +192,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
             <h2 className="text-center text-xl sm:text-3xl font-black text-indigo-950 font-['Fredoka']">
               {puzzle.prompt}
             </h2>
-            <div className="my-4 sm:my-6 min-h-24 flex items-center justify-center rounded-3xl bg-gradient-to-br from-sky-100 to-pink-100 px-3 py-4 text-5xl sm:text-7xl">
+            <div className={`my-4 sm:my-6 min-h-24 flex items-center justify-center rounded-3xl bg-gradient-to-br from-sky-100 to-pink-100 px-3 py-4 font-black text-center whitespace-pre-line break-words ${puzzle.visual.length > 24 ? 'text-xl sm:text-3xl' : 'text-5xl sm:text-7xl'}`}>
               <span aria-label={puzzle.visual}>{puzzle.visual}</span>
             </div>
 
@@ -175,7 +217,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
                     </span>
                   ) : (
                     <span
-                      className={`text-4xl sm:text-5xl font-black ${choice.art.includes('━') ? 'text-amber-700' : ''}`}
+                      className={`max-w-full break-words font-black ${choice.art.length > 8 ? 'text-base sm:text-xl' : 'text-4xl sm:text-5xl'} ${choice.art.includes('━') ? 'text-amber-700' : ''}`}
                       style={{ filter: choice.silhouette ? 'brightness(0)' : undefined }}
                       aria-hidden="true"
                     >{choice.art}</span>
