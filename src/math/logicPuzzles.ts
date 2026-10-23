@@ -632,7 +632,7 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
         { de: 'Äpfel', vi: 'táo', art: '🍎' }, { de: 'Birnen', vi: 'lê', art: '🍐' },
         { de: 'Kirschen', vi: 'anh đào', art: '🍒' }, { de: 'Pflaumen', vi: 'mận', art: '🫐' },
       ], 2);
-      return textPuzzle(lang, group, `Alle Kisten sind falsch beschriftet: ${fruitA.de}, ${fruitB.de}, Gemischt. Aus welcher Kiste ziehst du zuerst?`, `Các hộp đều dán nhãn sai: ${fruitA.vi}, ${fruitB.vi}, Hỗn hợp. Bạn lấy thử từ hộp nào trước?`, `${fruitA.art}　${fruitB.art}　Gemischt\nAlle Etiketten falsch`, 'Gemischt', [fruitA.de, fruitB.de, 'Beliebige Kiste']);
+      return textPuzzle(lang, group, `Alle Kisten sind falsch beschriftet: ${fruitA.de}, ${fruitB.de}, Gemischt. Aus welcher Kiste ziehst du zuerst?`, `Các hộp đều dán nhãn sai: ${fruitA.vi}, ${fruitB.vi}, Hỗn hợp. Bạn lấy thử từ hộp nào trước?`, `${fruitA.art}　${fruitB.art}　📦🌈\nAlle Etiketten falsch`, word(lang, 'Gemischt', 'Hỗn hợp'), [fruitA.de, fruitB.de, word(lang, 'Beliebige Kiste', 'Bất kỳ hộp nào')]);
     }
     case 46: {
       const [first, second, third] = sample(['Mira', 'Leo', 'Tom', 'Nia', 'Kai'], 3);
@@ -690,7 +690,11 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
         { de: 'Gelb: umdrehen', vi: 'Vàng: quay lại', color: '🟡', answer: '⬇️ Zurück', wrong: ['⬅️ Links', '➡️ Rechts', '⬆️ Geradeaus'] },
       ];
       const rule = pick(rules);
-      return textPuzzle(lang, group, `Im Labyrinth gilt die Regel „${rule.de}“. Du erreichst das Feld. Wohin gehst du?`, `Trong mê cung có quy tắc “${rule.vi}”. Bạn đến ô đó. Đi hướng nào?`, `START → ${rule.color} → ?`, rule.answer, rule.wrong);
+      const directions = ['⬅️', '➡️', '⬆️', '⬇️'];
+      const directionNames = lang === 'de' ? ['Links', 'Rechts', 'Geradeaus', 'Zurück'] : ['Trái', 'Phải', 'Đi thẳng', 'Quay lại'];
+      const answerIndex = rule.answer.startsWith('⬅️') ? 0 : rule.answer.startsWith('➡️') ? 1 : rule.answer.startsWith('⬆️') ? 2 : 3;
+      const options = directions.map((arrow, index) => `${arrow} ${directionNames[index]}`);
+      return textPuzzle(lang, group, `Im Labyrinth gilt die Regel „${rule.de}“. Du erreichst das Feld. Wohin gehst du?`, `Trong mê cung có quy tắc “${rule.vi}”. Bạn đến ô đó. Đi hướng nào?`, `START → ${rule.color} → ?`, options[answerIndex], options.filter((_, index) => index !== answerIndex));
     }
     case 57: {
       const clue = Math.random() < 0.5 ? 0 : 4;
@@ -722,18 +726,24 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     }
     case 63: {
       const a = 5 + Math.floor(Math.random() * 4);
-      return textPuzzle(lang, group, 'Jeder Buchstabe ist eine andere Ziffer. Löse A + A = BA.', 'Mỗi chữ là một chữ số khác nhau. Tìm A + A = BA.', 'A + A = BA', `A=${a}, B=1`, [`A=${a - 1}, B=1`, `A=${a}, B=2`, `A=${a + 1}, B=1`]);
+      return textPuzzle(lang, group, 'Jeder Buchstabe ist eine andere Ziffer. Löse A + A = BC.', 'Mỗi chữ là một chữ số khác nhau. Tìm A + A = BC.', 'A + A = BC', `A=${a}, B=1, C=${2 * a - 10}`, [`A=${a - 1}, B=1`, `A=${a}, B=2`, `A=${a + 1}, B=1`]);
     }
     case 64: {
       const [x, y, z] = sample(['p', 'q', 'r', 's'], 3);
       return textPuzzle(lang, group, `Es gilt ${x} < ${z} und ${z} < ${y}. Welche Reihenfolge stimmt?`, `Biết ${x} < ${z} và ${z} < ${y}. Thứ tự nào đúng?`, `${x} < ${z}　und　${z} < ${y}`, `${x} < ${z} < ${y}`, [`${z} < ${x} < ${y}`, `${y} < ${z} < ${x}`, `${x} < ${y} < ${z}`]);
     }
     case 65: {
-      const directions = ['⬆️ Norden', '➡️ Osten', '⬇️ Süden', '⬅️ Westen'];
+      const directions = lang === 'de'
+        ? ['⬆️ Norden', '➡️ Osten', '⬇️ Süden', '⬅️ Westen']
+        : ['⬆️ Bắc', '➡️ Đông', '⬇️ Nam', '⬅️ Tây'];
       const start = Math.floor(Math.random() * 4);
       const turns = 1 + Math.floor(Math.random() * 3);
       const answer = directions[(start + turns) % 4];
-      return textPuzzle(lang, group, `Ein Pfeil zeigt ${directions[start].split(' ')[1]}. Drehe ihn ${turns}-mal um 90° nach rechts. Wohin zeigt er?`, `Mũi tên chỉ hướng ${directions[start].split(' ')[1]}. Xoay ${turns} lần, mỗi lần 90° sang phải. Nó chỉ hướng nào?`, `${directions[start].split(' ')[0]} × ${turns} Rechtsdrehungen`, answer, directions.filter((direction) => direction !== answer));
+      return textPuzzle(lang, group, lang === 'de'
+        ? `Ein Pfeil zeigt ${directions[start].split(' ')[1]}. Drehe ihn ${turns}-mal um 90° nach rechts. Wohin zeigt er?`
+        : `Mũi tên chỉ hướng ${directions[start].split(' ')[1]}. Xoay ${turns} lần, mỗi lần 90° sang phải. Nó chỉ hướng nào?`,
+      lang === 'de' ? `Ein Pfeil zeigt ${directions[start].split(' ')[1]}. Drehe ihn ${turns}-mal um 90° nach rechts. Wohin zeigt er?` : `Mũi tên chỉ hướng ${directions[start].split(' ')[1]}. Xoay ${turns} lần, mỗi lần 90° sang phải. Nó chỉ hướng nào?`,
+      `${directions[start].split(' ')[0]} × ${turns} ${word(lang, 'Rechtsdrehungen', 'lần xoay phải')}`, answer, directions.filter((direction) => direction !== answer));
     }
     case 66: {
       const switches = sample(['A', 'B', 'C'], 3);
@@ -755,13 +765,13 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     case 69: {
       const reward = 2 + Math.floor(Math.random() * 4);
       const temptation = reward + 2 + Math.floor(Math.random() * 4);
-      return textPuzzle(lang, group, `Im Gefangenendilemma bringt Kooperation ${reward} Punkte. Verrat bringt dir ${temptation}, wenn die andere Person kooperiert. Was ist dein einzelner bester Zug?`, `Trong thế lưỡng nan tù nhân, hợp tác được ${reward} điểm. Phản bội được ${temptation} điểm nếu người kia hợp tác. Nước đi cá nhân tốt nhất là gì?`, `Kooperieren: ${reward} · Verraten: ${temptation}`, 'Verraten', ['Kooperieren', 'Zufällig wählen', 'Aufgeben']);
+      return textPuzzle(lang, group, `Beim Gefangenendilemma: Kooperation gegen Kooperation bringt ${reward}, Verrat gegen Kooperation ${temptation}; gegen Verrat bringt Kooperation 0 und Verrat 1. Was ist der beste Einzelzug?`, `Trong thế lưỡng nan tù nhân: hai bên hợp tác được ${reward}; phản bội người hợp tác được ${temptation}; khi đối thủ phản bội, hợp tác được 0 và phản bội được 1. Nước đi cá nhân tốt nhất là gì?`, `Koop/Koop: ${reward} · Verrat/Koop: ${temptation} · Koop/Verrat: 0 · Verrat/Verrat: 1`, word(lang, 'Verraten', 'Phản bội'), [word(lang, 'Kooperieren', 'Hợp tác'), word(lang, 'Zufällig wählen', 'Chọn ngẫu nhiên'), word(lang, 'Aufgeben', 'Bỏ cuộc')]);
     }
     case 70: {
       const values = [Math.random() < 0.5, Math.random() < 0.5, Math.random() < 0.5];
       const answer = values[0] && (values[1] || !values[2]);
-      const display = values.map((value, index) => `${'ABC'[index]}=${value ? 'W' : 'F'}`).join(' · ');
-      return textPuzzle(lang, group, 'Werte den verschachtelten Wahrheitsausdruck aus.', 'Tính giá trị biểu thức chân lý lồng nhau.', `${display}\nA AND (B OR NOT C)`, answer ? '✅ Wahr' : '❌ Falsch', [answer ? '❌ Falsch' : '✅ Wahr', 'Beides', 'Unbekannt']);
+      const display = values.map((value, index) => `${'ABC'[index]}=${value ? '1' : '0'}`).join(' · ');
+      return textPuzzle(lang, group, 'Werte den verschachtelten Wahrheitsausdruck aus.', 'Tính giá trị biểu thức chân lý lồng nhau.', `${display}\nA ∧ (B ∨ ¬C)`, answer ? '✅ 1' : '❌ 0', [answer ? '❌ 0' : '✅ 1', 'Beides', 'Unbekannt']);
     }
     case 71: {
       const paradox = pick([
@@ -861,21 +871,21 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     }
     case 88: {
       const puzzles = [
-        { de: 'Ein Mann schiebt sein Auto zu einem Hotel und verliert sein ganzes Geld. Was spielt er?', vi: 'Một người đẩy xe đến khách sạn và mất hết tiền. Anh ấy đang chơi gì?', visual: '🚗 → 🏨 → 💸', answer: 'Monopoly', wrong: ['Schach', 'Fußball', 'Reise nach Hause'] },
-        { de: 'Ein elektrischer Zug fährt nach Norden. Wohin weht der Rauch?', vi: 'Một đoàn tàu điện chạy về phía bắc. Khói bay hướng nào?', visual: '🚆⚡ → Norden', answer: 'Es gibt keinen Rauch', wrong: ['Norden', 'Süden', 'Osten'] },
-        { de: 'Was wird größer, je mehr man davon wegnimmt?', vi: 'Thứ gì càng lấy đi thì càng lớn?', visual: '🕳️', answer: 'Ein Loch', wrong: ['Ein Berg', 'Ein Ball', 'Ein Baum'] },
+        { de: 'Ein Mann schiebt sein Auto zu einem Hotel und verliert sein ganzes Geld. Was spielt er?', vi: 'Một người đẩy xe đến khách sạn và mất hết tiền. Anh ấy đang chơi gì?', visual: '🚗 → 🏨 → 💸', answerDe: 'Monopoly', answerVi: 'Cờ tỷ phú', wrongDe: ['Schach', 'Fußball', 'Reise nach Hause'], wrongVi: ['Cờ vua', 'Bóng đá', 'Đi du lịch'] },
+        { de: 'Ein elektrischer Zug fährt nach Norden. Wohin weht der Rauch?', vi: 'Một đoàn tàu điện chạy về phía bắc. Khói bay hướng nào?', visual: '🚆⚡ → Norden', answerDe: 'Kein Rauch', answerVi: 'Không có khói', wrongDe: ['Norden', 'Süden', 'Osten'], wrongVi: ['Bắc', 'Nam', 'Đông'] },
+        { de: 'Was wird größer, je mehr man davon wegnimmt?', vi: 'Thứ gì càng lấy đi thì càng lớn?', visual: '🕳️', answerDe: 'Ein Loch', answerVi: 'Cái hố', wrongDe: ['Ein Berg', 'Ein Ball', 'Ein Baum'], wrongVi: ['Ngọn núi', 'Quả bóng', 'Cái cây'] },
       ];
       const puzzle = pick(puzzles);
-      return textPuzzle(lang, group, puzzle.de, puzzle.vi, puzzle.visual, puzzle.answer, puzzle.wrong);
+      return textPuzzle(lang, group, puzzle.de, puzzle.vi, puzzle.visual, word(lang, puzzle.answerDe, puzzle.answerVi), lang === 'de' ? puzzle.wrongDe : puzzle.wrongVi);
     }
     case 89: {
       const mutual = 2 + Math.floor(Math.random() * 4);
       const temptation = mutual + 2 + Math.floor(Math.random() * 4);
-      return textPuzzle(lang, group, `Beide erhalten ${mutual} bei Kooperation. Wer allein verrät, erhält ${temptation}; wer verraten wird, 0. Was ist die dominante Einzelstrategie?`, `Cả hai được ${mutual} nếu hợp tác. Người phản bội một mình được ${temptation}; người bị phản bội được 0. Chiến lược cá nhân trội là gì?`, `Kooperation: ${mutual},${mutual}\nVerrat: ${temptation},0`, 'Verraten', ['Kooperieren', 'Münze werfen', 'Keine Strategie']);
+      return textPuzzle(lang, group, `Beide erhalten ${mutual} bei Kooperation. Wer allein verrät, erhält ${temptation}; wer verraten wird, 0. Was ist die dominante Einzelstrategie?`, `Cả hai được ${mutual} nếu hợp tác. Người phản bội một mình được ${temptation}; người bị phản bội được 0. Chiến lược cá nhân trội là gì?`, `Kooperation: ${mutual},${mutual}\nVerrat: ${temptation},0`, word(lang, 'Verraten', 'Phản bội'), [word(lang, 'Kooperieren', 'Hợp tác'), word(lang, 'Münze werfen', 'Tung đồng xu'), word(lang, 'Keine Strategie', 'Không có chiến lược')]);
     }
     case 90: {
       const names = sample(['Ari', 'Ben', 'Cem', 'Dia'], 3);
-      return textPuzzle(lang, group, `${names[0]} sagt: „${names[1]} lügt.“ ${names[1]} sagt: „${names[2]} lügt.“ ${names[2]} sagt: „${names[0]} lügt.“ Jeder ist Ritter (wahr) oder Schurke (lügt). Was folgt?`, `${names[0]} nói: “${names[1]} nói dối.” ${names[1]} nói: “${names[2]} nói dối.” ${names[2]} nói: “${names[0]} nói dối.” Mỗi người hoặc luôn thật hoặc luôn nói dối. Kết luận nào đúng?`, 'Aussagen bilden einen Kreis mit 3 Widersprüchen', 'Keine konsistente Zuordnung', ['Alle Ritter', 'Alle Schurken', 'Genau ein Ritter']);
+      return textPuzzle(lang, group, `${names[0]} sagt: „${names[1]} lügt.“ ${names[1]} sagt: „${names[2]} lügt.“ ${names[2]} sagt: „${names[0]} lügt.“ Jeder ist Ritter (wahr) oder Schurke (lügt). Was folgt?`, `${names[0]} nói: “${names[1]} nói dối.” ${names[1]} nói: “${names[2]} nói dối.” ${names[2]} nói: “${names[0]} nói dối.” Mỗi người hoặc luôn thật hoặc luôn nói dối. Kết luận nào đúng?`, 'Aussagen bilden einen Kreis mit 3 Widersprüchen', word(lang, 'Keine konsistente Zuordnung', 'Không có cách gán nhất quán'), [word(lang, 'Alle Ritter', 'Tất cả là hiệp sĩ'), word(lang, 'Alle Schurken', 'Tất cả là kẻ nói dối'), word(lang, 'Genau ein Ritter', 'Chính xác một hiệp sĩ')]);
     }
     case 91: {
       const rounds = 5 + Math.floor(Math.random() * 20);
@@ -894,7 +904,7 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     case 94: {
       const initial = (Math.random() * 0.1).toFixed(2);
       const later = (0.5 + Math.random() * 9).toFixed(1);
-      return textPuzzle(lang, group, 'Zwei fast gleiche Startwerte führen später zu stark verschiedenen Ergebnissen. Welche Eigenschaft zeigt das?', 'Hai giá trị ban đầu gần giống nhau nhưng sau đó cho kết quả rất khác. Đây là đặc tính nào?', `${initial} ≈ 0　→　${later} ≠ ?`, 'Empfindlichkeit gegenüber Anfangswerten', ['Zufälligkeit ohne Regeln', 'Immer gleiche Ausgabe', 'Paritätsfehler']);
+      return textPuzzle(lang, group, 'Zwei fast gleiche Startwerte führen später zu stark verschiedenen Ergebnissen. Welche Eigenschaft zeigt das?', 'Hai giá trị ban đầu gần giống nhau nhưng sau đó cho kết quả rất khác. Đây là đặc tính nào?', `${initial} ≈ 0　→　${later} ≠ ?`, word(lang, 'Empfindlichkeit gegenüber Anfangswerten', 'Nhạy cảm với điều kiện ban đầu'), [word(lang, 'Zufälligkeit ohne Regeln', 'Ngẫu nhiên không quy luật'), word(lang, 'Immer gleiche Ausgabe', 'Luôn cùng kết quả'), word(lang, 'Paritätsfehler', 'Lỗi chẵn lẻ')]);
     }
     case 95: {
       const states = sample(['0', '1', 'Rot', 'Blau'], 2);
@@ -902,7 +912,7 @@ function advancedPuzzle(topicId: number, lang: Language): GeneratedLogicPuzzle {
     }
     case 96: {
       const contents = sample(['Äpfel', 'Birnen', 'Kirschen'], 3);
-      return textPuzzle(lang, group, `Drei verschachtelte Kisten enthalten je nur ${contents[0]}, ${contents[1]} oder Gemischtes. Alle Etiketten sind falsch. Welche Kiste prüfst du zuerst?`, `Ba hộp lồng nhau chỉ chứa ${contents[0]}, ${contents[1]} hoặc hỗn hợp. Tất cả nhãn đều sai. Bạn kiểm tra hộp nào trước?`, `${contents[0]} · ${contents[1]} · Gemischt\nAlle Etiketten falsch`, 'Gemischt', [contents[0], contents[1], 'Alle zugleich']);
+      return textPuzzle(lang, group, `Drei Inventarkisten enthalten je nur ${contents[0]}, ${contents[1]} oder Gemischtes. Alle Etiketten sind falsch. Welche Kiste prüfst du zuerst?`, `Ba hộp kho chứa ${contents[0]}, ${contents[1]} hoặc hỗn hợp. Tất cả nhãn đều sai. Bạn kiểm tra hộp nào trước?`, `${contents[0]} · ${contents[1]} · Gemischt\nAlle Etiketten falsch`, word(lang, 'Gemischt', 'Hỗn hợp'), [contents[0], contents[1], word(lang, 'Alle zugleich', 'Tất cả cùng lúc')]);
     }
     case 97: {
       const stretches = 2 + Math.floor(Math.random() * 8);
