@@ -80,7 +80,7 @@ export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> =
             <div className="flex flex-col items-center gap-2">
               <div className="relative w-full max-w-[200px]">
                 <input
-                  type="text"
+                  type="password"
                   inputMode="numeric"
                   pattern="[0-9]*"
                   value={pinInput}
@@ -90,23 +90,11 @@ export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> =
                   }}
                   maxLength={4}
                   autoFocus
-                  placeholder="8888"
+                  placeholder="••••"
                   className="w-full text-center bg-slate-950 border-2 border-rose-500/60 focus:border-rose-400 text-rose-200 font-black text-2xl tracking-[0.5em] py-2 px-3 rounded-xl focus:outline-none transition font-mono"
                 />
                 <Lock className="w-4 h-4 text-rose-400 absolute left-3 top-3.5 opacity-60" />
               </div>
-
-              {/* Quick shortcut to type 8888 */}
-              <button
-                type="button"
-                onClick={() => {
-                  setPinInput('8888');
-                  setErrorMsg(null);
-                }}
-                className="text-[11px] text-rose-300 hover:text-white underline cursor-pointer mt-1"
-              >
-                {lang === 'de' ? 'Code "8888" einfügen' : 'Điền nhanh "8888"'}
-              </button>
             </div>
 
             {errorMsg && (
