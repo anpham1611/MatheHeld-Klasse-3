@@ -192,7 +192,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
                 }}
                 maxLength={20}
                 autoFocus
-                placeholder="Ví dụ: Tom, Mia, Bin, Anna..."
+                placeholder="Zum Beispiel: Tom, Mia, Ben, Anna …"
                 className="w-full bg-slate-900 border-2 border-slate-600 focus:border-amber-400 text-white font-bold px-3 py-2.5 rounded-xl text-base focus:outline-none transition font-['Fredoka']"
               />
               {checking && (

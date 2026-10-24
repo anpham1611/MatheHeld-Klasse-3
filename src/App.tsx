@@ -53,7 +53,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
 
 export default function App() {
   const [screen, setScreen] = useState<GameScreen>('title');
-  const [lang, setLang] = useState<Language>('de');
+  const lang: Language = 'de';
   const [isMuted, setIsMuted] = useState(false);
 
   const [gameScores, setGameScores] = useState<Record<string, GameScoreDetail>>({});
@@ -190,6 +190,14 @@ export default function App() {
     });
   };
 
+  const handleCapturedPokemonChange = (capturedPokemon: string[]) => {
+    setPlayer((prev) => {
+      const updatedPlayer = { ...prev, capturedPokemon };
+      savePlayerToDb(updatedPlayer).catch(() => {});
+      return updatedPlayer;
+    });
+  };
+
   // Rename existing player safely (updates DB without cloning!)
   const handleRenamePlayer = async (newName: string) => {
     const clean = newName.trim();
@@ -291,7 +299,6 @@ export default function App() {
       {screen === 'title' && (
         <TitleScreen
           lang={lang}
-          onSetLang={setLang}
           player={player}
           onSelectAvatar={handleSelectAvatar}
           onOpenRenameModal={() => setShowRenameModal(true)}
@@ -311,7 +318,6 @@ export default function App() {
       {screen === 'world_map' && (
         <WorldSelect
           lang={lang}
-          onSetLang={setLang}
           player={player}
           onSelectWorld={(world) => setScreen(world)}
           onBackToTitle={() => setScreen('title')}
@@ -397,6 +403,7 @@ export default function App() {
           onUpdateStats={(stars, coins, score, caughtId) =>
             handleUpdateStats('pokemon', stars, coins, score, caughtId)
           }
+          onCapturedPokemonChange={handleCapturedPokemonChange}
           onBack={() => setScreen('world_map')}
           isMuted={isMuted}
           onToggleMute={handleToggleMute}

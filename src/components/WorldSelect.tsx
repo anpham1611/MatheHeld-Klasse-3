@@ -7,7 +7,6 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
-  Globe,
   Save,
   Users,
   Check,
@@ -20,7 +19,6 @@ import { totalGameScore } from '../math/gameScore';
 
 interface WorldSelectProps {
   lang: Language;
-  onSetLang: (lang: Language) => void;
   player: PlayerProfile;
   onSelectWorld: (world: GameScreen) => void;
   onBackToTitle: () => void;
@@ -43,7 +41,6 @@ const AVATAR_EMOJIS: Record<CharacterAvatar, string> = {
 
 export const WorldSelect: React.FC<WorldSelectProps> = ({
   lang,
-  onSetLang,
   player,
   onSelectWorld,
   onBackToTitle,
@@ -240,19 +237,6 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               title={t(lang, 'certificateTitle')}
             >
               <Award className="w-4 h-4 text-amber-400" />
-            </button>
-
-            {/* Language */}
-            <button
-              onClick={() => {
-                sound.playJump();
-                onSetLang(lang === 'de' ? 'vi' : 'de');
-              }}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold cursor-pointer transition"
-              title={t(lang, 'languageToggle')}
-            >
-              <Globe className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-[11px] font-black">{lang === 'de' ? 'DE' : 'VI'}</span>
             </button>
 
             {/* Sound */}

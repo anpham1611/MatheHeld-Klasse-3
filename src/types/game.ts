@@ -12,7 +12,7 @@ export type GameScreen =
   | 'roboforge'
   | 'certificate';
 
-export type Language = 'de' | 'vi';
+export type Language = 'de';
 
 export type CharacterAvatar = 'fuchs' | 'eule' | 'hase' | 'baer' | 'drache';
 

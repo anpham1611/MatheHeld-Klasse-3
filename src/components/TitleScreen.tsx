@@ -3,7 +3,6 @@ import {
   Play,
   Volume2,
   VolumeX,
-  Globe,
   Award,
   Star,
   Save,
@@ -21,7 +20,6 @@ import { totalGameScore } from '../math/gameScore';
 
 interface TitleScreenProps {
   lang: Language;
-  onSetLang: (lang: Language) => void;
   player: PlayerProfile;
   onSelectAvatar: (avatar: CharacterAvatar) => void;
   onStart: () => void;
@@ -47,7 +45,6 @@ const AVATARS: { id: CharacterAvatar; emoji: string; nameDe: string; nameVi: str
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({
   lang,
-  onSetLang,
   player,
   onSelectAvatar,
   onStart,
@@ -179,19 +176,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             title={t(lang, 'certificateTitle')}
           >
             <Award className="w-4 h-4 text-amber-400" />
-          </button>
-
-          {/* Language Switcher */}
-          <button
-            onClick={() => {
-              sound.playJump();
-              onSetLang(lang === 'de' ? 'vi' : 'de');
-            }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:py-2 bg-slate-800/80 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur"
-            title={t(lang, 'languageToggle')}
-          >
-            <Globe className="w-3.5 h-3.5 text-indigo-400" />
-            <span>{lang === 'de' ? 'VI' : 'DE'}</span>
           </button>
 
           {/* Sound Toggle */}

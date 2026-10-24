@@ -98,7 +98,7 @@ export const PlayerSwitchModal: React.FC<PlayerSwitchModalProps> = ({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition cursor-pointer"
-          title="Đóng / Schließen"
+          title="Schließen"
         >
           <X className="w-5 h-5" />
         </button>
@@ -155,7 +155,7 @@ export const PlayerSwitchModal: React.FC<PlayerSwitchModalProps> = ({
                 }}
                 onBlur={() => handleCheckName(inputName)}
                 maxLength={20}
-                placeholder="Ví dụ: Leo, Mia, Bin..."
+                placeholder="Zum Beispiel: Leo, Mia, Ben …"
                 className="w-full bg-slate-900 border border-slate-600 focus:border-amber-400 text-white font-bold pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none transition font-['Fredoka']"
               />
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-3" />

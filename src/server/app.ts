@@ -14,6 +14,7 @@ import {
 import { BRICK_CATALOG, getBrickDimensions, getBrickPiece } from '../math/brickCatalog.js';
 import { BaseGridSize, blockFitsBaseGrid, blocksOverlap, DEFAULT_BASE_GRID_SIZE, isBaseGridSize } from '../math/brickBuilding.js';
 import type { VoxelBlock } from '../math/minecraftCurriculum.js';
+import { isValidCapturedPokemonCollection } from '../math/pokemonData.js';
 
 export const app = express();
 app.use(express.json());
@@ -185,6 +186,13 @@ app.post('/api/players/save', async (req: Request, res: Response) => {
 
     if (!name || typeof name !== 'string' || !name.trim()) {
       return res.status(400).json({ success: false, error: 'Valid player name is required' });
+    }
+
+    if (capturedPokemon !== undefined && !isValidCapturedPokemonCollection(capturedPokemon)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Captured Pokémon must be a unique list of up to 50 valid Pokémon IDs',
+      });
     }
 
     const saved = await savePlayerProfile({

@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { ArrowLeft, Pause, BookOpen, Sparkles, RefreshCw, HelpCircle, PenTool, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Pause, BookOpen, Sparkles, RefreshCw, HelpCircle, PenTool, CheckCircle2, Trash2 } from 'lucide-react';
 import { Language, PlayerProfile } from '../../types/game';
 import { t } from '../../math/translations';
 import { sound } from '../../audio/soundManager';
 import {
   POKEMON_ROSTER,
+  WILD_POKEMON_ROSTER,
+  KANTO_POKEDEX_COUNT,
+  MAX_CAPTURED_POKEMON,
+  normalizeCapturedPokemon,
   Pokemon,
   generatePokemonBattleTask,
   PokemonMathBattleTask,
@@ -17,6 +21,7 @@ interface PokemonArenaProps {
   lang: Language;
   player: PlayerProfile;
   onUpdateStats: (stars: number, coins: number, score: number, caughtPokemonId?: string) => void;
+  onCapturedPokemonChange: (capturedPokemon: string[]) => void;
   onBack: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
@@ -26,16 +31,16 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
   lang,
   player,
   onUpdateStats,
+  onCapturedPokemonChange,
   onBack,
   isMuted,
   onToggleMute,
 }) => {
   // Current Wild Pokemon
   const [wildPokemon, setWildPokemon] = useState<Pokemon>(() => {
-    return POKEMON_ROSTER[Math.floor(Math.random() * POKEMON_ROSTER.length)];
+    return WILD_POKEMON_ROSTER[Math.floor(Math.random() * WILD_POKEMON_ROSTER.length)];
   });
   const [wildHp, setWildHp] = useState<number>(wildPokemon.maxHp);
-  const [playerHp, setPlayerHp] = useState<number>(100);
 
   // Battle Phase
   // 'menu': choosing action (Attack, Ball, Run, Pokedex)
@@ -61,12 +66,14 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
   const [showPokedex, setShowPokedex] = useState(false);
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [releaseCandidateId, setReleaseCandidateId] = useState<string | null>(null);
+  const [damageNumber, setDamageNumber] = useState<number | null>(null);
 
   // Local state of caught pokemon list
-  const [capturedList, setCapturedList] = useState<string[]>(
-    player.capturedPokemon || ['pikachu']
-  );
+  const [capturedList, setCapturedList] = useState<string[]>(() => normalizeCapturedPokemon(player.capturedPokemon));
+  const [activePokemonId, setActivePokemonId] = useState(() => normalizeCapturedPokemon(player.capturedPokemon)[0]);
   const [score, setScore] = useState<number>(player.scores.pokemon || 0);
+  const activePokemon = POKEMON_ROSTER.find((mon) => mon.id === activePokemonId) || POKEMON_ROSTER[0];
 
   // Keyboard shortcut listener for math options 1, 2, 3, 4
   useEffect(() => {
@@ -102,6 +109,12 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
   // Start Catch Action (Pokéball)
   const handleStartCatch = () => {
+    if (capturedList.length >= MAX_CAPTURED_POKEMON) {
+      setBattleLog(lang === 'de'
+        ? 'Deine Tasche ist voll. Lass zuerst ein Pokémon frei!'
+        : 'Túi Pokémon đã đầy. Hãy thả một Pokémon trước!');
+      return;
+    }
     sound.playPokeballThrow();
     const task = generatePokemonBattleTask('catch');
     setCurrentTask(task);
@@ -117,7 +130,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
   // Encounter New Wild Pokemon (Run / Suche)
   const handleNewEncounter = () => {
     sound.playJump();
-    const randomMon = POKEMON_ROSTER[Math.floor(Math.random() * POKEMON_ROSTER.length)];
+    const randomMon = WILD_POKEMON_ROSTER[Math.floor(Math.random() * WILD_POKEMON_ROSTER.length)];
     setWildPokemon(randomMon);
     setWildHp(randomMon.maxHp);
     setBattlePhase('menu');
@@ -145,9 +158,11 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         setTimeout(() => {
           setIsAttackingPlayer(false);
           setIsHitWild(false);
-        }, 500);
+        }, 850);
 
         const damage = Math.floor(Math.random() * 20) + 25;
+        setDamageNumber(damage);
+        setTimeout(() => setDamageNumber(null), 1200);
         const remainingHp = Math.max(0, wildHp - damage);
         setWildHp(remainingHp);
 
@@ -191,12 +206,14 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
             clearInterval(shakeInterval);
             // Catch succeeded!
             sound.playPokeballCaught();
-            confetti({
-              particleCount: 90,
-              spread: 80,
-              origin: { y: 0.55 },
-              colors: ['#ef4444', '#ffffff', '#fbbf24', '#3b82f6'],
-            });
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+              confetti({
+                particleCount: 90,
+                spread: 80,
+                origin: { y: 0.55 },
+                colors: ['#ef4444', '#ffffff', '#fbbf24', '#3b82f6'],
+              });
+            }
 
             // Update captured list
             if (!capturedList.includes(wildPokemon.id)) {
@@ -237,12 +254,33 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
     }
   };
 
+  const handleReleasePokemon = (pokemonId: string) => {
+    if (capturedList.length <= 1 || !capturedList.includes(pokemonId)) return;
+
+    const nextCollection = capturedList.filter((id) => id !== pokemonId);
+    setCapturedList(nextCollection);
+    onCapturedPokemonChange(nextCollection);
+    setReleaseCandidateId(null);
+    if (activePokemonId === pokemonId) setActivePokemonId(nextCollection[0]);
+  };
+
   const hpPercentage = Math.round((wildHp / wildPokemon.maxHp) * 100);
   const hpColor =
     hpPercentage > 50 ? 'bg-emerald-500' : hpPercentage > 20 ? 'bg-amber-400' : 'bg-rose-500';
+  const caughtKantoCount = capturedList.filter((id) => POKEMON_ROSTER.some((mon) => mon.id === id && !mon.legacyOnly)).length;
+  const isPocketFull = capturedList.length >= MAX_CAPTURED_POKEMON;
 
   return (
     <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-hidden flex flex-col bg-slate-950 select-none">
+      <style>{`
+        @keyframes pokemon-lunge { 0%, 100% { transform: translateX(0) scale(1); } 45% { transform: translateX(4.5rem) scale(1.18); } }
+        @keyframes pokemon-impact { 0%, 100% { transform: translateX(0) scale(1); filter: brightness(1); } 30% { transform: translateX(.7rem) scale(.82); filter: brightness(2.4); } 60% { transform: translateX(-.5rem) scale(.9); } }
+        @keyframes pokemon-faint { to { opacity: .22; transform: translateY(2rem) scale(.72) rotate(12deg); filter: grayscale(1); } }
+        @keyframes pokemon-projectile { from { transform: translateX(0) scale(.5); opacity: 0; } 25% { opacity: 1; } to { transform: translateX(58vw) scale(1.5); opacity: 0; } }
+        @keyframes pokemon-damage { 0% { opacity: 0; transform: translateY(.5rem) scale(.6); } 20%, 75% { opacity: 1; transform: translateY(-.5rem) scale(1.1); } 100% { opacity: 0; transform: translateY(-1.5rem) scale(1); } }
+        .pokemon-motion { animation-duration: 850ms; animation-timing-function: ease-out; animation-fill-mode: both; }
+        @media (prefers-reduced-motion: reduce) { .pokemon-motion, .animate-pulse, .animate-in { animation: none !important; transition: none !important; } }
+      `}</style>
       {/* Top Header Cluster */}
       <header className="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between z-20 shrink-0 gap-2">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -275,14 +313,15 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         {/* Title & Pokédex Counter */}
         <div className="flex items-center gap-2">
           <button
+            disabled={battlePhase === 'wobbling'}
             onClick={() => {
               sound.playJump();
               setShowPokedex(true);
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl border-2 border-red-400 shadow-md cursor-pointer transition font-bold text-xs"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-xl border-2 border-red-400 shadow-md cursor-pointer disabled:cursor-not-allowed transition font-bold text-xs"
           >
             <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>Pokédex ({capturedList.length}/{POKEMON_ROSTER.length})</span>
+            <span>Pokédex ({capturedList.length}/{MAX_CAPTURED_POKEMON})</span>
           </button>
 
           {/* Score Readout */}
@@ -301,6 +340,15 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         <div className="absolute inset-0 pointer-events-none opacity-20 flex items-center justify-center">
           <div className="w-[500px] h-[500px] rounded-full border-8 border-dashed border-emerald-400/40" />
         </div>
+        {isAttackingPlayer && (
+          <div
+            aria-hidden="true"
+            className="pokemon-motion pointer-events-none absolute left-[18%] top-[47%] z-30 text-5xl drop-shadow-[0_0_18px_rgba(250,204,21,0.95)]"
+            style={{ animationName: 'pokemon-projectile' }}
+          >
+            {activePokemon.typeIcon}💥
+          </div>
+        )}
 
         {/* TOP RIGHT: Wild Pokemon Cluster */}
         <div className="relative z-10 self-end w-full max-w-sm flex flex-col items-end">
@@ -338,19 +386,33 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
           {/* Wild Pokemon Sprite Stage */}
           <div className="relative pr-6">
             <div className="w-36 h-10 bg-emerald-900/40 rounded-full blur-sm absolute bottom-0 left-2" />
+            <div className="absolute inset-2 rounded-full blur-2xl opacity-30" style={{ backgroundColor: wildPokemon.themeColor }} />
             <div
-              className={`text-8xl select-none transition-transform duration-300 ${
-                isHitWild ? 'scale-75 translate-x-4 opacity-70 animate-shake' : 'hover:scale-105'
+              className={`relative text-8xl select-none transition-transform duration-300 ${
+                isHitWild ? 'pokemon-motion' : wildHp <= 0 ? 'pokemon-motion' : 'hover:scale-105'
               }`}
+              style={{
+                animationName: isHitWild ? 'pokemon-impact' : wildHp <= 0 ? 'pokemon-faint' : undefined,
+                filter: isHitWild ? 'brightness(2.4)' : undefined,
+                transform: isHitWild ? 'scale(.82)' : undefined,
+              }}
             >
               {wildPokemon.sprite}
             </div>
+            {damageNumber !== null && (
+              <div
+                className="pokemon-motion absolute -top-5 right-0 z-10 text-3xl font-black text-rose-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+                style={{ animationName: 'pokemon-damage' }}
+              >
+                −{damageNumber}
+              </div>
+            )}
 
             {/* Pokéball in Flight or Wobbling */}
             {battlePhase === 'wobbling' && (
               <div className="absolute top-4 left-6 flex flex-col items-center">
                 <div
-                  className={`w-14 h-14 rounded-full border-4 border-slate-900 shadow-2xl flex items-center justify-center text-2xl relative overflow-hidden transition-transform duration-300 ${
+                  className={`pokemon-motion w-14 h-14 rounded-full border-4 border-slate-900 shadow-2xl flex items-center justify-center text-2xl relative overflow-hidden transition-transform duration-300 ${
                     wobbleCount % 2 === 1 ? '-rotate-24' : 'rotate-24'
                   }`}
                   style={{
@@ -371,12 +433,12 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         <div className="relative z-10 self-start w-full max-w-sm flex flex-col items-start">
           <div className="relative pl-6 mb-2">
             <div className="w-36 h-10 bg-indigo-900/40 rounded-full blur-sm absolute bottom-0 left-2" />
+            <div className="absolute inset-2 rounded-full blur-2xl opacity-30" style={{ backgroundColor: activePokemon.themeColor }} />
             <div
-              className={`text-8xl select-none transition-transform duration-300 ${
-                isAttackingPlayer ? 'translate-x-12 scale-110' : ''
-              }`}
+              className={`relative text-8xl select-none transition-transform duration-300 ${isAttackingPlayer ? 'pokemon-motion' : ''}`}
+              style={{ animationName: isAttackingPlayer ? 'pokemon-lunge' : undefined }}
             >
-              ⚡🐭
+              {activePokemon.sprite}
             </div>
           </div>
 
@@ -384,15 +446,15 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
           <div className="bg-slate-900/90 border-2 border-indigo-500/60 rounded-2xl p-3 shadow-xl w-full backdrop-blur">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="font-black text-white text-base font-['Fredoka']">
-                  Pikachu (Partner)
-                </span>
+                  <span className="font-black text-white text-base font-['Fredoka']">
+                    {lang === 'de' ? activePokemon.nameDe : activePokemon.nameVi}
+                  </span>
                 <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-bold">
                   Lv. 3
                 </span>
               </div>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-400 text-amber-950">
-                ⚡ Elektro
+              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${activePokemon.badgeBg}`}>
+                {activePokemon.typeIcon} {lang === 'de' ? activePokemon.typeDe : activePokemon.typeVi}
               </span>
             </div>
 
@@ -401,7 +463,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
               <div className="flex-1 h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                 <div className="h-full bg-emerald-500 w-full" />
               </div>
-              <span className="text-xs font-bold text-slate-300 tabular-nums">100/100</span>
+              <span className="text-xs font-bold text-slate-300 tabular-nums">{activePokemon.maxHp}/{activePokemon.maxHp}</span>
             </div>
           </div>
         </div>
@@ -428,10 +490,11 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
               <button
                 onClick={handleStartCatch}
-                className="py-3 px-4 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm sm:text-base rounded-2xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 cursor-pointer transform active:scale-95 transition font-['Fredoka']"
+                disabled={isPocketFull}
+                className="py-3 px-4 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:shadow-none text-slate-950 font-black text-sm sm:text-base rounded-2xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed transform active:scale-95 transition font-['Fredoka']"
               >
                 <span>🔴</span>
-                <span>{lang === 'de' ? 'Pokéball' : 'Ném bóng'}</span>
+                <span>{isPocketFull ? (lang === 'de' ? 'Tasche voll' : 'Túi đầy') : (lang === 'de' ? 'Pokéball' : 'Ném bóng')}</span>
               </button>
 
               <button
@@ -449,6 +512,14 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                 <BookOpen className="w-4 h-4 text-indigo-400" />
                 <span>Pokédex</span>
               </button>
+            </div>
+          )}
+
+          {battlePhase === 'menu' && isPocketFull && (
+            <div className="mt-3 rounded-xl border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-center text-xs font-bold text-amber-200">
+              {lang === 'de'
+                ? 'Deine Tasche ist voll. Lass im Pokédex ein Pokémon frei, um weiterzufangen.'
+                : 'Túi đã đầy. Hãy thả một Pokémon trong Pokédex để tiếp tục thu phục.'}
             </div>
           )}
 
@@ -555,8 +626,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                 <div className="w-8 h-8 rounded-full bg-red-600 border-2 border-white flex items-center justify-center text-white text-xs font-black">
                   🔴
                 </div>
-                <h3 className="text-2xl font-black text-white font-['Fredoka']">
-                  Offizieller Pokédex ({capturedList.length}/{POKEMON_ROSTER.length})
+                <h3 className="text-xl sm:text-2xl font-black text-white font-['Fredoka']">
+                  Pokédex · Kanto {caughtKantoCount}/{KANTO_POKEDEX_COUNT} · Tasche {capturedList.length}/{MAX_CAPTURED_POKEMON}
                 </h3>
               </div>
 
@@ -569,7 +640,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
             </div>
 
             {/* Grid of Pokemon */}
-            <div className="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1">
+            <div className="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pr-1">
               {POKEMON_ROSTER.map((mon) => {
                 const isCaught = capturedList.includes(mon.id);
                 return (
@@ -581,7 +652,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                         : 'bg-slate-950/60 border-slate-800 opacity-60'
                     }`}
                   >
-                    <div className="text-4xl mb-1">{isCaught ? mon.sprite : '❓'}</div>
+                    <div className="text-4xl mb-1" style={isCaught ? { color: mon.themeColor } : undefined}>{isCaught ? mon.sprite : '❓'}</div>
                     <div className="font-black text-sm text-white font-['Fredoka']">
                       {isCaught ? (lang === 'de' ? mon.nameDe : mon.nameVi) : '???'}
                     </div>
@@ -589,9 +660,51 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                       No. {mon.pokedexNo} · {lang === 'de' ? mon.typeDe : mon.typeVi}
                     </div>
                     {isCaught && (
-                      <div className="mt-1 flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>Gefangen</span>
+                      <div className="mt-1 flex flex-col items-center gap-1.5">
+                        <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>{lang === 'de' ? 'Gefangen' : 'Đã bắt'}</span>
+                        </div>
+                        {activePokemonId === mon.id ? (
+                          <span className="rounded-lg bg-indigo-500/20 px-2 py-1 text-[10px] font-black text-indigo-200">
+                            {lang === 'de' ? 'Im Kampf' : 'Đang chiến đấu'}
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => setActivePokemonId(mon.id)}
+                            className="rounded-lg bg-indigo-600 px-2 py-1 text-[10px] font-black text-white hover:bg-indigo-500 cursor-pointer"
+                          >
+                            {lang === 'de' ? 'Kämpfer wählen' : 'Chọn chiến binh'}
+                          </button>
+                        )}
+                        {releaseCandidateId === mon.id ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleReleasePokemon(mon.id)}
+                              className="rounded-lg bg-rose-600 px-2 py-1 text-[10px] font-black text-white hover:bg-rose-500 cursor-pointer"
+                            >
+                              {lang === 'de' ? 'Freilassen' : 'Thả Pokémon'}
+                            </button>
+                            <button
+                              onClick={() => setReleaseCandidateId(null)}
+                              className="rounded-lg bg-slate-700 px-2 py-1 text-[10px] font-black text-white hover:bg-slate-600 cursor-pointer"
+                            >
+                              {lang === 'de' ? 'Abbrechen' : 'Hủy'}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setReleaseCandidateId(mon.id)}
+                            disabled={capturedList.length <= 1}
+                            title={capturedList.length <= 1
+                              ? (lang === 'de' ? 'Das letzte Pokémon bleibt bei dir.' : 'Bạn cần giữ lại Pokémon cuối cùng.')
+                              : (lang === 'de' ? 'Pokémon freilassen' : 'Thả Pokémon')}
+                            className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold text-rose-300 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            {lang === 'de' ? 'Freilassen' : 'Thả'}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

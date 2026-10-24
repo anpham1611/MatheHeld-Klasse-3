@@ -59,6 +59,15 @@ export const BLOCK_VALUES = {
   iron: { nameVi: 'Khối Sắt (Iron Block)', nameDe: 'Eisenblock', value: 1000, color: '#e0e7ea', labelVi: '1000 Nghìn (T)', labelDe: '1000 Tausender (T)' },
 };
 
+export function shuffleAnswerOptions(options: number[], random: () => number = Math.random): number[] {
+  const shuffled = [...options];
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
 // Generates randomized, curriculum-aligned tasks
 export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTask {
   const taskId = `${moduleId}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -104,7 +113,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
           explanationVi: `Phép nhân là phép cộng lặp lại: ${rows} hàng × ${cols} con gà = ${total} con gà trong chuồng!`,
           explanationDe: `Multiplikation als wiederholte Addition: ${rows} × ${cols} = ${total} Hühner!`,
           correctAnswer: total,
-          options: options.sort((a, b) => a - b),
+          options: shuffleAnswerOptions(options),
           initialBlocks: blocks,
           meta: { rows, cols }
         };
@@ -140,7 +149,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
           explanationVi: `Phép tính: ${totalTreasures} ÷ ${recipients} = ${perRecipient}. Mỗi rương nhận đúng ${perRecipient} thỏi vàng!`,
           explanationDe: `Rechnung: ${totalTreasures} ÷ ${recipients} = ${perRecipient} Goldbarren pro Truhe!`,
           correctAnswer: perRecipient,
-          options: options.sort((a, b) => a - b),
+          options: shuffleAnswerOptions(options),
           initialBlocks: blocks,
           meta: { totalTreasures, recipients }
         };
@@ -204,7 +213,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
           explanationVi: `Diện tích là số khối mặt sàn: ${length} × ${width} = ${area} khối vuông (Blocks²).`,
           explanationDe: `Fläche: ${length} × ${width} = ${area} Blöcke²!`,
           correctAnswer: area,
-          options: options.sort((a, b) => a - b),
+          options: shuffleAnswerOptions(options),
           initialBlocks: blocks,
           meta: { length, width }
         };
@@ -231,7 +240,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
           explanationVi: `Chu vi bao quanh: (${length} + ${width}) × 2 = ${length + width} × 2 = ${perimeter} khối hàng rào!`,
           explanationDe: `Umfang: (${length} + ${width}) × 2 = ${perimeter} Zaunblöcke!`,
           correctAnswer: perimeter,
-          options: options.sort((a, b) => a - b),
+          options: shuffleAnswerOptions(options),
           initialBlocks: blocks,
           meta: { length, width }
         };
@@ -275,7 +284,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
         explanationVi: `Cấu tạo số: ${iron} Nghìn (${iron * 1000}) + ${cobble} Trăm (${cobble * 100}) + ${wood} Chục (${wood * 10}) + ${dirt} Đơn vị (${dirt}) = ${targetNumber}!`,
         explanationDe: `Stellenwert: ${iron} Tausender + ${cobble} Hunderter + ${wood} Zehner + ${dirt} Einer = ${targetNumber}!`,
         correctAnswer: targetNumber,
-        options: options.sort((a, b) => a - b),
+        options: shuffleAnswerOptions(options),
         initialBlocks: blocks,
         meta: { iron, cobble, wood, dirt, targetNumber }
       };
@@ -317,7 +326,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
           explanationVi: `Phép tính: ${bridgeLength} ÷ ${perDay} = ${days} ngày. Dân làng sẽ qua sông an toàn sau ${days} ngày!`,
           explanationDe: `Rechnung: ${bridgeLength} ÷ ${perDay} = ${days} Tage Bauzeit!`,
           correctAnswer: days,
-          options: options.sort((a, b) => a - b),
+          options: shuffleAnswerOptions(options),
           initialBlocks: blocks,
           meta: { bridgeLength, perDay }
         };
@@ -347,7 +356,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
           explanationVi: `Phép tính: ${torches} ÷ 4 = ${coalNeed} viên Than. Đủ để thắp sáng an toàn!`,
           explanationDe: `Rechnung: ${torches} ÷ 4 = ${coalNeed} Kohleblöcke!`,
           correctAnswer: coalNeed,
-          options: options.sort((a, b) => a - b),
+          options: shuffleAnswerOptions(options),
           meta: { targetNumber: coalNeed }
         };
       }
@@ -390,7 +399,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
           explanationVi: `Ta có ${totalSlices} ÷ ${denom} = ${totalSlices / denom} miếng mỗi phần. Vậy ${numer} phần tương ứng: ${totalSlices / denom} × ${numer} = ${eatenSlices} miếng!`,
           explanationDe: `Rechnung: ${totalSlices} ÷ ${denom} = ${totalSlices / denom}, mal ${numer} = ${eatenSlices} Stücke!`,
           correctAnswer: eatenSlices,
-          options: options.sort((a, b) => a - b),
+          options: shuffleAnswerOptions(options),
           initialBlocks: blocks,
           meta: { fractionNumerator: numer, fractionDenominator: denom }
         };
@@ -421,7 +430,7 @@ export function generateMinecraftTask(moduleId: MinecraftModuleId): MinecraftTas
           explanationVi: `Phép tính: ${cycles} × 20 = ${totalMinutes} phút (tương đương ${Math.floor(totalMinutes / 60)} giờ ${totalMinutes % 60} phút)!`,
           explanationDe: `Rechnung: ${cycles} × 20 = ${totalMinutes} Minuten!`,
           correctAnswer: totalMinutes,
-          options: options.sort((a, b) => a - b),
+          options: shuffleAnswerOptions(options),
           meta: { targetNumber: totalMinutes }
         };
       }
