@@ -96,6 +96,15 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
       timesPlayed: gameScores['mathbrick']?.timesPlayed || (player.scores.mathbrick ? 1 : 0),
       color: 'from-cyan-600/30 to-slate-950/40 border-cyan-500/40 text-cyan-300',
     },
+    {
+      key: 'roboforge',
+      name: 'RoboForge: Mathe-Rettung',
+      icon: '🤖🌳',
+      score: player.scores.roboforge || 0,
+      solved: gameScores['roboforge']?.problemsSolved || 0,
+      timesPlayed: gameScores['roboforge']?.timesPlayed || (player.scores.roboforge ? 1 : 0),
+      color: 'from-emerald-600/30 to-sky-950/40 border-emerald-500/40 text-emerald-300',
+    },
   ];
 
   return (

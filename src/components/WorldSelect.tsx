@@ -137,6 +137,16 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       badge: lang === 'de' ? '🧠 MATHE & 3D-BAUEN · 8+' : '🧠 TOÁN & XÂY 3D · 8+',
       score: player.scores.mathbrick || 0,
     },
+    {
+      id: 'roboforge' as GameScreen,
+      title: 'RoboForge: Mathe-Rettung',
+      desc: 'Löse Mathe-Aufgaben, programmiere Robi und rette den Energie-Wald!',
+      icon: '🤖🌳',
+      bgGradient: 'from-emerald-500 via-teal-700 to-sky-950',
+      borderColor: 'border-emerald-300',
+      badge: '🧠 MATHE · CODE · RETTUNG',
+      score: player.scores.roboforge || 0,
+    },
   ];
 
   return (
@@ -350,6 +360,8 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                     ? (lang === 'de' ? 'Ab 3 Jahren' : 'Dành cho bé từ 3 tuổi')
                     : w.id === 'mathbrick'
                     ? (lang === 'de' ? 'Ab 8 Jahren · 3D-Bau' : 'Từ 8 tuổi · Xây dựng 3D')
+                    : w.id === 'roboforge'
+                    ? 'Ab 8 Jahren · Mathe & Code'
                     : (lang === 'de' ? '3. Klasse Lehrplan' : 'Chương trình Lớp 3')}</span>
                 </span>
                 <span className="group-hover:translate-x-1 transition-transform">

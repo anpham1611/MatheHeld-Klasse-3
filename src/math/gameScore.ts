@@ -8,7 +8,7 @@ export function scoreAfterGame(
   const safeScore = Math.max(0, scoreAchieved);
 
   // Live / continuous modes where score increments on correct and decrements on wrong
-  if (gameKey === 'minecraft' || gameKey === 'pokemon' || gameKey === 'mathbrick' || gameKey === 'logic_game') {
+  if (gameKey === 'minecraft' || gameKey === 'pokemon' || gameKey === 'mathbrick' || gameKey === 'logic_game' || gameKey === 'roboforge') {
     return safeScore;
   }
 

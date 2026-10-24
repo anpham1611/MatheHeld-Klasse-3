@@ -9,6 +9,7 @@ export type GameScreen =
   | 'pokemon'
   | 'logic_game'
   | 'mathbrick'
+  | 'roboforge'
   | 'certificate';
 
 export type Language = 'de' | 'vi';
@@ -34,6 +35,7 @@ export interface PlayerProfile {
     pokemon?: number;
     logic_game?: number;
     mathbrick?: number;
+    roboforge?: number;
   };
   totalProblemsSolved: number;
 }

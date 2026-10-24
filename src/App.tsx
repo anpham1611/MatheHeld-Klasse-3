@@ -11,6 +11,7 @@ import { PokemonArena } from './components/games/PokemonArena';
 import { MinecraftMathWorld } from './components/games/MinecraftMathWorld';
 import { LogicAdventure } from './components/games/LogicAdventure';
 import { MathBrickBuilder } from './components/games/MathBrickBuilder';
+import { RoboForge } from './components/games/RoboForge';
 import { CertificateModal } from './components/CertificateModal';
 import { PlayerSwitchModal } from './components/PlayerSwitchModal';
 import { GameScoresModal } from './components/GameScoresModal';
@@ -46,6 +47,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
     pokemon: 0,
     logic_game: 0,
     mathbrick: 0,
+    roboforge: 0,
   },
   totalProblemsSolved: 0,
 };
@@ -454,6 +456,19 @@ export default function App() {
           player={player}
           onUpdateStats={(stars, coins, score) =>
             handleUpdateStats('mathbrick', stars, coins, score)
+          }
+          onBack={() => setScreen('world_map')}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+        />
+      )}
+
+      {screen === 'roboforge' && (
+        <RoboForge
+          lang={lang}
+          player={player}
+          onUpdateStats={(stars, coins, score) =>
+            handleUpdateStats('roboforge', stars, coins, score)
           }
           onBack={() => setScreen('world_map')}
           isMuted={isMuted}
