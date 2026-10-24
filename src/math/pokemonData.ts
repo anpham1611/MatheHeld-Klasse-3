@@ -233,7 +233,14 @@ function createPokemon(
   const primaryType = TYPE_INFO[types[0]];
   const localizedTypes = types.map((type) => TYPE_INFO[type]);
   const maxHp = Math.round(50 + baseHp * 0.28);
-  const region = pokedexNo <= KANTO_POKEDEX_COUNT ? 'Kanto' : pokedexNo <= KANTO_POKEDEX_COUNT + JOHTO_POKEDEX_COUNT ? 'Johto' : 'Hoenn';
+  const region =
+    pokedexNo <= KANTO_POKEDEX_COUNT
+      ? 'Kanto'
+      : pokedexNo <= KANTO_POKEDEX_COUNT + JOHTO_POKEDEX_COUNT
+        ? 'Johto'
+        : pokedexNo <= NATIONAL_POKEDEX_COUNT
+          ? 'Hoenn'
+          : 'Sinnoh';
 
   return {
     id,
