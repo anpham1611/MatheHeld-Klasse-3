@@ -7,6 +7,7 @@ import { app, initializeServer } from './src/server/app.js';
 import { getEngineInfo } from './src/server/db.js';
 
 dotenv.config();
+process.env.DISABLE_HMR = 'true';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,11 +23,10 @@ async function startServer() {
 
   if (!isProduction) {
     const { createServer: createViteServer } = await import('vite');
-    const isHmrDisabled = process.env.DISABLE_HMR === 'true';
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: isHmrDisabled ? false : { server },
+        hmr: false,
       },
       appType: 'spa',
     });

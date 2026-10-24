@@ -47,6 +47,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
       setNameInput('');
       setErrorMessage(null);
       setAvailability(null);
+      setChecking(false);
       return;
     }
     fetchSavedPlayersList().then((list) => {
@@ -56,30 +57,27 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
 
   useEffect(() => {
     const trimmed = nameInput.trim();
-    if (!trimmed) {
+    setErrorMessage(null);
+
+    if (!trimmed || trimmed.length < 2) {
       setAvailability(null);
-      setErrorMessage(null);
+      setChecking(false);
       return;
     }
 
+    setChecking(true);
     const timer = setTimeout(async () => {
-      setChecking(true);
       const res = await checkPlayerNameAvailability(trimmed);
       setChecking(false);
       setAvailability({
         checked: true,
-        available: res.available,
-        exists: res.exists,
+        available: Boolean(res.available),
+        exists: Boolean(res.exists),
       });
-      if (res.exists) {
-        setErrorMessage(t(lang, 'nameAlreadyTaken'));
-      } else {
-        setErrorMessage(null);
-      }
-    }, 350);
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [nameInput, lang]);
+  }, [nameInput]);
 
   if (!isOpen) return null;
 
@@ -97,6 +95,11 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
       return;
     }
 
+    if (availability?.exists) {
+      setErrorMessage(t(lang, 'nameAlreadyTaken'));
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -108,9 +111,12 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
       onClose();
     } else {
       sound.playWrong();
-      setErrorMessage(result.error || t(lang, 'nameAlreadyTaken'));
+      setErrorMessage(result.error || (lang === 'de' ? 'Fehler beim Erstellen!' : 'Lỗi khi tạo tài khoản!'));
     }
   };
+
+  const trimmed = nameInput.trim();
+  const isTooShort = trimmed.length > 0 && trimmed.length < 2;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-200">
@@ -190,36 +196,37 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
                 className="w-full bg-slate-900 border-2 border-slate-600 focus:border-amber-400 text-white font-bold px-3 py-2.5 rounded-xl text-base focus:outline-none transition font-['Fredoka']"
               />
               {checking && (
-                <div className="absolute right-3 top-3 text-xs text-slate-400 animate-pulse">
+                <div className="absolute right-3 top-3 text-xs text-amber-300 animate-pulse font-bold">
                   {lang === 'de' ? 'Prüfe...' : 'Kiểm tra...'}
                 </div>
               )}
             </div>
 
-            {/* Availability feedback */}
-            {availability?.checked && nameInput.trim() && (
-              <div
-                className={`mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl ${
-                  availability.available
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                }`}
-              >
-                {availability.available ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>{lang === 'de' ? 'Perfekt! Name ist verfügbar.' : 'Tên hợp lệ! Có thể tạo tài khoản.'}</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span>{t(lang, 'nameAlreadyTaken')}</span>
-                  </>
-                )}
+            {/* Too short hint */}
+            {isTooShort && (
+              <div className="mt-2 text-xs font-semibold text-amber-300/80 px-2">
+                {t(lang, 'nameMinChars')}
               </div>
             )}
 
-            {errorMessage && !availability?.exists && (
+            {/* Only show 'Already taken' when exists is STRICTLY true */}
+            {availability?.checked && availability.exists && (
+              <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{t(lang, 'nameAlreadyTaken')}</span>
+              </div>
+            )}
+
+            {/* Show 'Available' when exists is false and length >= 2 */}
+            {availability?.checked && !availability.exists && availability.available && trimmed.length >= 2 && (
+              <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{t(lang, 'nameAvailableNotice')}</span>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {errorMessage && (
               <div className="mt-2 text-xs font-bold text-rose-400 flex items-center gap-1.5 px-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMessage}</span>
@@ -243,7 +250,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
                 onClick={onClose}
                 className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded-xl transition cursor-pointer w-full sm:w-auto"
               >
-                {lang === 'de' ? 'Abbrechen' : 'Huỷ bỏ'}
+                {t(lang, 'cancelBtn')}
               </button>
             ) : <div />}
 
@@ -252,8 +259,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
               disabled={
                 isSubmitting ||
                 checking ||
-                !nameInput.trim() ||
-                nameInput.trim().length < 2 ||
+                trimmed.length < 2 ||
                 (availability?.exists ?? false)
               }
               className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 disabled:opacity-50 text-slate-950 font-black text-sm rounded-xl cursor-pointer transition flex items-center justify-center gap-2 shadow-lg font-['Fredoka'] active:scale-95"

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit3, Check, X, AlertCircle, Sparkles } from 'lucide-react';
+import { Edit3, Check, X, AlertCircle, Sparkles, Info } from 'lucide-react';
 import { Language } from '../types/game';
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
@@ -30,30 +30,35 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
 
   useEffect(() => {
     const trimmed = nameInput.trim();
+    setErrorMessage(null);
+
+    // If empty or identical to current name
     if (!trimmed || trimmed.toLowerCase() === currentName.toLowerCase()) {
       setAvailability(null);
-      setErrorMessage(null);
+      setChecking(false);
       return;
     }
 
+    // If too short, don't query server
+    if (trimmed.length < 2) {
+      setAvailability(null);
+      setChecking(false);
+      return;
+    }
+
+    setChecking(true);
     const timer = setTimeout(async () => {
-      setChecking(true);
       const res = await checkPlayerNameAvailability(trimmed);
       setChecking(false);
       setAvailability({
         checked: true,
-        available: res.available,
-        exists: res.exists,
+        available: Boolean(res.available),
+        exists: Boolean(res.exists),
       });
-      if (res.exists) {
-        setErrorMessage(t(lang, 'nameAlreadyTaken'));
-      } else {
-        setErrorMessage(null);
-      }
-    }, 350);
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [nameInput, currentName, lang]);
+  }, [nameInput, currentName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +79,11 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
       return;
     }
 
+    if (availability?.exists) {
+      setErrorMessage(t(lang, 'nameAlreadyTaken'));
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -85,9 +95,13 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
       onClose();
     } else {
       sound.playWrong();
-      setErrorMessage(result.error || t(lang, 'nameAlreadyTaken'));
+      setErrorMessage(result.error || (lang === 'de' ? 'Fehler beim Speichern!' : 'Lỗi khi đổi tên!'));
     }
   };
+
+  const trimmed = nameInput.trim();
+  const isSameAsCurrent = trimmed.toLowerCase() === currentName.toLowerCase();
+  const isTooShort = trimmed.length > 0 && trimmed.length < 2;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-200">
@@ -138,37 +152,45 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
                 className="w-full bg-slate-900 border-2 border-slate-600 focus:border-amber-400 text-white font-bold px-3 py-2.5 rounded-xl text-base focus:outline-none transition font-['Fredoka']"
               />
               {checking && (
-                <div className="absolute right-3 top-3 text-xs text-slate-400 animate-pulse">
+                <div className="absolute right-3 top-3 text-xs text-amber-300 animate-pulse font-bold">
                   {lang === 'de' ? 'Prüfe...' : 'Kiểm tra...'}
                 </div>
               )}
             </div>
 
-            {/* Availability feedback */}
-            {availability?.checked && nameInput.trim().toLowerCase() !== currentName.toLowerCase() && (
-              <div
-                className={`mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl ${
-                  availability.available
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                }`}
-              >
-                {availability.available ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>{lang === 'de' ? 'Name ist frei! Du kannst ihn wählen.' : 'Biệt danh hợp lệ & có thể dùng!'}</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span>{t(lang, 'nameAlreadyTaken')}</span>
-                  </>
-                )}
+            {/* Same as current name notice */}
+            {isSameAsCurrent && (
+              <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 border border-slate-700">
+                <Info className="w-4 h-4 text-slate-400 shrink-0" />
+                <span>{t(lang, 'currentNameNotice')}</span>
+              </div>
+            )}
+
+            {/* Too short hint */}
+            {isTooShort && (
+              <div className="mt-2 text-xs font-semibold text-amber-300/80 px-2">
+                {t(lang, 'nameMinChars')}
+              </div>
+            )}
+
+            {/* Only show 'Already taken' when exists is STRICTLY true */}
+            {availability?.checked && availability.exists && !isSameAsCurrent && (
+              <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{t(lang, 'nameAlreadyTaken')}</span>
+              </div>
+            )}
+
+            {/* Show 'Available' when exists is false and length >= 2 */}
+            {availability?.checked && !availability.exists && availability.available && !isSameAsCurrent && trimmed.length >= 2 && (
+              <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{t(lang, 'nameAvailableNotice')}</span>
               </div>
             )}
 
             {/* Error Message */}
-            {errorMessage && !availability?.exists && (
+            {errorMessage && (
               <div className="mt-2 text-xs font-bold text-rose-400 flex items-center gap-1.5 px-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMessage}</span>
@@ -182,15 +204,15 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
               onClick={onClose}
               className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded-xl transition cursor-pointer"
             >
-              {lang === 'de' ? 'Abbrechen' : 'Huỷ bỏ'}
+              {t(lang, 'cancelBtn')}
             </button>
             <button
               type="submit"
               disabled={
                 isSubmitting ||
                 checking ||
-                !nameInput.trim() ||
-                nameInput.trim().length < 2 ||
+                isSameAsCurrent ||
+                trimmed.length < 2 ||
                 (availability?.exists ?? false)
               }
               className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 disabled:opacity-50 text-slate-950 font-black text-sm rounded-xl cursor-pointer transition flex items-center gap-1.5 shadow-lg font-['Fredoka']"

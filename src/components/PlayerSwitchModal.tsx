@@ -4,6 +4,7 @@ import { Language, CharacterAvatar, SavedPlayerSummary, DbEngineInfo } from '../
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
 import { fetchSavedPlayersList, loadPlayerFromDb, fetchDbStatus, deletePlayerInDb } from '../services/playerService';
+import { DeletePlayerConfirmModal } from './DeletePlayerConfirmModal';
 
 interface PlayerSwitchModalProps {
   lang: Language;
@@ -273,43 +274,24 @@ export const PlayerSwitchModal: React.FC<PlayerSwitchModalProps> = ({
 
                   {/* Actions: Choose or Delete */}
                   <div className="flex items-center gap-1.5 shrink-0">
-                    {isConfirmingDelete ? (
-                      <div className="flex items-center gap-1 bg-rose-950/90 border border-rose-500 p-1 rounded-xl">
-                        <button
-                          onClick={() => handleDeletePlayer(p.name)}
-                          className="px-2 py-1 bg-rose-600 text-white font-bold text-[11px] rounded-lg cursor-pointer hover:bg-rose-500 transition"
-                        >
-                          {lang === 'de' ? 'Löschen' : 'Xoá'}
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirmTarget(null)}
-                          className="px-2 py-1 bg-slate-800 text-slate-300 text-[11px] rounded-lg cursor-pointer hover:bg-slate-700"
-                        >
-                          {lang === 'de' ? 'Nein' : 'Huỷ'}
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handlePickSaved(p)}
-                          className={`px-3 py-1.5 text-xs font-bold rounded-xl transition font-['Fredoka'] cursor-pointer ${
-                            isCurrent
-                              ? 'bg-amber-400 text-slate-950 font-black'
-                              : 'bg-slate-700 hover:bg-amber-500 hover:text-slate-950 text-slate-200'
-                          }`}
-                        >
-                          {isCurrent ? (lang === 'de' ? 'Ausgewählt' : 'Đang chọn') : (lang === 'de' ? 'Wählen' : 'Chọn')}
-                        </button>
-                        {!isCurrent && (
-                          <button
-                            onClick={() => setDeleteConfirmTarget(p.name)}
-                            className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition cursor-pointer"
-                            title={t(lang, 'deletePlayer')}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </>
+                    <button
+                      onClick={() => handlePickSaved(p)}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition font-['Fredoka'] cursor-pointer ${
+                        isCurrent
+                          ? 'bg-amber-400 text-slate-950 font-black'
+                          : 'bg-slate-700 hover:bg-amber-500 hover:text-slate-950 text-slate-200'
+                      }`}
+                    >
+                      {isCurrent ? (lang === 'de' ? 'Ausgewählt' : 'Đang chọn') : (lang === 'de' ? 'Wählen' : 'Chọn')}
+                    </button>
+                    {!isCurrent && (
+                      <button
+                        onClick={() => setDeleteConfirmTarget(p.name)}
+                        className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/15 rounded-lg transition cursor-pointer"
+                        title={t(lang, 'deletePlayer')}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     )}
                   </div>
                 </div>
@@ -333,6 +315,18 @@ export const PlayerSwitchModal: React.FC<PlayerSwitchModalProps> = ({
             {engineInfo?.databaseTarget}
           </span>
         </div>
+
+        {/* Security PIN 8888 Delete Confirmation Modal */}
+        {deleteConfirmTarget && (
+          <DeletePlayerConfirmModal
+            lang={lang}
+            playerName={deleteConfirmTarget}
+            onConfirmDelete={async () => {
+              await handleDeletePlayer(deleteConfirmTarget);
+            }}
+            onClose={() => setDeleteConfirmTarget(null)}
+          />
+        )}
       </div>
     </div>
   );

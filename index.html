@@ -12,6 +12,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+      // Suppress benign dev HMR websocket connection errors in preview iframe
+      window.addEventListener('error', function(event) {
+        if (
+          event.filename && event.filename.includes('@vite/client') ||
+          (event.message && (event.message.includes('WebSocket') || event.message.includes('vite-hmr')))
+        ) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function(event) {
+        var str = String(event.reason || '');
+        if (str.includes('WebSocket') || str.includes('vite')) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+        }
+      }, true);
+    </script>
   </head>
   <body class="bg-slate-900 text-white min-h-[100dvh] overflow-x-hidden select-none font-['Nunito',sans-serif]">
     <div id="root"></div>

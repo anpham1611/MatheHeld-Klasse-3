@@ -210,11 +210,15 @@ export async function deletePlayerInDb(name: string): Promise<{ success: boolean
 
 export async function checkPlayerNameAvailability(name: string): Promise<{ available: boolean; exists: boolean }> {
   try {
-    const res = await fetch(`/api/players/check/${encodeURIComponent(name.trim())}`);
-    if (!res.ok) return { available: false, exists: false };
-    const data = await res.json();
-    return { available: Boolean(data.available), exists: Boolean(data.exists) };
+    const clean = name.trim();
+    if (!clean || clean.length < 2) return { available: false, exists: false };
+    const res = await loadPlayerFromDb(clean);
+    if (res.exists) {
+      return { available: false, exists: true };
+    }
+    return { available: true, exists: false };
   } catch {
     return { available: false, exists: false };
   }
 }
+
