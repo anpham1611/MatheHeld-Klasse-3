@@ -22,24 +22,24 @@ const STORAGE_KEY = 'matheheld_klasse3_profile_v1';
 const DEFAULT_PROFILE: PlayerProfile = {
   name: 'Leo der Fuchs',
   avatar: 'fuchs',
-  stars: 12,
-  euroCoins: 45,
+  stars: 0,
+  euroCoins: 0,
   currentStreak: 0,
-  highestStreak: 5,
+  highestStreak: 0,
   unlockedHats: ['standard'],
   equippedHat: 'standard',
   capturedPokemon: ['pikachu'],
   scores: {
-    minecraft: 320,
-    number_line: 450,
-    einmaleins: 620,
-    euro_shop: 380,
-    tower_math: 250,
-    pokemon: 150,
+    minecraft: 0,
+    number_line: 0,
+    einmaleins: 0,
+    euro_shop: 0,
+    tower_math: 0,
+    pokemon: 0,
     logic_game: 0,
     mathbrick: 0,
   },
-  totalProblemsSolved: 24,
+  totalProblemsSolved: 0,
 };
 
 export default function App() {
@@ -62,7 +62,18 @@ export default function App() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Normalize any old inflated scores (> 50 points from old x100 scale)
+        if (parsed.scores) {
+          const keys = Object.keys(parsed.scores) as (keyof PlayerProfile['scores'])[];
+          const hasOldInflatedScores = keys.some((k) => (parsed.scores[k] || 0) > 50);
+          if (hasOldInflatedScores) {
+            keys.forEach((k) => {
+              parsed.scores[k] = 0;
+            });
+          }
+        }
+        return parsed;
       }
     } catch {}
     return DEFAULT_PROFILE;
@@ -77,8 +88,19 @@ export default function App() {
     // Try loading current player from database (SQLite or Turso)
     const currentName = player.name || 'Leo der Fuchs';
     loadPlayerFromDb(currentName).then((res) => {
-      if (res.exists && res.player) {
-        setPlayer(res.player);
+      const loadedPlayer = res.player;
+      if (res.exists && loadedPlayer) {
+        if (loadedPlayer.scores) {
+          const scoresRecord = loadedPlayer.scores;
+          const keys = Object.keys(scoresRecord) as (keyof PlayerProfile['scores'])[];
+          const hasOldInflated = keys.some((k) => (scoresRecord[k] || 0) > 50);
+          if (hasOldInflated) {
+            keys.forEach((k) => {
+              scoresRecord[k] = 0;
+            });
+          }
+        }
+        setPlayer(loadedPlayer);
         if (res.gameScores) setGameScores(res.gameScores);
       } else {
         // Player doesn't exist yet in DB; save initial state

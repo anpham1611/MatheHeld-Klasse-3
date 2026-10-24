@@ -5,9 +5,13 @@ export function scoreAfterGame(
   gameKey: keyof PlayerProfile['scores'],
   scoreAchieved: number,
 ): number {
-  if (gameKey === 'logic_game') {
-    return (scores.logic_game || 0) + scoreAchieved;
+  const safeScore = Math.max(0, scoreAchieved);
+
+  // Live / continuous modes where score increments on correct and decrements on wrong
+  if (gameKey === 'minecraft' || gameKey === 'pokemon' || gameKey === 'mathbrick' || gameKey === 'logic_game') {
+    return safeScore;
   }
 
-  return Math.max(scores[gameKey] || 0, scoreAchieved);
+  // Session quest games: save highest score achieved in that quest
+  return Math.max(scores[gameKey] || 0, safeScore);
 }

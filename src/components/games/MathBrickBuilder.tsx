@@ -160,6 +160,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
   const [tool, setTool] = useState<'build' | 'remove'>('build');
   const [challenge, setChallenge] = useState<ActiveChallenge | null>(null);
   const [answerFeedback, setAnswerFeedback] = useState<'wrong' | 'correct' | null>(null);
+  const [isAnsweringChallenge, setIsAnsweringChallenge] = useState(false);
   const [notice, setNotice] = useState('');
   const [selectedCommon, setSelectedCommon] = useState('brick-2x2');
   const [selectedRare, setSelectedRare] = useState('gear-2x2');
@@ -348,14 +349,27 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
   };
 
   const answerQuestion = (answer: string) => {
-    if (!challenge) return;
+    if (!challenge || isAnsweringChallenge) return;
+    setIsAnsweringChallenge(true);
+
     if (answer !== challenge.question.answer) {
       sound.playWrong();
       setAnswerFeedback('wrong');
+      const nextScore = Math.max(0, score - 1);
+      setScore(nextScore);
+      onUpdateStats(0, 0, nextScore);
+
+      // Wrong answer: -1 point, dismiss challenge after 900ms, no retry
+      setTimeout(() => {
+        setChallenge(null);
+        setAnswerFeedback(null);
+        setIsAnsweringChallenge(false);
+      }, 900);
       return;
     }
+
     sound.playCorrect();
-    const nextScore = score + (challenge.hard ? 250 : 100);
+    const nextScore = score + 1;
     setScore(nextScore);
     onUpdateStats(challenge.hard ? 2 : 1, challenge.hard ? 5 : 2, nextScore);
     if (challenge.hard && challenge.rareReward) {
@@ -363,12 +377,15 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
         ...current,
         inventory: { ...current.inventory, [challenge.rareReward!]: current.inventory[challenge.rareReward!] + 1 },
       }));
-      setNotice(text('Richtig! Dein gewähltes Spezialteil gehört dir!', 'Chính xác! Khối đặc biệt bé chọn đã thuộc về bé!'));
+      setNotice(text('Richtig (+1 Punkt)! Dein gewähltes Spezialteil gehört dir!', 'Chính xác (+1 điểm)! Khối đặc biệt bé chọn đã thuộc về bé!'));
     } else {
       earnRewardPack();
     }
-    setChallenge(null);
-    setAnswerFeedback(null);
+    setTimeout(() => {
+      setChallenge(null);
+      setAnswerFeedback(null);
+      setIsAnsweringChallenge(false);
+    }, 500);
   };
 
   const checkBlueprint = () => {
@@ -582,12 +599,21 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
             <div className={`my-5 rounded-2xl border border-slate-700 bg-slate-950 p-4 text-center font-black leading-relaxed whitespace-pre-line break-words ${challenge.question.visual.length > 24 ? 'text-lg sm:text-2xl' : 'text-2xl sm:text-4xl'}`}>{challenge.question.visual}</div>
             <div className="grid grid-cols-2 gap-3">
               {challenge.question.options.map((option, index) => (
-                <button key={`${option}-${index}`} onClick={() => answerQuestion(option)} className="min-h-14 break-words rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-base font-black hover:border-cyan-400 hover:bg-slate-700 sm:text-lg">
+                <button
+                  key={`${option}-${index}`}
+                  disabled={isAnsweringChallenge}
+                  onClick={() => answerQuestion(option)}
+                  className="min-h-14 break-words rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-base font-black hover:border-cyan-400 hover:bg-slate-700 sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   {option}
                 </button>
               ))}
             </div>
-            {answerFeedback === 'wrong' && <p className="mt-4 text-center font-bold text-amber-300">{text('Noch nicht. Probiere es nochmal!', 'Chưa đúng. Thử lại nhé!')}</p>}
+            {answerFeedback === 'wrong' && (
+              <p className="mt-4 text-center font-bold text-rose-400">
+                {text('Falsch (-1 Punkt)! Challenge beendet... ❌', 'Chưa đúng (-1 điểm)! Không được chọn lại... ❌')}
+              </p>
+            )}
             {challenge.hard && <p className="mt-4 text-center text-xs text-fuchsia-200">{text('Richtig gelöst: 1 gewähltes Spezialteil!', 'Giải đúng: nhận 1 khối đặc biệt đã chọn!')}</p>}
           </section>
         </div>

@@ -42,7 +42,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
   // 'math': solving math problem for Attack or Catch
   // 'wobbling': Pokéball thrown and shaking 1, 2, 3
   // 'caught': Celebration screen
-  const [battlePhase, setBattlePhase] = useState<'menu' | 'math' | 'wobbling' | 'caught'>('menu');
+  // 'fleeing': Pokemon ran away on wrong answer (-1 pt, auto-encounter next)
+  const [battlePhase, setBattlePhase] = useState<'menu' | 'math' | 'wobbling' | 'caught' | 'fleeing'>('menu');
   const [currentTask, setCurrentTask] = useState<PokemonMathBattleTask | null>(null);
   const [wobbleCount, setWobbleCount] = useState<number>(0);
 
@@ -130,10 +131,12 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
   // Handle Math Answer
   const handleAnswerMath = (selectedAnswer: number) => {
-    if (!currentTask) return;
+    if (!currentTask || battlePhase !== 'math') return;
 
     if (selectedAnswer === currentTask.answer) {
       sound.playCorrect();
+      const nextScore = score + 1;
+      setScore(nextScore);
 
       if (currentTask.actionType === 'attack') {
         // Player attacks wild Pokemon
@@ -148,22 +151,20 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         const remainingHp = Math.max(0, wildHp - damage);
         setWildHp(remainingHp);
 
-        setScore((s) => s + 80);
-
         if (remainingHp <= 0) {
           sound.playFanfare();
           setBattleLog(
             lang === 'de'
-              ? `Volltreffer! Das wilde ${wildPokemon.nameDe} wurde besiegt (+80 Punkte)!`
-              : `Chí mạng! ${wildPokemon.nameVi} đã bị đánh bại (+80 điểm)!`
+              ? `Volltreffer! Das wilde ${wildPokemon.nameDe} wurde besiegt (+1 Punkt)!`
+              : `Chí mạng! ${wildPokemon.nameVi} đã bị đánh bại (+1 điểm)!`
           );
           setBattlePhase('menu');
-          onUpdateStats(1, 10, score + 80);
+          onUpdateStats(1, 10, nextScore);
         } else {
           setBattleLog(
             lang === 'de'
-              ? `Klasse gerechnet! Du landest einen Volltreffer mit ${damage} KP Schaden!`
-              : `Bé tính chuẩn lắm! Đòn đánh gây ${damage} sát thương!`
+              ? `Klasse gerechnet (+1 Punkt)! Du landest einen Treffer mit ${damage} KP Schaden!`
+              : `Bé tính chuẩn lắm (+1 điểm)! Đòn đánh gây ${damage} sát thương!`
           );
           setBattlePhase('menu');
         }
@@ -172,8 +173,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         setBattlePhase('wobbling');
         setBattleLog(
           lang === 'de'
-            ? `Perfekter Wurf! Der Pokéball wackelt...`
-            : `Cú ném hoàn hảo! Bóng Pokéball đang rung lắc...`
+            ? `Perfekter Wurf (+1 Punkt)! Der Pokéball wackelt...`
+            : `Cú ném hoàn hảo (+1 điểm)! Bóng Pokéball đang rung lắc...`
         );
 
         // Shake sequence: 1... 2... 3... Catch!
@@ -201,12 +202,11 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
             if (!capturedList.includes(wildPokemon.id)) {
               const newList = [...capturedList, wildPokemon.id];
               setCapturedList(newList);
-              onUpdateStats(3, 25, score + 200, wildPokemon.id);
+              onUpdateStats(3, 25, nextScore, wildPokemon.id);
             } else {
-              onUpdateStats(1, 15, score + 120);
+              onUpdateStats(1, 15, nextScore);
             }
 
-            setScore((s) => s + 200);
             setBattlePhase('caught');
             setBattleLog(
               lang === 'de'
@@ -217,13 +217,23 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         }, 850);
       }
     } else {
+      // Wrong answer: -1 point, wild Pokemon flees immediately without chance to re-select
       sound.playWrong();
+      const nextScore = Math.max(0, score - 1);
+      setScore(nextScore);
+      onUpdateStats(0, 0, nextScore);
+
+      setBattlePhase('fleeing');
       setBattleLog(
         lang === 'de'
-          ? `Daneben gerechnet! Das Ergebnis war leider nicht richtig (${selectedAnswer}).`
-          : `Tính nhầm rồi bé ơi! Kết quả (${selectedAnswer}) chưa chính xác.`
+          ? `Daneben gerechnet (-1 Punkt)! Das wilde ${wildPokemon.nameDe} ist geflohen... Neue Suche!`
+          : `Tính nhầm rồi bé ơi (-1 điểm)! ${wildPokemon.nameVi} đã hoảng sợ chạy mất... Đang tìm Pokémon mới!`
       );
-      setBattlePhase('menu');
+
+      // Automatically encounter a new wild pokemon so player cannot retry
+      setTimeout(() => {
+        handleNewEncounter();
+      }, 1200);
     }
   };
 

@@ -102,13 +102,21 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
 
       const nextStreak = streak + 1;
       setStreak(nextStreak);
-      const points = 100 + nextStreak * 20;
-      setLocalScore((prev) => prev + points);
+      const nextScore = localScore + 1;
+      setLocalScore(nextScore);
 
-      onUpdateStats(1, 10, localScore + points);
+      onUpdateStats(1, 10, nextScore);
     } else {
       sound.playWrong();
       setStreak(0);
+      const nextScore = Math.max(0, localScore - 1);
+      setLocalScore(nextScore);
+      onUpdateStats(0, 0, nextScore);
+
+      // Wrong answer: -1 point and auto-advance to next quest after brief explanation
+      setTimeout(() => {
+        handleNextTask();
+      }, 1200);
     }
   };
 
@@ -521,13 +529,13 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                         <>
                           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                           <span className="text-emerald-300 font-black">
-                            {lang === 'de' ? 'Exzellent gelöst! +100 Punkte' : 'Chính xác xuất sắc! +100 điểm'}
+                            {lang === 'de' ? 'Exzellent gelöst! +1 Punkt' : 'Chính xác xuất sắc! +1 điểm'}
                           </span>
                         </>
                       ) : (
                         <>
                           <span className="text-rose-400 font-black">
-                            {lang === 'de' ? 'Noch nicht ganz richtig!' : 'Chưa chính xác!'}
+                            {lang === 'de' ? 'Falsch! -1 Punkt (nächste Quest...)' : 'Chưa chính xác! -1 điểm (chuyển câu tiếp...)'}
                           </span>
                         </>
                       )}

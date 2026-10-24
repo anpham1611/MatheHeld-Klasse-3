@@ -61,12 +61,17 @@ export const EuroShop: React.FC<EuroShopProps> = ({
     setFeedback(null);
   };
 
+  const [isVerifying, setIsVerifying] = useState(false);
+
   const handleVerifyChange = () => {
+    if (isVerifying || showVictory || isPaused) return;
+    setIsVerifying(true);
+
     if (currentChangeCents === task.changeCents) {
       sound.playCorrect();
       setFeedback('correct');
-      const addedScore = 150 + streak * 25;
-      setScore((s) => s + addedScore);
+      const nextScore = score + 1;
+      setScore(nextScore);
       setStreak((s) => s + 1);
 
       setTimeout(() => {
@@ -74,18 +79,37 @@ export const EuroShop: React.FC<EuroShopProps> = ({
         setCustomersServed(nextServed);
         if (nextServed >= 5) {
           setShowVictory(true);
-          onUpdateStats(3, 25, score + addedScore);
+          onUpdateStats(3, 25, nextScore);
         } else {
           setTask(generateEuroTask());
           setSelectedChange([]);
           setFeedback(null);
           setShowHint(false);
         }
+        setIsVerifying(false);
       }, 1000);
     } else {
       sound.playWrong();
       setFeedback('wrong');
       setStreak(0);
+      const nextScore = Math.max(0, score - 1);
+      setScore(nextScore);
+
+      // Wrong answer: deduct 1 point and advance immediately to next customer without retry
+      setTimeout(() => {
+        const nextServed = customersServed + 1;
+        setCustomersServed(nextServed);
+        if (nextServed >= 5) {
+          setShowVictory(true);
+          onUpdateStats(1, 10, nextScore);
+        } else {
+          setTask(generateEuroTask());
+          setSelectedChange([]);
+          setFeedback(null);
+          setShowHint(false);
+        }
+        setIsVerifying(false);
+      }, 1200);
     }
   };
 
@@ -280,8 +304,8 @@ export const EuroShop: React.FC<EuroShopProps> = ({
           {feedback === 'wrong' && (
             <div className="mt-2 text-center text-xs font-bold text-rose-400 bg-rose-500/20 py-2 rounded-xl animate-in shake">
               ⚠️ {lang === 'de'
-                ? `Das Wechselgeld ist noch nicht ganz richtig (${formatEuro(currentChangeCents)}). Versuche es noch einmal!`
-                : `Tiền thối chưa đúng (${formatEuro(currentChangeCents)}). Bé đếm lại nhé!`}
+                ? `Falsches Wechselgeld (${formatEuro(currentChangeCents)}). Richtig war ${formatEuro(task.changeCents)} (-1 Punkt). Nächster Kunde...`
+                : `Tiền thối chưa đúng (${formatEuro(currentChangeCents)}). Đúng là ${formatEuro(task.changeCents)} (-1 điểm). Đang đổi khách...`}
             </div>
           )}
         </div>
@@ -297,8 +321,9 @@ export const EuroShop: React.FC<EuroShopProps> = ({
             {EURO_DENOMINATIONS.slice(0, 4).map((d) => (
               <button
                 key={d.value}
+                disabled={isVerifying}
                 onClick={() => handleAddDenomination(d.value)}
-                className={`py-3 px-2 rounded-2xl flex flex-col items-center justify-center font-black text-base shadow-lg cursor-pointer transform active:scale-90 transition border-2 ${d.bg}`}
+                className={`py-3 px-2 rounded-2xl flex flex-col items-center justify-center font-black text-base shadow-lg cursor-pointer transform active:scale-90 transition border-2 disabled:opacity-40 disabled:cursor-not-allowed ${d.bg}`}
               >
                 <span>{d.label}</span>
                 <span className="text-[10px] opacity-80 uppercase tracking-tight">
@@ -313,8 +338,9 @@ export const EuroShop: React.FC<EuroShopProps> = ({
             {EURO_DENOMINATIONS.slice(4).map((d) => (
               <button
                 key={d.value}
+                disabled={isVerifying}
                 onClick={() => handleAddDenomination(d.value)}
-                className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center font-black text-xs shadow-md cursor-pointer transform active:scale-90 transition border-2 ${d.bg}`}
+                className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center font-black text-xs shadow-md cursor-pointer transform active:scale-90 transition border-2 disabled:opacity-40 disabled:cursor-not-allowed ${d.bg}`}
               >
                 <span>{d.label}</span>
               </button>
@@ -325,7 +351,7 @@ export const EuroShop: React.FC<EuroShopProps> = ({
           <div className="mt-4 pt-3 border-t border-slate-800">
             <button
               onClick={handleVerifyChange}
-              disabled={selectedChange.length === 0}
+              disabled={selectedChange.length === 0 || isVerifying}
               className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-lg rounded-2xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer transition transform active:scale-95"
             >
               <Check className="w-5 h-5" />

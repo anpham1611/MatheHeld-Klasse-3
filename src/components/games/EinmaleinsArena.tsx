@@ -79,11 +79,14 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [task, isPaused, showVictory]);
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const handleSelectOption = (
     opt: { label: string; value: number; remainder?: number },
     idx: number
   ) => {
-    if (isPaused || showVictory) return;
+    if (isPaused || showVictory || isProcessing) return;
+    setIsProcessing(true);
 
     const isCorrect =
       opt.value === task.answer &&
@@ -93,25 +96,22 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
       sound.playCorrect();
       setHeroCast(true);
       setMonsterHit(true);
-      setTimeout(() => {
-        setHeroCast(false);
-        setMonsterHit(false);
-      }, 400);
 
-      const multiplier = isFever ? 2 : 1;
-      const pts = (100 + streak * 15) * multiplier;
-      setScore((s) => s + pts);
+      const nextScore = score + 1;
+      setScore(nextScore);
       setStreak((s) => s + 1);
       setFeverMeter((m) => Math.min(100, m + 22));
 
       // Advance monster or defeat boss
       const nextHp = monsterHp - 1;
+      let isFinalBossBeaten = false;
       if (nextHp <= 0) {
         sound.playFanfare();
         const nextIdx = monsterIdx + 1;
         if (nextIdx >= 8) {
+          isFinalBossBeaten = true;
           setShowVictory(true);
-          onUpdateStats(3, 20, score + pts);
+          onUpdateStats(3, 20, nextScore);
         } else {
           setMonsterIdx(nextIdx);
           const nextMon = MONSTER_TYPES[nextIdx % MONSTER_TYPES.length];
@@ -121,14 +121,30 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
         setMonsterHp(nextHp);
       }
 
-      setTask(generateEinmaleinsTask(true));
-      setShowHint(false);
-      setWrongOption(null);
+      setTimeout(() => {
+        setHeroCast(false);
+        setMonsterHit(false);
+        if (!isFinalBossBeaten) {
+          setTask(generateEinmaleinsTask(true));
+        }
+        setShowHint(false);
+        setWrongOption(null);
+        setIsProcessing(false);
+      }, 400);
     } else {
       sound.playWrong();
       setStreak(0);
       setWrongOption(idx);
-      setTimeout(() => setWrongOption(null), 700);
+      const nextScore = Math.max(0, score - 1);
+      setScore(nextScore);
+
+      // Wrong answer: deduct 1 point and advance immediately to next question!
+      setTimeout(() => {
+        setWrongOption(null);
+        setTask(generateEinmaleinsTask(true));
+        setShowHint(false);
+        setIsProcessing(false);
+      }, 500);
     }
   };
 
@@ -288,15 +304,16 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
               return (
                 <button
                   key={i}
+                  disabled={isProcessing}
                   onClick={() => handleSelectOption(opt, i)}
-                  className={`py-4 px-6 rounded-2xl border-3 font-['Fredoka'] font-black text-2xl sm:text-3xl flex items-center justify-between cursor-pointer transition transform active:scale-95 shadow-xl ${
+                  className={`py-4 px-6 rounded-2xl border-3 font-['Fredoka'] font-black text-2xl sm:text-3xl flex items-center justify-between cursor-pointer transition transform active:scale-95 shadow-xl disabled:cursor-not-allowed ${
                     isWrong
                       ? 'bg-rose-600/80 border-rose-400 text-white animate-shake'
                       : 'bg-slate-800/90 hover:bg-indigo-600/90 border-slate-700 hover:border-indigo-400 text-white'
                   }`}
                 >
                   <span className="text-xs text-slate-400 bg-slate-900/60 px-2 py-1 rounded-lg">
-                    Taste {i + 1}
+                    {lang === 'de' ? 'Taste' : 'Phím'} {i + 1}
                   </span>
                   <span className="tracking-wide">{opt.label}</span>
                   <Zap className="w-5 h-5 text-amber-400 opacity-60" />

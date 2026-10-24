@@ -165,19 +165,21 @@ export const NumberLineGlider: React.FC<NumberLineGliderProps> = ({
 
     cameraShakeRef.current = 6;
     const newStreak = streak + 1;
-    const addedScore = 100 + newStreak * 20;
-    setScore((s) => s + addedScore);
+    const nextScore = score + 1;
+    setScore(nextScore);
     setStreak(newStreak);
     setSolvedCount((c) => {
       const nextCount = c + 1;
       if (nextCount >= 8) {
         setShowVictory(true);
-        onUpdateStats(3, Math.floor(score / 50) + 10, score + addedScore);
+        onUpdateStats(3, 15, nextScore);
       }
       return nextCount;
     });
 
-    // Next task
+    // Clear existing orbs/lasers and spawn next task immediately
+    orbsRef.current = [];
+    lasersRef.current = [];
     setTask(generateStellenwertTask());
     setShowHint(false);
   };
@@ -186,6 +188,8 @@ export const NumberLineGlider: React.FC<NumberLineGliderProps> = ({
     sound.playWrong();
     cameraShakeRef.current = 10;
     setStreak(0);
+    const nextScore = Math.max(0, score - 1);
+    setScore(nextScore);
     setLives((l) => {
       const nextLives = l - 1;
       if (nextLives <= 0) {
@@ -195,8 +199,13 @@ export const NumberLineGlider: React.FC<NumberLineGliderProps> = ({
       }
       return nextLives;
     });
-    // Remove orb
-    orbsRef.current = orbsRef.current.filter((o) => o.id !== orb.id);
+
+    // Deduct 1 point and advance to next question immediately:
+    // Clear all existing orbs so no retry is possible, and switch to new task
+    orbsRef.current = [];
+    lasersRef.current = [];
+    setTask(generateStellenwertTask());
+    setShowHint(false);
   };
 
   // Main 60fps Game Loop

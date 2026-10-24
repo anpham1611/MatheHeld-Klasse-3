@@ -53,13 +53,17 @@ export const TowerMath: React.FC<TowerMathProps> = ({
     setErrorFeedback(null);
   };
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const handleCheckAnswer = () => {
+    if (isProcessing || showVictory || isPaused) return;
     const fullAnswer = parseInt(`${userH || '0'}${userZ || '0'}${userE || '0'}`);
+    setIsProcessing(true);
 
     if (fullAnswer === task.answer) {
       sound.playCorrect();
-      const addedScore = 180 + streak * 30;
-      setScore((s) => s + addedScore);
+      const nextScore = score + 1;
+      setScore(nextScore);
       setStreak((s) => s + 1);
 
       const nextHeight = towerHeight + 1;
@@ -67,23 +71,39 @@ export const TowerMath: React.FC<TowerMathProps> = ({
 
       if (nextHeight >= 5) {
         setShowVictory(true);
-        onUpdateStats(3, 30, score + addedScore);
+        onUpdateStats(3, 30, nextScore);
+        setIsProcessing(false);
       } else {
-        // Toggle or randomize addition / subtraction
+        setTimeout(() => {
+          const nextOpAddition = Math.random() > 0.4;
+          setIsAddition(nextOpAddition);
+          setTask(generateTowerTask(nextOpAddition));
+          resetInputs();
+          setShowHint(false);
+          setIsProcessing(false);
+        }, 500);
+      }
+    } else {
+      sound.playWrong();
+      setStreak(0);
+      const nextScore = Math.max(0, score - 1);
+      setScore(nextScore);
+      setErrorFeedback(
+        lang === 'de'
+          ? `Leider falsch (${fullAnswer}). Die richtige Antwort war ${task.answer} (-1 Punkt). Nächste Aufgabe...`
+          : `Chưa đúng (${fullAnswer}). Đáp án đúng là ${task.answer} (-1 điểm). Đang chuyển câu tiếp...`
+      );
+
+      // Advance to next task without allowing retry on this problem
+      setTimeout(() => {
         const nextOpAddition = Math.random() > 0.4;
         setIsAddition(nextOpAddition);
         setTask(generateTowerTask(nextOpAddition));
         resetInputs();
         setShowHint(false);
-      }
-    } else {
-      sound.playWrong();
-      setStreak(0);
-      setErrorFeedback(
-        lang === 'de'
-          ? `Noch nicht ganz richtig (${fullAnswer}). Rechne von rechts nach links (erst E, dann Z, dann H)!`
-          : `Chưa đúng (${fullAnswer}). Bé nhớ tính từ phải sang trái (Đơn vị -> Chục -> Trăm) nhé!`
-      );
+        setErrorFeedback(null);
+        setIsProcessing(false);
+      }, 1200);
     }
   };
 
@@ -227,26 +247,29 @@ export const TowerMath: React.FC<TowerMathProps> = ({
             <input
               type="text"
               maxLength={1}
+              disabled={isProcessing}
               value={userH}
               onChange={(e) => setUserH(e.target.value.replace(/\D/g, ''))}
               placeholder="?"
-              className="py-2 text-center text-3xl font-black bg-emerald-50 border-2 border-emerald-400 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="py-2 text-center text-3xl font-black bg-emerald-50 border-2 border-emerald-400 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
             />
             <input
               type="text"
               maxLength={1}
+              disabled={isProcessing}
               value={userZ}
               onChange={(e) => setUserZ(e.target.value.replace(/\D/g, ''))}
               placeholder="?"
-              className="py-2 text-center text-3xl font-black bg-emerald-50 border-2 border-emerald-400 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="py-2 text-center text-3xl font-black bg-emerald-50 border-2 border-emerald-400 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
             />
             <input
               type="text"
               maxLength={1}
+              disabled={isProcessing}
               value={userE}
               onChange={(e) => setUserE(e.target.value.replace(/\D/g, ''))}
               placeholder="?"
-              className="py-2 text-center text-3xl font-black bg-emerald-50 border-2 border-emerald-400 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="py-2 text-center text-3xl font-black bg-emerald-50 border-2 border-emerald-400 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
             />
           </div>
 
@@ -261,7 +284,8 @@ export const TowerMath: React.FC<TowerMathProps> = ({
           <div className="w-full flex gap-3">
             <button
               onClick={() => setShowHint(!showHint)}
-              className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl cursor-pointer transition text-sm flex items-center justify-center gap-1.5"
+              disabled={isProcessing}
+              className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl cursor-pointer transition text-sm flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <HelpCircle className="w-4 h-4 text-indigo-500" />
               <span>Tipp</span>
@@ -269,7 +293,8 @@ export const TowerMath: React.FC<TowerMathProps> = ({
 
             <button
               onClick={handleCheckAnswer}
-              className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-lg rounded-2xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer transform active:scale-95 transition"
+              disabled={isProcessing}
+              className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-lg rounded-2xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer transform active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-5 h-5" />
               <span>{t(lang, 'checkAnswer')}</span>

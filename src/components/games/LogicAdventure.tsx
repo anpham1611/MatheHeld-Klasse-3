@@ -25,7 +25,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   const [puzzles, setPuzzles] = useState<LogicPuzzle[]>([]);
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [feedback, setFeedback] = useState<'correct' | 'tryAgain' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'wrong' | 'tryAgain' | null>(null);
   const [answered, setAnswered] = useState(false);
   const [complete, setComplete] = useState(false);
   const [startingTotal, setStartingTotal] = useState(player.scores.logic_game || 0);
@@ -47,18 +47,37 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
     setComplete(false);
   };
 
-  const choose = (choice: (typeof puzzles)[number]['choices'][number]) => {
+  const [selectedChoiceIndex, setSelectedChoiceIndex] = useState<number | null>(null);
+
+  const choose = (choice: (typeof puzzles)[number]['choices'][number], index: number) => {
     if (answered) return;
+    setAnswered(true);
+    setSelectedChoiceIndex(index);
+
     if (!choice.correct) {
-      sound.playJump();
-      setFeedback('tryAgain');
+      sound.playWrong();
+      setFeedback('wrong');
+      const nextScore = Math.max(0, score - 1);
+      setScore(nextScore);
+
+      advanceTimer.current = window.setTimeout(() => {
+        if (round === puzzles.length - 1) {
+          setComplete(true);
+          sound.playFanfare();
+          onUpdateStats(1, 5, nextScore);
+        } else {
+          setRound((current) => current + 1);
+          setAnswered(false);
+          setFeedback(null);
+          setSelectedChoiceIndex(null);
+        }
+      }, 700);
       return;
     }
 
     sound.playCorrect();
-    setAnswered(true);
     setFeedback('correct');
-    const nextScore = score + 100;
+    const nextScore = score + 1;
     setScore(nextScore);
     advanceTimer.current = window.setTimeout(() => {
       if (round === puzzles.length - 1) {
@@ -69,6 +88,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
         setRound((current) => current + 1);
         setAnswered(false);
         setFeedback(null);
+        setSelectedChoiceIndex(null);
       }
     }, 650);
   };
@@ -197,39 +217,45 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              {puzzle.choices.map((choice, index) => (
-                <button
-                  key={`${round}-${index}`}
-                  onClick={() => choose(choice)}
-                  disabled={answered}
-                  className={`min-h-28 sm:min-h-36 rounded-3xl border-4 p-3 flex flex-col items-center justify-center gap-2 text-indigo-950 shadow-md transition active:scale-95 disabled:cursor-default ${
-                    answered && choice.correct
-                      ? 'border-emerald-400 bg-emerald-100 scale-[1.03]'
-                      : 'border-white bg-gradient-to-br from-amber-50 to-pink-100 hover:border-violet-300 hover:-translate-y-1'
-                  }`}
-                  aria-label={choice.label || choice.art || text('Bären der Größe nach', 'Gấu xếp theo kích thước')}
-                >
-                  {choice.sizes ? (
-                    <span className="flex items-center justify-center gap-0.5 h-16">
-                      {choice.sizes.map((size, sizeIndex) => (
-                        <span key={sizeIndex} style={{ fontSize: size }} aria-hidden="true">🐻</span>
-                      ))}
-                    </span>
-                  ) : (
-                    <span
-                      className={`max-w-full break-words font-black ${choice.art.length > 8 ? 'text-base sm:text-xl' : 'text-4xl sm:text-5xl'} ${choice.art.includes('━') ? 'text-amber-700' : ''}`}
-                      style={{ filter: choice.silhouette ? 'brightness(0)' : undefined }}
-                      aria-hidden="true"
-                    >{choice.art}</span>
-                  )}
-                  {choice.label && <span className="text-sm font-bold">{choice.label}</span>}
-                </button>
-              ))}
+              {puzzle.choices.map((choice, index) => {
+                const isSelectedWrong = answered && selectedChoiceIndex === index && !choice.correct;
+                const isCorrect = answered && choice.correct;
+                return (
+                  <button
+                    key={`${round}-${index}`}
+                    onClick={() => choose(choice, index)}
+                    disabled={answered}
+                    className={`min-h-28 sm:min-h-36 rounded-3xl border-4 p-3 flex flex-col items-center justify-center gap-2 text-indigo-950 shadow-md transition active:scale-95 disabled:cursor-default ${
+                      isCorrect
+                        ? 'border-emerald-400 bg-emerald-100 scale-[1.03]'
+                        : isSelectedWrong
+                        ? 'border-rose-500 bg-rose-100 scale-[0.98]'
+                        : 'border-white bg-gradient-to-br from-amber-50 to-pink-100 hover:border-violet-300 hover:-translate-y-1'
+                    }`}
+                    aria-label={choice.label || choice.art || text('Bären der Größe nach', 'Gấu xếp theo kích thước')}
+                  >
+                    {choice.sizes ? (
+                      <span className="flex items-center justify-center gap-0.5 h-16">
+                        {choice.sizes.map((size, sizeIndex) => (
+                          <span key={sizeIndex} style={{ fontSize: size }} aria-hidden="true">🐻</span>
+                        ))}
+                      </span>
+                    ) : (
+                      <span
+                        className={`max-w-full break-words font-black ${choice.art.length > 8 ? 'text-base sm:text-xl' : 'text-4xl sm:text-5xl'} ${choice.art.includes('━') ? 'text-amber-700' : ''}`}
+                        style={{ filter: choice.silhouette ? 'brightness(0)' : undefined }}
+                        aria-hidden="true"
+                      >{choice.art}</span>
+                    )}
+                    {choice.label && <span className="text-sm font-bold">{choice.label}</span>}
+                  </button>
+                );
+              })}
             </div>
 
             <p className="min-h-8 mt-4 text-center text-lg sm:text-xl font-black" aria-live="polite">
-              {feedback === 'correct' && <span className="text-emerald-600">{text('Richtig! 🌟', 'Đúng rồi! 🌟')}</span>}
-              {feedback === 'tryAgain' && <span className="text-violet-600">{text('Versuch es noch einmal! 💛', 'Thử lại nhé! 💛')}</span>}
+              {feedback === 'correct' && <span className="text-emerald-600 font-black">{text('Richtig (+1 Punkt)! 🌟', 'Đúng rồi (+1 điểm)! 🌟')}</span>}
+              {feedback === 'wrong' && <span className="text-rose-600 font-black">{text('Falsch (-1 Punkt)! Nächste Frage... ❌', 'Chưa đúng (-1 điểm)! Qua câu tiếp theo... ❌')}</span>}
               {!feedback && <span className="text-slate-400">{text('Tippe auf das passende Bild!', 'Chạm vào hình đúng nhé!')}</span>}
             </p>
           </div>
