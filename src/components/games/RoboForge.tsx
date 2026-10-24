@@ -24,6 +24,26 @@ interface Mission {
   rows: number;
 }
 
+type MissionLayout = Pick<Mission, 'start' | 'battery' | 'robot' | 'rocks' | 'cols' | 'rows'>;
+
+const LATE_GAME_LAYOUTS: MissionLayout[] = [
+  { start: [0, 3], battery: [2, 3], robot: [4, 0], rocks: [[1, 2], [2, 1], [3, 3]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [3, 2], robot: [4, 0], rocks: [[1, 3], [2, 1], [3, 1]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [2, 2], robot: [4, 0], rocks: [[1, 3], [3, 2], [3, 1]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [3, 3], robot: [4, 0], rocks: [[1, 2], [2, 1], [3, 1]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [2, 3], robot: [4, 0], rocks: [[1, 2], [2, 1], [3, 3]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [3, 2], robot: [4, 0], rocks: [[1, 2], [2, 2], [3, 1]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [2, 3], robot: [4, 0], rocks: [[1, 2], [3, 2], [3, 1]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [3, 3], robot: [4, 0], rocks: [[1, 2], [2, 2], [3, 2]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [2, 2], robot: [4, 0], rocks: [[1, 3], [2, 1], [3, 2]], cols: 5, rows: 4 },
+  { start: [0, 3], battery: [3, 2], robot: [4, 0], rocks: [[1, 2], [2, 1], [3, 1]], cols: 5, rows: 4 },
+];
+
+const lateMission = (story: Omit<Mission, keyof MissionLayout>, layout: number): Mission => ({
+  ...story,
+  ...LATE_GAME_LAYOUTS[layout],
+});
+
 const MISSIONS: Mission[] = [
   {
     title: 'Robi erwacht', chapter: 'Kapitel 1 · Roboter aufwecken', area: 'Energie-Wiese',
@@ -85,6 +105,106 @@ const MISSIONS: Mission[] = [
     hint: 'Teile erst 36 durch 4. Rechne dann 5 × 6 und addiere beide Ergebnisse.',
     start: [0, 3], battery: [3, 2], robot: [4, 0], rocks: [[1, 3], [2, 2], [3, 1]], reward: 'Kern-Schlüssel', cols: 5, rows: 4,
   },
+  lateMission({
+    title: 'Kristall-Karren', chapter: 'Kapitel 5 · Kristall-Canyon', area: 'Kristall-Canyon',
+    math: '320 Kristalle + 180 Kristalle = ?', answer: 500, choices: [400, 500, 510],
+    hint: '320 + 100 = 420. Addiere noch einmal 80.', reward: 'Kristall-Linse',
+  }, 0),
+  lateMission({
+    title: 'Der volle Kristallkorb', chapter: 'Kapitel 5 · Kristall-Canyon', area: 'Kristall-Canyon',
+    math: '8 × 6 Kristalle − 12 zerbrochene Kristalle = ?', answer: 36, choices: [36, 38, 48],
+    hint: 'Berechne zuerst 8 × 6. Ziehe danach 12 ab.', reward: 'Kristall-Korb',
+  }, 1),
+  lateMission({
+    title: 'Wasser für den Wasserfall', chapter: 'Kapitel 6 · Wasserfallstation', area: 'Wasserfallstation',
+    math: '435 cm Wasserrohr + 240 cm Wasserrohr = ? cm', answer: 675, choices: [665, 675, 685],
+    hint: 'Addiere Einer, Zehner und Hunderter getrennt.', reward: 'Wasser-Rad',
+  }, 2),
+  lateMission({
+    title: 'Der große Wassertank', chapter: 'Kapitel 6 · Wasserfallstation', area: 'Wasserfallstation',
+    math: '750 ml + 250 ml = ? ml', answer: 1000, choices: [900, 1000, 1500],
+    hint: '750 ml sind noch 250 ml bis zu 1.000 ml.', reward: 'Tank-Dichtung',
+  }, 3),
+  lateMission({
+    title: 'Windrad-Wache', chapter: 'Kapitel 7 · Windrad-Feld', area: 'Windrad-Feld',
+    math: '6 Windräder drehen sich je 8-mal. Wie viele Drehungen sind das?', answer: 48, choices: [42, 48, 56],
+    hint: 'Das ist eine Malaufgabe: 6 Gruppen mit je 8 Drehungen.', reward: 'Wind-Flügel',
+  }, 4),
+  lateMission({
+    title: 'Strom für die Stadt', chapter: 'Kapitel 7 · Windrad-Feld', area: 'Windrad-Feld',
+    math: '4 Windräder liefern je 125 Energiepunkte. Wie viele zusammen?', answer: 500, choices: [400, 500, 525],
+    hint: 'Rechne 125 + 125 + 125 + 125 oder 4 × 125.', reward: 'Turbinen-Kern',
+  }, 5),
+  lateMission({
+    title: 'Die fehlenden Hunderter', chapter: 'Kapitel 8 · Zahlenwerkstatt', area: 'Zahlenwerkstatt',
+    math: '608 − 279 = ?', answer: 329, choices: [319, 329, 339],
+    hint: 'Ziehe zuerst 200 ab. Danach kommen noch 79.', reward: 'Zahlen-Zahnrad',
+  }, 6),
+  lateMission({
+    title: 'Zwei Zahlenrollen', chapter: 'Kapitel 8 · Zahlenwerkstatt', area: 'Zahlenwerkstatt',
+    math: '347 + 286 = ?', answer: 633, choices: [623, 633, 643],
+    hint: 'Addiere erst Hunderter, dann Zehner und Einer. Achte auf den Übertrag.', reward: 'Rechen-Rolle',
+  }, 7),
+  lateMission({
+    title: 'Spiegel-Schutzschild', chapter: 'Kapitel 9 · Spiegelhöhle', area: 'Spiegelhöhle',
+    math: 'Ein Rechteck ist 8 cm lang und 5 cm breit. Wie lang ist sein Rand?', answer: 26, choices: [13, 26, 40],
+    hint: 'Der Rand hat zwei lange und zwei kurze Seiten: 8 + 5 + 8 + 5.', reward: 'Spiegel-Schild',
+  }, 8),
+  lateMission({
+    title: 'Die Spiegelsplitter', chapter: 'Kapitel 9 · Spiegelhöhle', area: 'Spiegelhöhle',
+    math: '4 Spiegelplatten haben je 9 Splitter. 7 Splitter fehlen. Wie viele sind noch da?', answer: 29, choices: [27, 29, 36],
+    hint: 'Berechne 4 × 9 und ziehe dann 7 ab.', reward: 'Silber-Splitter',
+  }, 9),
+  lateMission({
+    title: 'Rettung der Recycling-Kisten', chapter: 'Kapitel 10 · Recycling-Bucht', area: 'Recycling-Bucht',
+    math: 'Eine Kiste wiegt 1.000 g. 650 g sind schon drin. Wie viele Gramm fehlen?', answer: 350, choices: [250, 350, 450],
+    hint: 'Rechne 1.000 − 650. Ergänze erst bis 700, dann bis 1.000.', reward: 'Sortier-Greifer',
+  }, 0),
+  lateMission({
+    title: 'Die schweren Akkus', chapter: 'Kapitel 10 · Recycling-Bucht', area: 'Recycling-Bucht',
+    math: '3 Akku-Kisten wiegen je 240 g. Wie viel wiegen sie zusammen?', answer: 720, choices: [620, 720, 740],
+    hint: 'Addiere 240 dreimal: 240, 480, 720.', reward: 'Akku-Waage',
+  }, 1),
+  lateMission({
+    title: 'Sternenmuster', chapter: 'Kapitel 11 · Sternwarte', area: 'Sternwarte',
+    math: '125, 250, 375, … Welche Zahl kommt als Nächstes?', answer: 500, choices: [475, 500, 525],
+    hint: 'Wie viel wird jedes Mal dazugezählt?', reward: 'Sternen-Karte',
+  }, 2),
+  lateMission({
+    title: 'Zeit für den Sternenscan', chapter: 'Kapitel 11 · Sternwarte', area: 'Sternwarte',
+    math: '2 Stunden und 15 Minuten sind wie viele Minuten?', answer: 135, choices: [125, 135, 215],
+    hint: 'Eine Stunde hat 60 Minuten. Rechne 60 + 60 + 15.', reward: 'Zeit-Teleskop',
+  }, 3),
+  lateMission({
+    title: 'Schrauben verteilen', chapter: 'Kapitel 12 · Roboterstadt', area: 'Roboterstadt',
+    math: '56 Schrauben werden gerecht auf 7 Roboter verteilt. Wie viele pro Roboter?', answer: 8, choices: [7, 8, 9],
+    hint: 'Welche Zahl mal 7 ergibt 56?', reward: 'Team-Schrauber',
+  }, 4),
+  lateMission({
+    title: 'Getriebe für alle', chapter: 'Kapitel 12 · Roboterstadt', area: 'Roboterstadt',
+    math: '45 Zahnräder werden gleich auf 5 Roboter verteilt. Wie viele pro Roboter?', answer: 9, choices: [8, 9, 10],
+    hint: 'Zähle in Fünferschritten bis 45.', reward: 'Stadt-Getriebe',
+  }, 5),
+  lateMission({
+    title: 'Nebel-Aufräumer', chapter: 'Kapitel 13 · Nebel-Labyrinth', area: 'Nebel-Labyrinth',
+    math: '700 − (125 + 175) = ?', answer: 400, choices: [300, 400, 500],
+    hint: 'Rechne zuerst die Klammer. Ziehe das Ergebnis dann von 700 ab.', reward: 'Nebel-Lampe',
+  }, 6),
+  lateMission({
+    title: 'Das letzte Labyrinth-Tor', chapter: 'Kapitel 13 · Nebel-Labyrinth', area: 'Nebel-Labyrinth',
+    math: '9 × 6 + 12 = ?', answer: 66, choices: [54, 66, 78],
+    hint: 'Berechne zuerst 9 × 6. Addiere danach 12.', reward: 'Orientierungs-Stern',
+  }, 7),
+  lateMission({
+    title: 'Der Kern-Schlüssel', chapter: 'Kapitel 14 · RoboForge-Finale', area: 'Kernkammer',
+    math: '(480 : 6) + 37 = ?', answer: 117, choices: [107, 117, 127],
+    hint: 'Teile zuerst 480 durch 6. Addiere dann 37.', reward: 'Kern-Schlüssel',
+  }, 8),
+  lateMission({
+    title: 'RoboForge-Finale', chapter: 'Kapitel 14 · RoboForge-Finale', area: 'Energie-Herz',
+    math: '700 − 8 × 75 = ?', answer: 100, choices: [100, 110, 140],
+    hint: 'Rechne zuerst 8 × 75. Ziehe das Ergebnis danach von 700 ab.', reward: 'Regenbogen-Kern',
+  }, 9),
 ];
 
 const DIRECTIONS: { command: Direction; label: string; icon: string; delta: Cell }[] = [
@@ -100,10 +220,10 @@ interface Progress {
 
 const loadProgress = (playerName: string): Progress => {
   try {
-    const raw = localStorage.getItem(`roboforge-v1:${encodeURIComponent(playerName.toLowerCase())}`);
-    if (raw) {
-      const saved = JSON.parse(raw);
-      return { skin: Number.isInteger(saved.skin) && saved.skin >= 0 && saved.skin <= 3 ? saved.skin : 0 };
+      const raw = localStorage.getItem(`roboforge-v1:${encodeURIComponent(playerName.toLowerCase())}`);
+      if (raw) {
+        const saved = JSON.parse(raw);
+      return { skin: Number.isInteger(saved.skin) && saved.skin >= 0 && saved.skin <= 8 ? saved.skin : 0 };
     }
   } catch {
     // Use the default robot color if browser storage is unavailable.
@@ -116,6 +236,11 @@ const ROBOT_SKINS = [
   { name: 'Sonnengelb', color: 'from-amber-300 to-orange-500', unlock: 2 },
   { name: 'Waldgrün', color: 'from-emerald-400 to-green-600', unlock: 4 },
   { name: 'Kernviolett', color: 'from-violet-400 to-purple-700', unlock: 8 },
+  { name: 'Korallenrot', color: 'from-rose-400 to-red-600', unlock: 12 },
+  { name: 'Silberblitz', color: 'from-slate-300 to-slate-500', unlock: 16 },
+  { name: 'Minzgrün', color: 'from-teal-300 to-cyan-600', unlock: 20 },
+  { name: 'Sonnengold', color: 'from-yellow-300 to-amber-500', unlock: 24 },
+  { name: 'Regenbogen', color: 'from-fuchsia-400 to-indigo-500', unlock: 28 },
 ];
 
 const CHAPTERS = [
@@ -123,6 +248,16 @@ const CHAPTERS = [
   { title: 'Brücke reparieren', start: 3, end: 5 },
   { title: 'Die große Rettung', start: 5, end: 7 },
   { title: 'Energiekern reparieren', start: 7, end: 10 },
+  { title: 'Kristall-Canyon', start: 10, end: 12 },
+  { title: 'Wasserfallstation', start: 12, end: 14 },
+  { title: 'Windrad-Feld', start: 14, end: 16 },
+  { title: 'Zahlenwerkstatt', start: 16, end: 18 },
+  { title: 'Spiegelhöhle', start: 18, end: 20 },
+  { title: 'Recycling-Bucht', start: 20, end: 22 },
+  { title: 'Sternwarte', start: 22, end: 24 },
+  { title: 'Roboterstadt', start: 24, end: 26 },
+  { title: 'Nebel-Labyrinth', start: 26, end: 28 },
+  { title: 'RoboForge-Finale', start: 28, end: 30 },
 ];
 
 interface RoboForgeProps {
@@ -137,6 +272,10 @@ interface RoboForgeProps {
 export const RoboForge: React.FC<RoboForgeProps> = ({ lang, player, onUpdateStats, onBack, isMuted, onToggleMute }) => {
   const [progress, setProgress] = useState<Progress>(() => loadProgress(player.name));
   const [missionIndex, setMissionIndex] = useState(0);
+  const [selectedChapterIndex, setSelectedChapterIndex] = useState(() => {
+    const next = CHAPTERS.findIndex((chapter) => (player.scores.roboforge || 0) < chapter.end);
+    return next < 0 ? CHAPTERS.length - 1 : next;
+  });
   const [stage, setStage] = useState<'map' | 'math' | 'code' | 'won'>('map');
   const [commands, setCommands] = useState<Command[]>([]);
   const [position, setPosition] = useState<Cell>(MISSIONS[0].start);
@@ -210,6 +349,8 @@ export const RoboForge: React.FC<RoboForgeProps> = ({ lang, player, onUpdateStat
           setRunMessage(`Geschafft! Robi hat ${mission.reward} eingebaut. 🌟`);
           setStage('won');
           if (!completedMissions.includes(missionIndex)) {
+            const nextChapter = CHAPTERS.findIndex((chapter) => completedCount + 1 < chapter.end);
+            if (nextChapter >= 0) setSelectedChapterIndex(nextChapter);
             onUpdateStats(2, 10, Math.min(MISSIONS.length, completedCount + 1));
           }
         } else if (!collected) {
@@ -297,22 +438,24 @@ export const RoboForge: React.FC<RoboForgeProps> = ({ lang, player, onUpdateStat
             </div>
           </div>
 
-          <div className="mt-5 grid gap-2 sm:grid-cols-3">
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {CHAPTERS.map((chapter, chapterIndex) => {
               const done = completedMissions.filter((index) => index >= chapter.start && index < chapter.end).length;
               const total = chapter.end - chapter.start;
               return (
-                <div key={chapterIndex} className={`rounded-2xl border-2 p-3 ${done === total ? 'border-emerald-300 bg-emerald-50' : 'border-slate-100 bg-white'}`}>
+                <button key={chapterIndex} onClick={() => setSelectedChapterIndex(chapterIndex)} aria-pressed={selectedChapterIndex === chapterIndex} className={`rounded-2xl border-2 p-3 text-left transition ${selectedChapterIndex === chapterIndex ? 'border-emerald-500 bg-emerald-50 shadow-sm' : done === total ? 'border-emerald-300 bg-white' : 'border-slate-100 bg-white'}`}>
                   <p className="text-xs font-black uppercase text-emerald-700">Kapitel {chapterIndex + 1}</p>
-                  <p className="font-black">{chapter.title}</p>
+                  <p className="truncate font-black">{chapter.title}</p>
                   <p className="text-xs font-bold text-slate-500">{done === total ? '✅ Gebiet gerettet!' : `${done} von ${total} Missionen`}</p>
-                </div>
+                </button>
               );
             })}
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {MISSIONS.map((item, index) => {
+            {MISSIONS.map((item, index) => ({ item, index }))
+              .filter(({ index }) => index >= CHAPTERS[selectedChapterIndex].start && index < CHAPTERS[selectedChapterIndex].end)
+              .map(({ item, index }) => {
               const unlocked = index <= Math.min(MISSIONS.length - 1, completedCount);
               const complete = completedMissions.includes(index);
               return (
@@ -342,7 +485,7 @@ export const RoboForge: React.FC<RoboForgeProps> = ({ lang, player, onUpdateStat
               const unlocked = completedCount >= skin.unlock;
               return <button key={skin.name} disabled={!unlocked} onClick={() => setProgress((current) => ({ ...current, skin: index }))} className={`rounded-full border-2 px-3 py-1.5 text-xs font-black ${progress.skin === index ? 'border-sky-700 bg-sky-700 text-white' : unlocked ? 'border-white bg-white text-sky-900' : 'border-slate-200 bg-slate-100 text-slate-400'}`} aria-label={unlocked ? `${skin.name} auswählen` : `${skin.name} nach ${skin.unlock} Rettungen freischalten`}>{unlocked ? skin.name : `🔒 ${skin.name}`}</button>;
             })}
-            <span className="ml-auto text-sm">{['🔵', '🟡', '🟢', '🟣'][progress.skin]} Robi wartet auf dich!</span>
+            <span className="ml-auto text-sm">{['🔵', '🟡', '🟢', '🟣', '🔴', '⚪', '🟩', '🟡', '🌈'][progress.skin]} Robi wartet auf dich!</span>
           </div>
         </div>
 
