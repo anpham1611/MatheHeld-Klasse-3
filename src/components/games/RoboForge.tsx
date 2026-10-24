@@ -67,6 +67,24 @@ const MISSIONS: Mission[] = [
     hint: '7 × 4 = 28. Verdopple 28 für 7 × 8.',
     start: [0, 3], battery: [3, 3], robot: [4, 0], rocks: [[1, 2], [2, 2], [3, 1]], reward: 'Kern-Kristall', cols: 5, rows: 4,
   },
+  {
+    title: 'Der letzte Akku', chapter: 'Kapitel 4 · Energiekern reparieren', area: 'Kern-Schleuse',
+    math: '450 − 180 + 75 = ?', answer: 345, choices: [335, 345, 355],
+    hint: 'Rechne zuerst 450 − 180. Addiere danach 75.',
+    start: [0, 3], battery: [3, 3], robot: [4, 0], rocks: [[1, 3], [2, 1], [3, 1]], reward: 'Akku-Verstärker', cols: 5, rows: 4,
+  },
+  {
+    title: 'Schrauben für alle', chapter: 'Kapitel 4 · Energiekern reparieren', area: 'Werkstatt-Kuppel',
+    math: '8 Roboter brauchen je 7 Schrauben. 6 Schrauben sind kaputt. Wie viele gute bleiben?', answer: 50, choices: [48, 50, 56],
+    hint: 'Berechne erst 8 × 7. Ziehe dann die 6 kaputten Schrauben ab.',
+    start: [0, 3], battery: [2, 3], robot: [4, 0], rocks: [[1, 2], [3, 3], [2, 1]], reward: 'Doppel-Schrauber', cols: 5, rows: 4,
+  },
+  {
+    title: 'Der Kern-Code', chapter: 'Kapitel 4 · Energiekern reparieren', area: 'Reaktor-Herz',
+    math: '36 Kabel werden auf 4 Gruppen verteilt. Dazu kommen 5 × 6 Splitter. Wie viele insgesamt?', answer: 39, choices: [39, 41, 54],
+    hint: 'Teile erst 36 durch 4. Rechne dann 5 × 6 und addiere beide Ergebnisse.',
+    start: [0, 3], battery: [3, 2], robot: [4, 0], rocks: [[1, 3], [2, 2], [3, 1]], reward: 'Kern-Schlüssel', cols: 5, rows: 4,
+  },
 ];
 
 const DIRECTIONS: { command: Direction; label: string; icon: string; delta: Cell }[] = [
@@ -85,7 +103,7 @@ const loadProgress = (playerName: string): Progress => {
     const raw = localStorage.getItem(`roboforge-v1:${encodeURIComponent(playerName.toLowerCase())}`);
     if (raw) {
       const saved = JSON.parse(raw);
-      return { skin: Number.isInteger(saved.skin) && saved.skin >= 0 && saved.skin <= 2 ? saved.skin : 0 };
+      return { skin: Number.isInteger(saved.skin) && saved.skin >= 0 && saved.skin <= 3 ? saved.skin : 0 };
     }
   } catch {
     // Use the default robot color if browser storage is unavailable.
@@ -97,12 +115,14 @@ const ROBOT_SKINS = [
   { name: 'Himmelblau', color: 'from-sky-400 to-blue-600', unlock: 0 },
   { name: 'Sonnengelb', color: 'from-amber-300 to-orange-500', unlock: 2 },
   { name: 'Waldgrün', color: 'from-emerald-400 to-green-600', unlock: 4 },
+  { name: 'Kernviolett', color: 'from-violet-400 to-purple-700', unlock: 8 },
 ];
 
 const CHAPTERS = [
   { title: 'Roboter aufwecken', start: 0, end: 3 },
   { title: 'Brücke reparieren', start: 3, end: 5 },
   { title: 'Die große Rettung', start: 5, end: 7 },
+  { title: 'Energiekern reparieren', start: 7, end: 10 },
 ];
 
 interface RoboForgeProps {
@@ -322,7 +342,7 @@ export const RoboForge: React.FC<RoboForgeProps> = ({ lang, player, onUpdateStat
               const unlocked = completedCount >= skin.unlock;
               return <button key={skin.name} disabled={!unlocked} onClick={() => setProgress((current) => ({ ...current, skin: index }))} className={`rounded-full border-2 px-3 py-1.5 text-xs font-black ${progress.skin === index ? 'border-sky-700 bg-sky-700 text-white' : unlocked ? 'border-white bg-white text-sky-900' : 'border-slate-200 bg-slate-100 text-slate-400'}`} aria-label={unlocked ? `${skin.name} auswählen` : `${skin.name} nach ${skin.unlock} Rettungen freischalten`}>{unlocked ? skin.name : `🔒 ${skin.name}`}</button>;
             })}
-            <span className="ml-auto text-sm">{['🔵', '🟡', '🟢'][progress.skin]} Robi wartet auf dich!</span>
+            <span className="ml-auto text-sm">{['🔵', '🟡', '🟢', '🟣'][progress.skin]} Robi wartet auf dich!</span>
           </div>
         </div>
 
