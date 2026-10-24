@@ -7,7 +7,6 @@ import { sound } from '../../audio/soundManager';
 import {
   POKEMON_ROSTER,
   WILD_POKEMON_ROSTER,
-  KANTO_POKEDEX_COUNT,
   MAX_CAPTURED_POKEMON,
   normalizeCapturedPokemon,
   Pokemon,
@@ -267,7 +266,6 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
   const hpPercentage = Math.round((wildHp / wildPokemon.maxHp) * 100);
   const hpColor =
     hpPercentage > 50 ? 'bg-emerald-500' : hpPercentage > 20 ? 'bg-amber-400' : 'bg-rose-500';
-  const caughtKantoCount = capturedList.filter((id) => POKEMON_ROSTER.some((mon) => mon.id === id && !mon.legacyOnly)).length;
   const isPocketFull = capturedList.length >= MAX_CAPTURED_POKEMON;
 
   return (
@@ -627,7 +625,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                   🔴
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black text-white font-['Fredoka']">
-                  Pokédex · Kanto {caughtKantoCount}/{KANTO_POKEDEX_COUNT} · Tasche {capturedList.length}/{MAX_CAPTURED_POKEMON}
+                  Pokédex · Tasche {capturedList.length}/{MAX_CAPTURED_POKEMON}
                 </h3>
               </div>
 

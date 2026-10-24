@@ -1,3 +1,5 @@
+import { HOENN_POKEMON, JOHTO_POKEMON } from './pokemonRegionalData.js';
+
 export interface Pokemon {
   id: string;
   pokedexNo: number;
@@ -19,8 +21,11 @@ export interface Pokemon {
   legacyOnly?: boolean;
 }
 
-export const MAX_CAPTURED_POKEMON = 50;
+export const MAX_CAPTURED_POKEMON = 100;
 export const KANTO_POKEDEX_COUNT = 151;
+export const JOHTO_POKEDEX_COUNT = 100;
+export const HOENN_POKEDEX_COUNT = 135;
+export const NATIONAL_POKEDEX_COUNT = KANTO_POKEDEX_COUNT + JOHTO_POKEDEX_COUNT + HOENN_POKEDEX_COUNT;
 
 type PokemonType =
   | 'Normal' | 'Fighting' | 'Flying' | 'Poison' | 'Ground' | 'Rock' | 'Bug'
@@ -57,11 +62,10 @@ const TYPE_INFO: Record<PokemonType, TypeInfo> = {
   Fairy: { de: 'Fee', vi: 'Hệ Tiên', icon: '💖', badgeBg: 'bg-pink-500 text-white', color: '#ec4899', sprite: '💖🧚' },
 };
 
-// Base HP values and localized species names from the canonical Kanto Pokédex.
 // Vietnamese labels use the commonly recognized English species names.
-type KantoPokemonRow = readonly [number, string, string, string, string, number];
+export type PokemonRow = readonly [number, string, string, string, string, number];
 
-const KANTO_POKEMON: KantoPokemonRow[] = [
+const KANTO_POKEMON: PokemonRow[] = [
   [1, 'bisasam', 'Bisasam', 'Bulbasaur', 'Grass/Poison', 45],
   [2, 'ivysaur', 'Bisaknosp', 'Ivysaur', 'Grass/Poison', 60],
   [3, 'venusaur', 'Bisaflor', 'Venusaur', 'Grass/Poison', 80],
@@ -215,16 +219,21 @@ const KANTO_POKEMON: KantoPokemonRow[] = [
   [151, 'mew', 'Mew', 'Mew', 'Psychic', 100],
 ];
 
-const LEGENDARY_POKEDEX_NUMBERS = new Set([144, 145, 146, 150, 151]);
+const LEGENDARY_POKEDEX_NUMBERS = new Set([
+  144, 145, 146, 150, 151,
+  243, 244, 245, 249, 250, 251,
+  377, 378, 379, 380, 381, 382, 383, 384, 385, 386,
+]);
 
 function createPokemon(
-  [pokedexNo, id, nameDe, nameVi, typeNames, baseHp]: KantoPokemonRow,
+  [pokedexNo, id, nameDe, nameVi, typeNames, baseHp]: PokemonRow,
   legacyOnly = false,
 ): Pokemon {
-  const types = typeNames.split('/') as PokemonType[];
+  const types = typeNames.split('/').map((type) => type[0].toUpperCase() + type.slice(1)) as PokemonType[];
   const primaryType = TYPE_INFO[types[0]];
   const localizedTypes = types.map((type) => TYPE_INFO[type]);
   const maxHp = Math.round(50 + baseHp * 0.28);
+  const region = pokedexNo <= KANTO_POKEDEX_COUNT ? 'Kanto' : pokedexNo <= KANTO_POKEDEX_COUNT + JOHTO_POKEDEX_COUNT ? 'Johto' : 'Hoenn';
 
   return {
     id,
@@ -241,22 +250,24 @@ function createPokemon(
     baseCatchRate: Math.max(20, Math.min(70, 80 - Math.round(maxHp * 0.45))),
     moveDe: `${primaryType.de}-Attacke`,
     moveVi: `Đòn ${primaryType.vi}`,
-    habitatDe: 'Kanto-Arena',
-    habitatVi: 'Đấu trường Kanto',
+    habitatDe: `${region}-Arena`,
+    habitatVi: `Đấu trường ${region}`,
     rarity: LEGENDARY_POKEDEX_NUMBERS.has(pokedexNo) ? 'legendary' : maxHp >= 80 ? 'rare' : 'common',
     ...(legacyOnly ? { legacyOnly: true } : {}),
   };
 }
 
 const KANTO_ROSTER = KANTO_POKEMON.map((entry) => createPokemon(entry));
+const JOHTO_ROSTER = JOHTO_POKEMON.map((entry) => createPokemon(entry));
+const HOENN_ROSTER = HOENN_POKEMON.map((entry) => createPokemon(entry));
 const LEGACY_POKEMON = createPokemon(
   [448, 'lucario', 'Lucario', 'Lucario', 'Fighting/Steel', 70],
   true,
 );
 
 // Lucario remains viewable and usable by existing owners, but is never a wild encounter.
-export const POKEMON_ROSTER: Pokemon[] = [...KANTO_ROSTER, LEGACY_POKEMON];
-export const WILD_POKEMON_ROSTER: Pokemon[] = KANTO_ROSTER;
+export const POKEMON_ROSTER: Pokemon[] = [...KANTO_ROSTER, ...JOHTO_ROSTER, ...HOENN_ROSTER, LEGACY_POKEMON];
+export const WILD_POKEMON_ROSTER: Pokemon[] = [...KANTO_ROSTER, ...JOHTO_ROSTER, ...HOENN_ROSTER];
 
 const POKEMON_IDS = new Set(POKEMON_ROSTER.map(({ id }) => id));
 
