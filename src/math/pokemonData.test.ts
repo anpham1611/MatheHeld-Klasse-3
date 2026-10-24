@@ -27,6 +27,8 @@ test('Pokédex contains Kanto, Johto, and Hoenn species and preserves legacy Luc
   assert.equal(POKEMON_ROSTER.find(({ id }) => id === 'chikorita')?.pokedexNo, 152);
   assert.equal(POKEMON_ROSTER.find(({ id }) => id === 'treecko')?.pokedexNo, 252);
   assert.equal(POKEMON_ROSTER.find(({ id }) => id === 'deoxys-normal')?.pokedexNo, 386);
+  assert.equal(POKEMON_ROSTER.find(({ id }) => id === 'glumanda')?.attackStyle, 'ranged');
+  assert.equal(POKEMON_ROSTER.find(({ id }) => id === 'machop')?.attackStyle, 'physical');
 });
 
 test('collection validation accepts up to the configured pocket capacity', () => {

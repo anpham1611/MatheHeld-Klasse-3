@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { ArrowLeft, Pause, BookOpen, Sparkles, RefreshCw, HelpCircle, PenTool, CheckCircle2, Trash2 } from 'lucide-react';
 import { Language, PlayerProfile } from '../../types/game';
@@ -10,6 +10,7 @@ import {
   MAX_CAPTURED_POKEMON,
   normalizeCapturedPokemon,
   Pokemon,
+  PokemonAttackStyle,
   generatePokemonBattleTask,
   PokemonMathBattleTask,
 } from '../../math/pokemonData';
@@ -44,10 +45,11 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
   // Battle Phase
   // 'menu': choosing action (Attack, Ball, Run, Pokedex)
   // 'math': solving math problem for Attack or Catch
+  // 'attacking': playing the attack animation and applying its impact
   // 'wobbling': Pokéball thrown and shaking 1, 2, 3
   // 'caught': Celebration screen
   // 'fleeing': Pokemon ran away on wrong answer (-1 pt, auto-encounter next)
-  const [battlePhase, setBattlePhase] = useState<'menu' | 'math' | 'wobbling' | 'caught' | 'fleeing'>('menu');
+  const [battlePhase, setBattlePhase] = useState<'menu' | 'math' | 'attacking' | 'wobbling' | 'caught' | 'fleeing'>('menu');
   const [currentTask, setCurrentTask] = useState<PokemonMathBattleTask | null>(null);
   const [wobbleCount, setWobbleCount] = useState<number>(0);
 
@@ -58,7 +60,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
       : `Một chú ${wildPokemon.nameVi} hoang dã xuất hiện trong bụi cỏ!`
   );
   const [isHitWild, setIsHitWild] = useState<boolean>(false);
-  const [isAttackingPlayer, setIsAttackingPlayer] = useState<boolean>(false);
+  const [attackEffect, setAttackEffect] = useState<PokemonAttackStyle | null>(null);
 
   // Modals & Tools
   const [isPaused, setIsPaused] = useState(false);
@@ -73,6 +75,23 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
   const [activePokemonId, setActivePokemonId] = useState(() => normalizeCapturedPokemon(player.capturedPokemon)[0]);
   const [score, setScore] = useState<number>(player.scores.pokemon || 0);
   const activePokemon = POKEMON_ROSTER.find((mon) => mon.id === activePokemonId) || POKEMON_ROSTER[0];
+  const attackTimers = useRef<number[]>([]);
+
+  const clearAttackTimers = () => {
+    attackTimers.current.forEach((timer) => window.clearTimeout(timer));
+    attackTimers.current = [];
+  };
+  const scheduleAttackTimer = (callback: () => void, delay: number) => {
+    const timer = window.setTimeout(() => {
+      attackTimers.current = attackTimers.current.filter((scheduledTimer) => scheduledTimer !== timer);
+      callback();
+    }, delay);
+    attackTimers.current.push(timer);
+  };
+
+  useEffect(() => () => {
+    attackTimers.current.forEach((timer) => window.clearTimeout(timer));
+  }, []);
 
   // Keyboard shortcut listener for math options 1, 2, 3, 4
   useEffect(() => {
@@ -128,6 +147,10 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
   // Encounter New Wild Pokemon (Run / Suche)
   const handleNewEncounter = () => {
+    clearAttackTimers();
+    setAttackEffect(null);
+    setIsHitWild(false);
+    setDamageNumber(null);
     sound.playJump();
     const randomMon = WILD_POKEMON_ROSTER[Math.floor(Math.random() * WILD_POKEMON_ROSTER.length)];
     setWildPokemon(randomMon);
@@ -151,37 +174,46 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
       setScore(nextScore);
 
       if (currentTask.actionType === 'attack') {
-        // Player attacks wild Pokemon
-        setIsAttackingPlayer(true);
-        setIsHitWild(true);
-        setTimeout(() => {
-          setIsAttackingPlayer(false);
-          setIsHitWild(false);
-        }, 850);
-
+        clearAttackTimers();
+        const attackStyle = activePokemon.attackStyle;
+        const impactDelay = attackStyle === 'physical' ? 380 : 650;
         const damage = Math.floor(Math.random() * 20) + 25;
-        setDamageNumber(damage);
-        setTimeout(() => setDamageNumber(null), 1200);
         const remainingHp = Math.max(0, wildHp - damage);
-        setWildHp(remainingHp);
+        setAttackEffect(attackStyle);
+        setBattlePhase('attacking');
+        setBattleLog(lang === 'de'
+          ? `${activePokemon.nameDe} setzt ${activePokemon.moveDe} ein!`
+          : `${activePokemon.nameVi} dùng ${activePokemon.moveVi}!`);
 
-        if (remainingHp <= 0) {
-          sound.playFanfare();
-          setBattleLog(
-            lang === 'de'
-              ? `Volltreffer! Das wilde ${wildPokemon.nameDe} wurde besiegt (+1 Punkt)!`
-              : `Chí mạng! ${wildPokemon.nameVi} đã bị đánh bại (+1 điểm)!`
-          );
+        scheduleAttackTimer(() => {
+          setIsHitWild(true);
+          setDamageNumber(damage);
+          setWildHp(remainingHp);
+
+          if (remainingHp <= 0) {
+            sound.playFanfare();
+            setBattleLog(
+              lang === 'de'
+                ? `Volltreffer! Das wilde ${wildPokemon.nameDe} wurde besiegt (+1 Punkt)!`
+                : `Chí mạng! ${wildPokemon.nameVi} đã bị đánh bại (+1 điểm)!`
+            );
+            onUpdateStats(1, 10, nextScore);
+          } else {
+            setBattleLog(
+              lang === 'de'
+                ? `Klasse gerechnet (+1 Punkt)! Du landest einen Treffer mit ${damage} KP Schaden!`
+                : `Bé tính chuẩn lắm (+1 điểm)! Đòn đánh gây ${damage} sát thương!`
+            );
+          }
+        }, impactDelay);
+
+        scheduleAttackTimer(() => {
+          setAttackEffect(null);
+          setIsHitWild(false);
           setBattlePhase('menu');
-          onUpdateStats(1, 10, nextScore);
-        } else {
-          setBattleLog(
-            lang === 'de'
-              ? `Klasse gerechnet (+1 Punkt)! Du landest einen Treffer mit ${damage} KP Schaden!`
-              : `Bé tính chuẩn lắm (+1 điểm)! Đòn đánh gây ${damage} sát thương!`
-          );
-          setBattlePhase('menu');
-        }
+        }, 850);
+        scheduleAttackTimer(() => setDamageNumber(null), impactDelay + 1200);
+
       } else {
         // Catch Attempt (Pokéball Throw)
         setBattlePhase('wobbling');
@@ -271,10 +303,11 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
   return (
     <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-hidden flex flex-col bg-slate-950 select-none">
       <style>{`
-        @keyframes pokemon-lunge { 0%, 100% { transform: translateX(0) scale(1); } 45% { transform: translateX(4.5rem) scale(1.18); } }
+        @keyframes pokemon-lunge { 0%, 100% { transform: translateX(0) scale(1); } 45% { transform: translateX(4.5rem) scale(1.18); } 70% { transform: translateX(2rem) scale(1.08); } }
         @keyframes pokemon-impact { 0%, 100% { transform: translateX(0) scale(1); filter: brightness(1); } 30% { transform: translateX(.7rem) scale(.82); filter: brightness(2.4); } 60% { transform: translateX(-.5rem) scale(.9); } }
+        @keyframes pokemon-impact-burst { 0% { opacity: 0; transform: scale(.25) rotate(-20deg); } 35% { opacity: 1; transform: scale(1.35) rotate(12deg); } 100% { opacity: 0; transform: scale(.8) rotate(28deg); } }
         @keyframes pokemon-faint { to { opacity: .22; transform: translateY(2rem) scale(.72) rotate(12deg); filter: grayscale(1); } }
-        @keyframes pokemon-projectile { from { transform: translateX(0) scale(.5); opacity: 0; } 25% { opacity: 1; } to { transform: translateX(58vw) scale(1.5); opacity: 0; } }
+        @keyframes pokemon-projectile { from { transform: translateX(0) scale(.5); opacity: 0; } 25% { opacity: 1; } 70% { transform: translateX(58vw) scale(1.3); opacity: 1; } to { transform: translateX(58vw) scale(1.6); opacity: 0; } }
         @keyframes pokemon-damage { 0% { opacity: 0; transform: translateY(.5rem) scale(.6); } 20%, 75% { opacity: 1; transform: translateY(-.5rem) scale(1.1); } 100% { opacity: 0; transform: translateY(-1.5rem) scale(1); } }
         .pokemon-motion { animation-duration: 850ms; animation-timing-function: ease-out; animation-fill-mode: both; }
         @media (prefers-reduced-motion: reduce) { .pokemon-motion, .animate-pulse, .animate-in { animation: none !important; transition: none !important; } }
@@ -311,7 +344,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         {/* Title & Pokédex Counter */}
         <div className="flex items-center gap-2">
           <button
-            disabled={battlePhase === 'wobbling'}
+            disabled={battlePhase === 'wobbling' || battlePhase === 'attacking'}
             onClick={() => {
               sound.playJump();
               setShowPokedex(true);
@@ -338,13 +371,16 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         <div className="absolute inset-0 pointer-events-none opacity-20 flex items-center justify-center">
           <div className="w-[500px] h-[500px] rounded-full border-8 border-dashed border-emerald-400/40" />
         </div>
-        {isAttackingPlayer && (
+        {attackEffect === 'ranged' && (
           <div
             aria-hidden="true"
-            className="pokemon-motion pointer-events-none absolute left-[18%] top-[47%] z-30 text-5xl drop-shadow-[0_0_18px_rgba(250,204,21,0.95)]"
-            style={{ animationName: 'pokemon-projectile' }}
+            className="pokemon-motion pointer-events-none absolute left-[18%] top-[47%] z-30 text-5xl"
+            style={{
+              animationName: 'pokemon-projectile',
+              filter: `drop-shadow(0 0 18px ${activePokemon.themeColor})`,
+            }}
           >
-            {activePokemon.typeIcon}💥
+            {activePokemon.typeIcon}✨
           </div>
         )}
 
@@ -385,6 +421,15 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
           <div className="relative pr-6">
             <div className="w-36 h-10 bg-emerald-900/40 rounded-full blur-sm absolute bottom-0 left-2" />
             <div className="absolute inset-2 rounded-full blur-2xl opacity-30" style={{ backgroundColor: wildPokemon.themeColor }} />
+            {isHitWild && (
+              <div
+                aria-hidden="true"
+                className="pokemon-motion pointer-events-none absolute -top-3 right-2 z-20 text-4xl"
+                style={{ animationName: 'pokemon-impact-burst', color: activePokemon.themeColor }}
+              >
+                {attackEffect === 'physical' ? '💥' : activePokemon.typeIcon}
+              </div>
+            )}
             <div
               className={`relative text-8xl select-none transition-transform duration-300 ${
                 isHitWild ? 'pokemon-motion' : wildHp <= 0 ? 'pokemon-motion' : 'hover:scale-105'
@@ -433,8 +478,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
             <div className="w-36 h-10 bg-indigo-900/40 rounded-full blur-sm absolute bottom-0 left-2" />
             <div className="absolute inset-2 rounded-full blur-2xl opacity-30" style={{ backgroundColor: activePokemon.themeColor }} />
             <div
-              className={`relative text-8xl select-none transition-transform duration-300 ${isAttackingPlayer ? 'pokemon-motion' : ''}`}
-              style={{ animationName: isAttackingPlayer ? 'pokemon-lunge' : undefined }}
+              className={`relative text-8xl select-none transition-transform duration-300 ${attackEffect === 'physical' ? 'pokemon-motion' : ''}`}
+              style={{ animationName: attackEffect === 'physical' ? 'pokemon-lunge' : undefined }}
             >
               {activePokemon.sprite}
             </div>

@@ -1,5 +1,7 @@
 import { HOENN_POKEMON, JOHTO_POKEMON } from './pokemonRegionalData.js';
 
+export type PokemonAttackStyle = 'physical' | 'ranged';
+
 export interface Pokemon {
   id: string;
   pokedexNo: number;
@@ -13,6 +15,7 @@ export interface Pokemon {
   sprite: string;
   maxHp: number;
   baseCatchRate: number;
+  attackStyle: PokemonAttackStyle;
   moveDe: string;
   moveVi: string;
   habitatDe: string;
@@ -224,6 +227,9 @@ const LEGENDARY_POKEDEX_NUMBERS = new Set([
   243, 244, 245, 249, 250, 251,
   377, 378, 379, 380, 381, 382, 383, 384, 385, 386,
 ]);
+const RANGED_ATTACK_TYPES = new Set<PokemonType>([
+  'Poison', 'Ghost', 'Fire', 'Water', 'Grass', 'Electric', 'Psychic', 'Ice', 'Dragon',
+]);
 
 function createPokemon(
   [pokedexNo, id, nameDe, nameVi, typeNames, baseHp]: PokemonRow,
@@ -255,6 +261,7 @@ function createPokemon(
     sprite: primaryType.sprite,
     maxHp,
     baseCatchRate: Math.max(20, Math.min(70, 80 - Math.round(maxHp * 0.45))),
+    attackStyle: RANGED_ATTACK_TYPES.has(types[0]) ? 'ranged' : 'physical',
     moveDe: `${primaryType.de}-Attacke`,
     moveVi: `Đòn ${primaryType.vi}`,
     habitatDe: `${region}-Arena`,
