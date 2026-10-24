@@ -194,7 +194,7 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
         await saveMathBrickBuild(player.name, localSavedBuild).catch(() => {});
       }
     }).catch(() => {
-      // Keep the local build available when the database is offline.
+      // Keep the local build available when remote sync is unavailable.
     });
     return () => { cancelled = true; };
   }, [player.name]);
@@ -271,9 +271,9 @@ export const MathBrickBuilder: React.FC<MathBrickBuilderProps> = ({
     try {
       await saveMathBrickBuild(player.name, savedBuild);
       sound.playCorrect();
-      setNotice(text('Bau und Sammlung in der Datenbank gespeichert!', 'Đã lưu công trình và bộ sưu tập vào cơ sở dữ liệu!'));
+      setNotice(text('Bau und Sammlung gespeichert!', 'Đã lưu công trình và bộ sưu tập!'));
     } catch {
-      setNotice(text('Lokal gespeichert. Datenbank gerade nicht erreichbar.', 'Đã lưu trên thiết bị. Hiện không kết nối được cơ sở dữ liệu.'));
+      setNotice(text('Lokal gespeichert. Synchronisierung später.', 'Đã lưu trên thiết bị. Sẽ đồng bộ sau.'));
     } finally {
       setIsSavingBuild(false);
     }

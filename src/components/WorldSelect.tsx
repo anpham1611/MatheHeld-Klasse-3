@@ -13,9 +13,10 @@ import {
   Check,
   Coins,
 } from 'lucide-react';
-import { GameScreen, Language, PlayerProfile, CharacterAvatar, DbEngineInfo } from '../types/game';
+import { GameScreen, Language, PlayerProfile, CharacterAvatar } from '../types/game';
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
+import { totalGameScore } from '../math/gameScore';
 
 interface WorldSelectProps {
   lang: Language;
@@ -28,7 +29,6 @@ interface WorldSelectProps {
   saveMessage: string | null;
   onOpenScoresModal: () => void;
   onOpenSwitchModal: () => void;
-  engineInfo: DbEngineInfo | null;
   isMuted: boolean;
   onToggleMute: () => void;
 }
@@ -52,10 +52,10 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
   saveMessage,
   onOpenScoresModal,
   onOpenSwitchModal,
-  engineInfo,
   isMuted,
   onToggleMute,
 }) => {
+  const totalPoints = totalGameScore(player.scores);
   const worlds = [
     {
       id: 'logic_game' as GameScreen,
@@ -206,9 +206,13 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               <Coins className="w-3.5 h-3.5" />
               <span>{player.euroCoins}</span>
             </div>
-            <span className="text-[10px] text-slate-400 font-mono">
-              ({engineInfo?.engine === 'turso' ? 'Turso' : 'SQLite'})
-            </span>
+            <div
+              className="flex items-center gap-1 text-indigo-300 font-black text-xs"
+              title={lang === 'de' ? 'Gesamtpunkte' : 'Tổng điểm'}
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              <span>{totalPoints}</span>
+            </div>
           </div>
 
           {/* Right: Scores breakdown, Certificate, Language, Sound */}
@@ -286,6 +290,13 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               <Coins className="w-3 h-3" />
               <span>{player.euroCoins}</span>
             </div>
+            <div
+              className="flex items-center gap-1 text-indigo-300 font-bold"
+              title={lang === 'de' ? 'Gesamtpunkte' : 'Tổng điểm'}
+            >
+              <Trophy className="w-3 h-3" />
+              <span>{totalPoints}</span>
+            </div>
           </div>
         </div>
 
@@ -296,7 +307,6 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span className="font-bold">{saveMessage}</span>
             </div>
-            <span className="text-[10px] text-emerald-400 font-mono">SQLite / Turso DB</span>
           </div>
         )}
       </header>
@@ -376,7 +386,6 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       {/* Footer Info */}
       <footer className="text-center py-2 text-xs text-slate-500 font-mono">
         {lang === 'de' ? 'Grundschule Deutschland · Klasse 3 Mathematik' : 'Toán Lớp 3 · Tiêu Chuẩn Tiểu Học Quốc Tế'}
-        {' • '}{engineInfo?.engine === 'turso' ? '⚡ Turso Cloud' : '🗄️ SQLite'}
       </footer>
     </div>
   );

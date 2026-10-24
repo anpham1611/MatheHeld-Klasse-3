@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, Trophy, Star, Coins, Sparkles, Check, Database, Save } from 'lucide-react';
-import { Language, PlayerProfile, GameScoreDetail, DbEngineInfo } from '../types/game';
+import { X, Trophy, Star, Coins, Sparkles, Check, Save } from 'lucide-react';
+import { Language, PlayerProfile, GameScoreDetail } from '../types/game';
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
 
@@ -8,7 +8,6 @@ interface GameScoresModalProps {
   lang: Language;
   player: PlayerProfile;
   gameScores?: Record<string, GameScoreDetail>;
-  engineInfo?: DbEngineInfo | null;
   onSave: () => Promise<void>;
   isSaving: boolean;
   onClose: () => void;
@@ -18,7 +17,6 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
   lang,
   player,
   gameScores = {},
-  engineInfo,
   onSave,
   isSaving,
   onClose,
@@ -185,17 +183,7 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Database className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>
-              Engine:{' '}
-              <strong className={engineInfo?.engine === 'turso' ? 'text-cyan-300' : 'text-amber-300'}>
-                {engineInfo?.engine === 'turso' ? '⚡ Turso (Cloud)' : '🗄️ SQLite (Local)'}
-              </strong>
-            </span>
-          </div>
-
+        <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
           <button
             onClick={async () => {
               sound.playCorrect();

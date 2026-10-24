@@ -15,3 +15,10 @@ export function scoreAfterGame(
   // Session quest games: save highest score achieved in that quest
   return Math.max(scores[gameKey] || 0, safeScore);
 }
+
+export function totalGameScore(scores: PlayerProfile['scores']): number {
+  return Object.values(scores).reduce(
+    (total, score) => total + (typeof score === 'number' ? score : 0),
+    0,
+  );
+}

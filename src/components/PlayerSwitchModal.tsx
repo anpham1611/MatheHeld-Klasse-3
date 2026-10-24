@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Sparkles, Database, ArrowRight, X, Star, Coins, Trophy, UserPlus, Trash2, Search } from 'lucide-react';
-import { Language, CharacterAvatar, SavedPlayerSummary, DbEngineInfo } from '../types/game';
+import { Check, Sparkles, ArrowRight, X, Star, Coins, Trophy, UserPlus, Trash2, Search } from 'lucide-react';
+import { Language, CharacterAvatar, SavedPlayerSummary } from '../types/game';
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
-import { fetchSavedPlayersList, loadPlayerFromDb, fetchDbStatus, deletePlayerInDb } from '../services/playerService';
+import { fetchSavedPlayersList, loadPlayerFromDb, deletePlayerInDb } from '../services/playerService';
 import { DeletePlayerConfirmModal } from './DeletePlayerConfirmModal';
 
 interface PlayerSwitchModalProps {
@@ -31,7 +31,6 @@ export const PlayerSwitchModal: React.FC<PlayerSwitchModalProps> = ({
 }) => {
   const [inputName, setInputName] = useState(currentName);
   const [savedPlayers, setSavedPlayers] = useState<SavedPlayerSummary[]>([]);
-  const [engineInfo, setEngineInfo] = useState<DbEngineInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<string | null>(null);
@@ -43,7 +42,6 @@ export const PlayerSwitchModal: React.FC<PlayerSwitchModalProps> = ({
 
   useEffect(() => {
     loadPlayers();
-    fetchDbStatus().then(setEngineInfo);
   }, []);
 
   const loadPlayers = async () => {
@@ -298,22 +296,6 @@ export const PlayerSwitchModal: React.FC<PlayerSwitchModalProps> = ({
               );
             })
           )}
-        </div>
-
-        {/* Database Engine Information Footer */}
-        <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-          <div className="flex items-center gap-1.5 font-mono">
-            <Database className="w-3.5 h-3.5 text-emerald-400" />
-            <span>
-              Engine:{' '}
-              <span className={`font-bold uppercase ${engineInfo?.engine === 'turso' ? 'text-cyan-300' : 'text-amber-300'}`}>
-                {engineInfo?.engine === 'turso' ? '⚡ Turso Cloud' : '🗄️ SQLite File'}
-              </span>
-            </span>
-          </div>
-          <span className="text-slate-500 font-mono text-[10px] truncate max-w-[160px]">
-            {engineInfo?.databaseTarget}
-          </span>
         </div>
 
         {/* Security PIN 8888 Delete Confirmation Modal */}

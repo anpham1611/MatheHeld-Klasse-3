@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameScreen, Language, CharacterAvatar, PlayerProfile, GameScoreDetail, DbEngineInfo } from './types/game';
+import { GameScreen, Language, CharacterAvatar, PlayerProfile, GameScoreDetail } from './types/game';
 import { sound } from './audio/soundManager';
 import { TitleScreen } from './components/TitleScreen';
 import { WorldSelect } from './components/WorldSelect';
@@ -20,7 +20,6 @@ import { NewPlayerModal } from './components/NewPlayerModal';
 import {
   loadPlayerFromDb,
   savePlayerToDb,
-  fetchDbStatus,
   renamePlayerInDb,
   createPlayerInDb,
 } from './services/playerService';
@@ -57,8 +56,6 @@ export default function App() {
   const [lang, setLang] = useState<Language>('de');
   const [isMuted, setIsMuted] = useState(false);
 
-  // Database & Engine state
-  const [engineInfo, setEngineInfo] = useState<DbEngineInfo | null>(null);
   const [gameScores, setGameScores] = useState<Record<string, GameScoreDetail>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
@@ -84,50 +81,25 @@ export default function App() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Normalize any old inflated scores (> 50 points from old x100 scale)
-        if (parsed.scores) {
-          const keys = Object.keys(parsed.scores) as (keyof PlayerProfile['scores'])[];
-          const hasOldInflatedScores = keys.some((k) => (parsed.scores[k] || 0) > 50);
-          if (hasOldInflatedScores) {
-            keys.forEach((k) => {
-              parsed.scores[k] = 0;
-            });
-          }
-        }
         return parsed;
       }
     } catch {}
     return DEFAULT_PROFILE;
   });
 
-  // Fetch DB engine status and sync player profile on boot
+  // Sync player profile on boot
   useEffect(() => {
-    fetchDbStatus().then((info) => {
-      if (info) setEngineInfo(info);
-    });
-
-    // Try loading current player from database (SQLite or Turso)
+    // Try loading current player from the server
     const currentName = player.name || 'Leo der Fuchs';
     loadPlayerFromDb(currentName).then((res) => {
       const loadedPlayer = res.player;
       if (res.exists && loadedPlayer) {
-        if (loadedPlayer.scores) {
-          const scoresRecord = loadedPlayer.scores;
-          const keys = Object.keys(scoresRecord) as (keyof PlayerProfile['scores'])[];
-          const hasOldInflated = keys.some((k) => (scoresRecord[k] || 0) > 50);
-          if (hasOldInflated) {
-            keys.forEach((k) => {
-              scoresRecord[k] = 0;
-            });
-          }
-        }
         setPlayer(loadedPlayer);
         if (res.gameScores) setGameScores(res.gameScores);
       } else {
         // Player doesn't exist yet in DB; save initial state
         savePlayerToDb(player).catch(() => {});
       }
-      if (res.engine) setEngineInfo(res.engine);
     });
   }, []);
 
@@ -146,7 +118,7 @@ export default function App() {
     }, 3500);
   };
 
-  // Manual or automatic Save Progress to SQLite / Turso
+  // Manual or automatic save progress
   const handleSaveProgress = useCallback(async (lastGameMeta?: {
     gameKey: string;
     score: number;
@@ -160,13 +132,9 @@ export default function App() {
         if (res.gameScores) {
           setGameScores(res.gameScores);
         }
-        if (res.engine) {
-          setEngineInfo(res.engine);
-        }
-        const engineLabel = res.engine?.engine === 'turso' ? 'Turso' : 'SQLite';
         const msg = lang === 'de'
-          ? `Spielstand für ${player.name} in ${engineLabel} gespeichert!`
-          : `Đã lưu kết quả của ${player.name} vào ${engineLabel} thành công!`;
+          ? `Spielstand für ${player.name} gespeichert!`
+          : `Đã lưu kết quả của ${player.name} thành công!`;
         triggerSaveToast(msg);
       } else {
         triggerSaveToast(lang === 'de' ? 'Lokal gespeichert!' : 'Đã lưu vào bộ nhớ máy!');
@@ -206,7 +174,7 @@ export default function App() {
         totalProblemsSolved: prev.totalProblemsSolved + 1,
       };
 
-      // Automatically sync this game score to SQLite/Turso backend in background
+      // Automatically sync this game score in the background
       savePlayerToDb(updatedPlayer, {
         gameKey: modeKey,
         score: scoreAchieved,
@@ -335,7 +303,6 @@ export default function App() {
           onSaveProgress={() => handleSaveProgress()}
           isSaving={isSaving}
           saveMessage={saveMessage}
-          engineInfo={engineInfo}
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
         />
@@ -353,7 +320,6 @@ export default function App() {
           saveMessage={saveMessage}
           onOpenScoresModal={() => setShowScoresModal(true)}
           onOpenSwitchModal={() => setShowSwitchModal(true)}
-          engineInfo={engineInfo}
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
         />
@@ -505,7 +471,6 @@ export default function App() {
           lang={lang}
           player={player}
           gameScores={gameScores}
-          engineInfo={engineInfo}
           onSave={() => handleSaveProgress()}
           isSaving={isSaving}
           onClose={() => setShowScoresModal(false)}

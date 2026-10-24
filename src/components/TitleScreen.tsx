@@ -11,13 +11,13 @@ import {
   Trophy,
   Check,
   Edit2,
-  Database,
   Coins,
   UserPlus,
 } from 'lucide-react';
-import { Language, CharacterAvatar, PlayerProfile, DbEngineInfo } from '../types/game';
+import { Language, CharacterAvatar, PlayerProfile } from '../types/game';
 import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
+import { totalGameScore } from '../math/gameScore';
 
 interface TitleScreenProps {
   lang: Language;
@@ -33,7 +33,6 @@ interface TitleScreenProps {
   onSaveProgress: () => Promise<void>;
   isSaving: boolean;
   saveMessage: string | null;
-  engineInfo: DbEngineInfo | null;
   isMuted: boolean;
   onToggleMute: () => void;
 }
@@ -60,7 +59,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   onSaveProgress,
   isSaving,
   saveMessage,
-  engineInfo,
   isMuted,
   onToggleMute,
 }) => {
@@ -106,7 +104,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
 
       {/* Top Bar Controls */}
       <header className="relative z-10 px-2 py-2 sm:px-6 sm:py-3 flex flex-wrap items-center justify-between gap-2 shrink-0">
-        {/* German Curriculum & Database Badge */}
+        {/* German Curriculum Badge */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-2.5 py-1.5 rounded-2xl backdrop-blur">
             <span className="text-sm">🇩🇪</span>
@@ -218,7 +216,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               <Check className="w-4 h-4 text-emerald-400 shrink-0" />
               <span className="font-bold">{saveMessage}</span>
             </div>
-            <span className="text-[10px] text-emerald-400 font-mono">SQLite/Turso</span>
           </div>
         </div>
       )}
@@ -313,6 +310,13 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <span className="flex items-center gap-1 text-amber-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-amber-500/30">
               <Coins className="w-3.5 h-3.5" />
               {player.euroCoins}
+            </span>
+            <span
+              className="flex items-center gap-1 text-indigo-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-indigo-500/30"
+              title={lang === 'de' ? 'Gesamtpunkte' : 'Tổng điểm'}
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              {totalGameScore(player.scores)} {lang === 'de' ? 'Pkt' : 'điểm'}
             </span>
           </div>
 
