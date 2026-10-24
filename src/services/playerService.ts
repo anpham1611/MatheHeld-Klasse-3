@@ -138,3 +138,83 @@ export async function fetchSavedPlayersList(): Promise<SavedPlayerSummary[]> {
     return [];
   }
 }
+
+export async function renamePlayerInDb(
+  oldName: string,
+  newName: string
+): Promise<SavePlayerResponse & { code?: string }> {
+  try {
+    const res = await fetch('/api/players/rename', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oldName: oldName.trim(), newName: newName.trim() }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        error: data.error || `Server error (${res.status})`,
+        code: data.code,
+      };
+    }
+    return data;
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.message || 'Lỗi kết nối khi đổi tên',
+    };
+  }
+}
+
+export async function createPlayerInDb(
+  name: string,
+  avatar: string = 'fuchs'
+): Promise<SavePlayerResponse & { code?: string }> {
+  try {
+    const res = await fetch('/api/players/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name.trim(), avatar }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        error: data.error || `Server error (${res.status})`,
+        code: data.code,
+      };
+    }
+    return data;
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.message || 'Lỗi kết nối khi tạo tài khoản',
+    };
+  }
+}
+
+export async function deletePlayerInDb(name: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/players/${encodeURIComponent(name.trim())}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, error: data.error || 'Xoá thất bại' };
+    }
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Lỗi kết nối' };
+  }
+}
+
+export async function checkPlayerNameAvailability(name: string): Promise<{ available: boolean; exists: boolean }> {
+  try {
+    const res = await fetch(`/api/players/check/${encodeURIComponent(name.trim())}`);
+    if (!res.ok) return { available: false, exists: false };
+    const data = await res.json();
+    return { available: Boolean(data.available), exists: Boolean(data.exists) };
+  } catch {
+    return { available: false, exists: false };
+  }
+}

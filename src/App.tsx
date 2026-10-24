@@ -14,7 +14,15 @@ import { MathBrickBuilder } from './components/games/MathBrickBuilder';
 import { CertificateModal } from './components/CertificateModal';
 import { PlayerSwitchModal } from './components/PlayerSwitchModal';
 import { GameScoresModal } from './components/GameScoresModal';
-import { loadPlayerFromDb, savePlayerToDb, fetchDbStatus } from './services/playerService';
+import { RenamePlayerModal } from './components/RenamePlayerModal';
+import { NewPlayerModal } from './components/NewPlayerModal';
+import {
+  loadPlayerFromDb,
+  savePlayerToDb,
+  fetchDbStatus,
+  renamePlayerInDb,
+  createPlayerInDb,
+} from './services/playerService';
 import { scoreAfterGame } from './math/gameScore';
 
 const STORAGE_KEY = 'matheheld_klasse3_profile_v1';
@@ -56,6 +64,17 @@ export default function App() {
   // Modals
   const [showSwitchModal, setShowSwitchModal] = useState(false);
   const [showScoresModal, setShowScoresModal] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showNewPlayerModal, setShowNewPlayerModal] = useState(false);
+  const [isFirstTimeOnboarding, setIsFirstTimeOnboarding] = useState(() => {
+    try {
+      const hasOnboarded = localStorage.getItem('matheheld_onboarded_v1');
+      const hasSaved = localStorage.getItem(STORAGE_KEY);
+      return !hasOnboarded && !hasSaved;
+    } catch {
+      return false;
+    }
+  });
 
   // Player Profile initialized from localStorage or default
   const [player, setPlayer] = useState<PlayerProfile>(() => {
@@ -201,7 +220,62 @@ export default function App() {
     });
   };
 
-  // Switch or load player by name (Senior Engineer requirement: enter name to load old or create new)
+  // Rename existing player safely (updates DB without cloning!)
+  const handleRenamePlayer = async (newName: string) => {
+    const clean = newName.trim();
+    if (!clean || clean === player.name) return { success: true };
+
+    try {
+      const res = await renamePlayerInDb(player.name, clean);
+      if (res.success && res.player) {
+        setPlayer(res.player);
+        if (res.gameScores) setGameScores(res.gameScores);
+        const msg = lang === 'de'
+          ? `Name zu "${res.player.name}" geändert & Spielstand gesichert!`
+          : `Đã đổi biệt danh sang "${res.player.name}" thành công!`;
+        triggerSaveToast(msg);
+        return { success: true };
+      }
+      return {
+        success: false,
+        error: res.error || (lang === 'de' ? 'Dieser Name ist bereits vergeben!' : 'Biệt danh này đã có người sử dụng!'),
+      };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Lỗi khi đổi tên' };
+    }
+  };
+
+  // Create brand new player with clean 0 stats
+  const handleCreatePlayer = async (name: string, avatar: CharacterAvatar) => {
+    const clean = name.trim();
+    if (!clean) return { success: false, error: 'Tên không được để trống' };
+
+    try {
+      const res = await createPlayerInDb(clean, avatar);
+      if (res.success && res.player) {
+        setPlayer(res.player);
+        setGameScores(res.gameScores || {});
+        try {
+          localStorage.setItem('matheheld_onboarded_v1', 'true');
+        } catch {}
+        setIsFirstTimeOnboarding(false);
+        setShowNewPlayerModal(false);
+        const msg = lang === 'de'
+          ? `Neuer Held "${res.player.name}" erstellt! Willkommen im Spiel!`
+          : `Đã tạo nhân vật mới "${res.player.name}" thành công!`;
+        triggerSaveToast(msg);
+        return { success: true };
+      }
+      return {
+        success: false,
+        error: res.error || (lang === 'de' ? 'Dieser Name ist bereits vergeben!' : 'Biệt danh này đã tồn tại!'),
+      };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Lỗi khi tạo tài khoản' };
+    }
+  };
+
+  // Switch or load player by name
   const handleSwitchPlayer = async (name: string, isExisting: boolean) => {
     const cleanName = name.trim();
     if (!cleanName) return;
@@ -212,70 +286,19 @@ export default function App() {
       if (res.exists && res.player) {
         setPlayer(res.player);
         if (res.gameScores) setGameScores(res.gameScores);
+        try {
+          localStorage.setItem('matheheld_onboarded_v1', 'true');
+        } catch {}
+        setIsFirstTimeOnboarding(false);
         const msg = lang === 'de'
           ? `Willkommen zurück, ${res.player.name}! Alter Spielstand geladen.`
           : `Chào mừng ${res.player.name} trở lại! Đã tải dữ liệu thành tích cũ.`;
         triggerSaveToast(msg);
       } else {
-        // Create fresh new profile
-        const newProfile: PlayerProfile = {
-          name: cleanName,
-          avatar: 'fuchs',
-          stars: 0,
-          euroCoins: 0,
-          currentStreak: 0,
-          highestStreak: 0,
-          unlockedHats: ['standard'],
-          equippedHat: 'standard',
-          capturedPokemon: [],
-          scores: {
-            minecraft: 0,
-            number_line: 0,
-            einmaleins: 0,
-            euro_shop: 0,
-            tower_math: 0,
-            pokemon: 0,
-            logic_game: 0,
-            mathbrick: 0,
-          },
-          totalProblemsSolved: 0,
-        };
-        setPlayer(newProfile);
-        setGameScores({});
-        await savePlayerToDb(newProfile);
-        const msg = lang === 'de'
-          ? `Neuer Held ${cleanName} erstellt! Viel Erfolg!`
-          : `Tạo tài khoản mới cho ${cleanName}! Chúc bạn chơi vui vẻ!`;
-        triggerSaveToast(msg);
+        await handleCreatePlayer(cleanName, 'fuchs');
       }
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  // Inline name change on Title Screen
-  const handleUpdateName = async (newName: string) => {
-    const clean = newName.trim();
-    if (!clean || clean === player.name) return;
-
-    // Check if player exists in DB
-    const res = await loadPlayerFromDb(clean);
-    if (res.exists && res.player) {
-      setPlayer(res.player);
-      if (res.gameScores) setGameScores(res.gameScores);
-      const msg = lang === 'de'
-        ? `Spielstand für ${res.player.name} geladen!`
-        : `Đã tìm thấy và tải dữ liệu cũ của ${res.player.name}!`;
-      triggerSaveToast(msg);
-    } else {
-      // Rename current or create new
-      const updated = { ...player, name: clean };
-      setPlayer(updated);
-      savePlayerToDb(updated).catch(() => {});
-      const msg = lang === 'de'
-        ? `Name zu ${clean} geändert & gespeichert!`
-        : `Đã đổi tên sang ${clean} và lưu lại!`;
-      triggerSaveToast(msg);
     }
   };
 
@@ -301,7 +324,8 @@ export default function App() {
           onSetLang={setLang}
           player={player}
           onSelectAvatar={handleSelectAvatar}
-          onUpdateName={handleUpdateName}
+          onOpenRenameModal={() => setShowRenameModal(true)}
+          onOpenNewPlayerModal={() => setShowNewPlayerModal(true)}
           onStart={() => setScreen('world_map')}
           onOpenCertificate={() => setScreen('certificate')}
           onOpenSwitchModal={() => setShowSwitchModal(true)}
@@ -441,7 +465,7 @@ export default function App() {
         <CertificateModal
           lang={lang}
           player={player}
-          onUpdateName={handleUpdateName}
+          onRenamePlayer={handleRenamePlayer}
           onBack={() => setScreen('world_map')}
         />
       )}
@@ -452,6 +476,10 @@ export default function App() {
           lang={lang}
           currentName={player.name}
           onSelectPlayer={handleSwitchPlayer}
+          onOpenCreateNew={() => {
+            setShowSwitchModal(false);
+            setShowNewPlayerModal(true);
+          }}
           onClose={() => setShowSwitchModal(false)}
         />
       )}
@@ -466,6 +494,35 @@ export default function App() {
           onSave={() => handleSaveProgress()}
           isSaving={isSaving}
           onClose={() => setShowScoresModal(false)}
+        />
+      )}
+
+      {/* Safe Rename Nickname Modal */}
+      {showRenameModal && (
+        <RenamePlayerModal
+          lang={lang}
+          currentName={player.name}
+          onRename={handleRenamePlayer}
+          onClose={() => setShowRenameModal(false)}
+        />
+      )}
+
+      {/* Create New Hero & First-time Onboarding Modal */}
+      {(showNewPlayerModal || isFirstTimeOnboarding) && (
+        <NewPlayerModal
+          lang={lang}
+          isOpen={showNewPlayerModal || isFirstTimeOnboarding}
+          isFirstTime={isFirstTimeOnboarding}
+          onCreatePlayer={handleCreatePlayer}
+          onPickExisting={() => {
+            setIsFirstTimeOnboarding(false);
+            setShowNewPlayerModal(false);
+            setShowSwitchModal(true);
+          }}
+          onClose={() => {
+            setIsFirstTimeOnboarding(false);
+            setShowNewPlayerModal(false);
+          }}
         />
       )}
     </div>

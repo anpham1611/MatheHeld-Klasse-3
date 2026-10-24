@@ -7,6 +7,9 @@ import {
   listAllPlayers,
   saveMathBrickBuild,
   savePlayerProfile,
+  renamePlayer,
+  createPlayer,
+  deletePlayer,
 } from './db.js';
 import { BRICK_CATALOG, getBrickDimensions, getBrickPiece } from '../math/brickCatalog.js';
 import { BaseGridSize, blockFitsBaseGrid, blocksOverlap, DEFAULT_BASE_GRID_SIZE, isBaseGridSize } from '../math/brickBuilding.js';
@@ -212,5 +215,102 @@ app.post('/api/players/save', async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error saving player:', error);
     res.status(500).json({ success: false, error: error.message || 'Save error' });
+  }
+});
+
+// 5. Rename player (safe update of nickname without cloning!)
+app.post('/api/players/rename', async (req: Request, res: Response) => {
+  try {
+    const { oldName, newName } = req.body;
+    if (!oldName || typeof oldName !== 'string' || !oldName.trim()) {
+      return res.status(400).json({ success: false, error: 'Current player name is required' });
+    }
+    if (!newName || typeof newName !== 'string' || !newName.trim()) {
+      return res.status(400).json({ success: false, error: 'New player name is required' });
+    }
+
+    const trimmedOld = oldName.trim();
+    const trimmedNew = newName.trim();
+
+    if (trimmedNew.length < 2 || trimmedNew.length > 20) {
+      return res.status(400).json({ success: false, error: 'Name must be between 2 and 20 characters' });
+    }
+
+    const updated = await renamePlayer(trimmedOld, trimmedNew);
+    res.json({
+      success: true,
+      renamed: true,
+      player: updated?.player,
+      gameScores: updated?.gameScores,
+      engine: getEngineInfo(),
+    });
+  } catch (error: any) {
+    console.error('Error renaming player:', error);
+    if (error.code === 'NAME_EXISTS') {
+      return res.status(409).json({ success: false, code: 'NAME_EXISTS', error: error.message });
+    }
+    res.status(500).json({ success: false, error: error.message || 'Rename error' });
+  }
+});
+
+// 6. Create brand new player profile
+app.post('/api/players/create', async (req: Request, res: Response) => {
+  try {
+    const { name, avatar } = req.body;
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'Player name is required' });
+    }
+
+    const trimmed = name.trim();
+    if (trimmed.length < 2 || trimmed.length > 20) {
+      return res.status(400).json({ success: false, error: 'Name must be between 2 and 20 characters' });
+    }
+
+    const created = await createPlayer({ name: trimmed, avatar });
+    res.json({
+      success: true,
+      created: true,
+      player: created?.player,
+      gameScores: created?.gameScores,
+      engine: getEngineInfo(),
+    });
+  } catch (error: any) {
+    console.error('Error creating player:', error);
+    if (error.code === 'NAME_EXISTS') {
+      return res.status(409).json({ success: false, code: 'NAME_EXISTS', error: error.message });
+    }
+    res.status(500).json({ success: false, error: error.message || 'Creation error' });
+  }
+});
+
+// 7. Check nickname availability
+app.get('/api/players/check/:name', async (req: Request, res: Response) => {
+  try {
+    const name = req.params.name.trim();
+    if (!name) return res.json({ success: true, exists: false, available: false });
+    const existing = await getPlayerByName(name);
+    res.json({
+      success: true,
+      name,
+      exists: Boolean(existing),
+      available: !existing,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 8. Delete player profile
+app.delete('/api/players/:name', async (req: Request, res: Response) => {
+  try {
+    const name = req.params.name.trim();
+    if (!name) {
+      return res.status(400).json({ success: false, error: 'Player name is required' });
+    }
+    await deletePlayer(name);
+    res.json({ success: true, deleted: true });
+  } catch (error: any) {
+    console.error(`Error deleting player ${req.params.name}:`, error);
+    res.status(500).json({ success: false, error: error.message || 'Delete error' });
   }
 });

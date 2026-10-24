@@ -7,18 +7,20 @@ import { sound } from '../audio/soundManager';
 interface CertificateModalProps {
   lang: Language;
   player: PlayerProfile;
-  onUpdateName: (name: string) => void;
+  onRenamePlayer: (name: string) => Promise<{ success: boolean; error?: string }>;
   onBack: () => void;
 }
 
 export const CertificateModal: React.FC<CertificateModalProps> = ({
   lang,
   player,
-  onUpdateName,
+  onRenamePlayer,
   onBack,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(player.name || 'Felix');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const today = new Date().toLocaleDateString(lang === 'de' ? 'de-DE' : 'vi-VN', {
     day: '2-digit',
     month: '2-digit',
@@ -30,9 +32,24 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
     window.print();
   };
 
-  const handleSaveName = () => {
-    onUpdateName(tempName.trim() || 'Mathe-Held');
-    setIsEditing(false);
+  const handleSaveName = async () => {
+    const clean = tempName.trim();
+    if (!clean) return;
+    if (clean === player.name) {
+      setIsEditing(false);
+      return;
+    }
+    setSaving(true);
+    setErrorMsg(null);
+    const res = await onRenamePlayer(clean);
+    setSaving(false);
+    if (res.success) {
+      sound.playCorrect();
+      setIsEditing(false);
+    } else {
+      sound.playWrong();
+      setErrorMsg(res.error || t(lang, 'nameAlreadyTaken'));
+    }
   };
 
   return (
@@ -90,21 +107,32 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           </div>
 
           {isEditing ? (
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <input
-                type="text"
-                value={tempName}
-                onChange={(e) => setTempName(e.target.value)}
-                maxLength={24}
-                className="text-2xl sm:text-3xl font-black text-center text-amber-950 bg-white border-2 border-amber-400 rounded-xl px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500 font-serif"
-                autoFocus
-              />
-              <button
-                onClick={handleSaveName}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold cursor-pointer transition text-sm"
-              >
-                {lang === 'de' ? 'Speichern' : 'Lưu'}
-              </button>
+            <div className="flex flex-col items-center justify-center gap-2 mt-2">
+              <div className="flex items-center justify-center gap-2">
+                <input
+                  type="text"
+                  value={tempName}
+                  onChange={(e) => {
+                    setTempName(e.target.value);
+                    setErrorMsg(null);
+                  }}
+                  maxLength={20}
+                  className="text-2xl sm:text-3xl font-black text-center text-amber-950 bg-white border-2 border-amber-400 rounded-xl px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500 font-serif"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveName}
+                  disabled={saving || !tempName.trim()}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl font-bold cursor-pointer transition text-sm"
+                >
+                  {saving ? (lang === 'de' ? 'Speichern...' : 'Đang lưu...') : (lang === 'de' ? 'Speichern' : 'Lưu')}
+                </button>
+              </div>
+              {errorMsg && (
+                <div className="text-xs font-bold text-rose-700 bg-rose-100 border border-rose-300 px-3 py-1 rounded-lg">
+                  {errorMsg}
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center justify-center gap-3 mt-1 group">

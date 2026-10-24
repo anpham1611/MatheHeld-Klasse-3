@@ -13,6 +13,7 @@ import {
   Edit2,
   Database,
   Coins,
+  UserPlus,
 } from 'lucide-react';
 import { Language, CharacterAvatar, PlayerProfile, DbEngineInfo } from '../types/game';
 import { t } from '../math/translations';
@@ -23,11 +24,12 @@ interface TitleScreenProps {
   onSetLang: (lang: Language) => void;
   player: PlayerProfile;
   onSelectAvatar: (avatar: CharacterAvatar) => void;
-  onUpdateName: (newName: string) => void;
   onStart: () => void;
   onOpenCertificate: () => void;
   onOpenSwitchModal: () => void;
   onOpenScoresModal: () => void;
+  onOpenRenameModal: () => void;
+  onOpenNewPlayerModal: () => void;
   onSaveProgress: () => Promise<void>;
   isSaving: boolean;
   saveMessage: string | null;
@@ -49,11 +51,12 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   onSetLang,
   player,
   onSelectAvatar,
-  onUpdateName,
   onStart,
   onOpenCertificate,
   onOpenSwitchModal,
   onOpenScoresModal,
+  onOpenRenameModal,
+  onOpenNewPlayerModal,
   onSaveProgress,
   isSaving,
   saveMessage,
@@ -61,12 +64,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   isMuted,
   onToggleMute,
 }) => {
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(player.name);
-
-  useEffect(() => {
-    setNameInput(player.name);
-  }, [player.name]);
 
   useEffect(() => {
     // Keyboard listener: Space or Enter to start (when not editing name input)
@@ -83,15 +80,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onStart]);
-
-  const handleSaveName = () => {
-    const trimmed = nameInput.trim();
-    if (trimmed && trimmed !== player.name) {
-      sound.playCorrect();
-      onUpdateName(trimmed);
-    }
-    setIsEditingName(false);
-  };
 
   return (
     <div className="relative w-full min-h-[100dvh] h-[100dvh] overflow-y-auto overscroll-contain bg-slate-950 flex flex-col justify-between select-none p-2 sm:p-4">
@@ -144,6 +132,18 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Create New Hero Button */}
+          <button
+            onClick={() => {
+              sound.playJump();
+              onOpenNewPlayerModal();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-emerald-600/25 hover:bg-emerald-600/35 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur shadow-sm active:scale-95"
+            title={t(lang, 'newHeroBtn')}
+          >
+            <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">{t(lang, 'newHeroBtn')}</span>
+          </button>
 
           {/* Switch Player / Load Old Profile */}
           <button
@@ -285,44 +285,23 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             </div>
           </div>
 
-          {/* Interactive Player Name (Edit & Save on Main Screen) */}
-          <div className="mt-3 flex items-center justify-center gap-2">
-            {isEditingName ? (
-              <div className="flex items-center gap-1.5 bg-slate-900 border-2 border-amber-400 rounded-xl px-2 py-1 shadow-lg">
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSaveName();
-                    if (e.key === 'Escape') setIsEditingName(false);
-                  }}
-                  autoFocus
-                  maxLength={20}
-                  className="bg-transparent text-white font-extrabold text-sm focus:outline-none w-36 font-['Fredoka']"
-                />
-                <button
-                  onClick={handleSaveName}
-                  className="p-1 bg-amber-500 text-slate-950 rounded-lg hover:bg-amber-400 transition cursor-pointer"
-                  title="Lưu tên"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-700 hover:border-amber-400/80 px-3 py-1.5 rounded-xl backdrop-blur transition">
-                <span className="text-white font-extrabold text-base font-['Fredoka'] tracking-wide">
-                  {player.name}
-                </span>
-                <button
-                  onClick={() => setIsEditingName(true)}
-                  className="p-1 hover:text-amber-300 text-slate-400 transition cursor-pointer"
-                  title="Đổi tên / Name ändern"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
+          {/* Interactive Player Name (Opens safe Rename Dialog) */}
+          <div className="mt-3 flex items-center justify-center">
+            <button
+              onClick={() => {
+                sound.playJump();
+                onOpenRenameModal();
+              }}
+              className="flex items-center gap-2 bg-slate-900/90 border border-slate-700 hover:border-amber-400 px-3.5 py-1.5 rounded-xl backdrop-blur transition cursor-pointer group shadow-sm active:scale-98"
+              title={t(lang, 'renameHero')}
+            >
+              <span className="text-white font-extrabold text-base font-['Fredoka'] tracking-wide group-hover:text-amber-300 transition-colors">
+                {player.name}
+              </span>
+              <span className="p-1 text-slate-400 group-hover:text-amber-300 transition-colors">
+                <Edit2 className="w-3.5 h-3.5" />
+              </span>
+            </button>
           </div>
 
           {/* Player Stats Badges */}

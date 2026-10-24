@@ -1,3 +1,4 @@
+import http from 'http';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -17,12 +18,15 @@ const isProduction = process.env.NODE_ENV === 'production';
 async function startServer() {
   await initializeServer();
 
+  const server = http.createServer(app);
+
   if (!isProduction) {
     const { createServer: createViteServer } = await import('vite');
+    const isHmrDisabled = process.env.DISABLE_HMR === 'true';
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: process.env.DISABLE_HMR !== 'true',
+        hmr: isHmrDisabled ? false : { server },
       },
       appType: 'spa',
     });
@@ -35,10 +39,11 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT} [Mode: ${isProduction ? 'Production' : 'Development'}]`);
     console.log(`Active DB Engine: ${getEngineInfo().engine} (${getEngineInfo().databaseTarget})`);
   });
 }
 
 startServer();
+

@@ -500,3 +500,152 @@ export async function savePlayerProfile(data: {
 
   return await getPlayerByName(name);
 }
+
+// Rename player (safe update preserving all stats, cascading to child tables)
+export async function renamePlayer(oldName: string, newName: string) {
+  const db = getDb();
+  const trimmedOld = oldName.trim();
+  const trimmedNew = newName.trim();
+
+  if (!trimmedOld || !trimmedNew) {
+    throw new Error('Both old name and new name are required');
+  }
+
+  if (trimmedNew.length < 2 || trimmedNew.length > 20) {
+    throw new Error('Name must be between 2 and 20 characters');
+  }
+
+  // If identical, return existing
+  if (trimmedOld.toLowerCase() === trimmedNew.toLowerCase()) {
+    return await getPlayerByName(trimmedOld);
+  }
+
+  // Check if old player exists
+  const oldRes = await db.execute({
+    sql: `SELECT id, name FROM players WHERE LOWER(name) = LOWER(?) LIMIT 1`,
+    args: [trimmedOld],
+  });
+
+  if (oldRes.rows.length === 0) {
+    throw new Error(`Player "${trimmedOld}" not found`);
+  }
+
+  const playerId = Number(oldRes.rows[0].id);
+
+  // Check if new name is already taken by another player
+  const existingNewRes = await db.execute({
+    sql: `SELECT id, name FROM players WHERE LOWER(name) = LOWER(?) LIMIT 1`,
+    args: [trimmedNew],
+  });
+
+  if (existingNewRes.rows.length > 0) {
+    const error: any = new Error(`Nickname "${trimmedNew}" is already taken`);
+    error.code = 'NAME_EXISTS';
+    throw error;
+  }
+
+  // Update players table
+  await db.execute({
+    sql: `UPDATE players SET name = ?, updated_at = datetime('now') WHERE id = ?`,
+    args: [trimmedNew, playerId],
+  });
+
+  // Cascade to game_scores
+  await db.execute({
+    sql: `UPDATE game_scores SET player_name = ?, updated_at = datetime('now') WHERE LOWER(player_name) = LOWER(?)`,
+    args: [trimmedNew, trimmedOld],
+  });
+
+  // Cascade to game_history
+  await db.execute({
+    sql: `UPDATE game_history SET player_name = ? WHERE LOWER(player_name) = LOWER(?)`,
+    args: [trimmedNew, trimmedOld],
+  });
+
+  // Cascade to mathbrick_builds
+  await db.execute({
+    sql: `UPDATE mathbrick_builds SET player_name = ?, updated_at = datetime('now') WHERE LOWER(player_name) = LOWER(?)`,
+    args: [trimmedNew, trimmedOld],
+  });
+
+  console.log(`[DB] Renamed player #${playerId} from "${trimmedOld}" to "${trimmedNew}" successfully.`);
+  return await getPlayerByName(trimmedNew);
+}
+
+// Create fresh player account
+export async function createPlayer(data: { name: string; avatar?: string }) {
+  const db = getDb();
+  const trimmedName = data.name.trim();
+  const avatar = data.avatar || 'fuchs';
+
+  if (!trimmedName) {
+    throw new Error('Player name is required');
+  }
+
+  if (trimmedName.length < 2 || trimmedName.length > 20) {
+    throw new Error('Name must be between 2 and 20 characters');
+  }
+
+  // Check if name already taken
+  const existing = await db.execute({
+    sql: `SELECT id FROM players WHERE LOWER(name) = LOWER(?) LIMIT 1`,
+    args: [trimmedName],
+  });
+
+  if (existing.rows.length > 0) {
+    const error: any = new Error(`Nickname "${trimmedName}" is already taken`);
+    error.code = 'NAME_EXISTS';
+    throw error;
+  }
+
+  const insertRes = await db.execute({
+    sql: `INSERT INTO players (
+            name, avatar, stars, euro_coins, current_streak, highest_streak,
+            unlocked_hats, equipped_hat, captured_pokemon, total_problems_solved,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 0, 0, '["standard"]', 'standard', '[]', 0, datetime('now'), datetime('now'))`,
+    args: [trimmedName, avatar],
+  });
+
+  const newPlayerId = Number(insertRes.lastInsertRowid || 0);
+
+  // Initialize base game scores with 0
+  const defaultGames = ['minecraft', 'number_line', 'einmaleins', 'euro_shop', 'tower_math', 'pokemon', 'logic_game', 'mathbrick'];
+  for (const g of defaultGames) {
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO game_scores (player_id, player_name, game_key, high_score, times_played, problems_solved, stars_earned, coins_earned, level_reached)
+            VALUES (?, ?, ?, 0, 0, 0, 0, 0, 1)`,
+      args: [newPlayerId, trimmedName, g],
+    });
+  }
+
+  console.log(`[DB] Created new player profile #${newPlayerId} ("${trimmedName}").`);
+  return await getPlayerByName(trimmedName);
+}
+
+// Delete player account
+export async function deletePlayer(rawName: string) {
+  const db = getDb();
+  const name = rawName.trim();
+  if (!name) return false;
+
+  await db.execute({
+    sql: `DELETE FROM players WHERE LOWER(name) = LOWER(?)`,
+    args: [name],
+  });
+  await db.execute({
+    sql: `DELETE FROM game_scores WHERE LOWER(player_name) = LOWER(?)`,
+    args: [name],
+  });
+  await db.execute({
+    sql: `DELETE FROM game_history WHERE LOWER(player_name) = LOWER(?)`,
+    args: [name],
+  });
+  await db.execute({
+    sql: `DELETE FROM mathbrick_builds WHERE LOWER(player_name) = LOWER(?)`,
+    args: [name],
+  });
+
+  console.log(`[DB] Deleted player "${name}".`);
+  return true;
+}
