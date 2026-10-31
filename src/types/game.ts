@@ -10,6 +10,7 @@ export type GameScreen =
   | 'logic_game'
   | 'mathbrick'
   | 'roboforge'
+  | 'maze_discovery'
   | 'certificate';
 
 export type Language = 'de';
@@ -36,6 +37,7 @@ export interface PlayerProfile {
     logic_game?: number;
     mathbrick?: number;
     roboforge?: number;
+    maze_discovery?: number;
   };
   totalProblemsSolved: number;
 }

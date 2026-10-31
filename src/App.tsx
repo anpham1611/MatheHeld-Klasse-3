@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback } from 'react';
 import { GameScreen, Language, CharacterAvatar, PlayerProfile, GameScoreDetail } from './types/game';
 import { sound } from './audio/soundManager';
 import { TitleScreen } from './components/TitleScreen';
@@ -25,6 +25,8 @@ import {
 } from './services/playerService';
 import { scoreAfterGame } from './math/gameScore';
 
+const MazeDiscovery = lazy(() => import('./components/games/MazeDiscovery').then((module) => ({ default: module.MazeDiscovery })));
+
 const STORAGE_KEY = 'matheheld_klasse3_profile_v1';
 
 const DEFAULT_PROFILE: PlayerProfile = {
@@ -47,6 +49,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
     logic_game: 0,
     mathbrick: 0,
     roboforge: 0,
+    maze_discovery: 0,
   },
   totalProblemsSolved: 0,
 };
@@ -447,6 +450,21 @@ export default function App() {
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
         />
+      )}
+
+      {screen === 'maze_discovery' && (
+        <Suspense fallback={<div className="grid min-h-[100dvh] place-items-center bg-sky-100 font-black text-sky-900">Labyrinth wird geladen …</div>}>
+          <MazeDiscovery
+            lang={lang}
+            player={player}
+            onUpdateStats={(stars, coins, score) =>
+              handleUpdateStats('maze_discovery', stars, coins, score)
+            }
+            onBack={() => setScreen('world_map')}
+            isMuted={isMuted}
+            onToggleMute={handleToggleMute}
+          />
+        </Suspense>
       )}
 
       {screen === 'certificate' && (

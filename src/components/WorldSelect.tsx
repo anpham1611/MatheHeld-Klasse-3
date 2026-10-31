@@ -144,6 +144,16 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       badge: '🧠 MATHE · CODE · RETTUNG',
       score: player.scores.roboforge || 0,
     },
+    {
+      id: 'maze_discovery' as GameScreen,
+      title: 'Wegfinder 3D',
+      desc: 'Plane Robis Weg durch bunte Labyrinthe – dann drück auf LOS!',
+      icon: '🤖🧩',
+      bgGradient: 'from-cyan-500 via-blue-700 to-violet-950',
+      borderColor: 'border-cyan-300',
+      badge: '🧠 PLANEN · PROGRAMMIEREN · LOS!',
+      score: player.scores.maze_discovery || 0,
+    },
   ];
 
   return (
@@ -356,6 +366,8 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                     ? (lang === 'de' ? 'Ab 8 Jahren · 3D-Bau' : 'Từ 8 tuổi · Xây dựng 3D')
                     : w.id === 'roboforge'
                     ? 'Ab 8 Jahren · Mathe & Code'
+                    : w.id === 'maze_discovery'
+                    ? 'Ab 8 Jahren · 3D & Logik'
                     : (lang === 'de' ? '3. Klasse Lehrplan' : 'Chương trình Lớp 3')}</span>
                 </span>
                 <span className="group-hover:translate-x-1 transition-transform">

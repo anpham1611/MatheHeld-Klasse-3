@@ -103,6 +103,15 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
       timesPlayed: gameScores['roboforge']?.timesPlayed || (player.scores.roboforge ? 1 : 0),
       color: 'from-emerald-600/30 to-sky-950/40 border-emerald-500/40 text-emerald-300',
     },
+    {
+      key: 'maze_discovery',
+      name: 'Wegfinder 3D',
+      icon: '🤖🧩',
+      score: player.scores.maze_discovery || 0,
+      solved: gameScores['maze_discovery']?.problemsSolved || 0,
+      timesPlayed: gameScores['maze_discovery']?.timesPlayed || (player.scores.maze_discovery ? 1 : 0),
+      color: 'from-cyan-600/30 to-violet-950/40 border-cyan-500/40 text-cyan-300',
+    },
   ];
 
   return (
