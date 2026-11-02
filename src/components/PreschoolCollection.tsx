@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
+import { VEHICLE_CATALOG_SIZE } from '../math/vehiclePuzzle';
 
 type PreschoolMiniGame = 'monsterparty' | 'vehicle_puzzle';
 
@@ -25,7 +26,7 @@ const miniGames: Array<{
   {
     id: 'vehicle_puzzle',
     title: 'Puzzle-Rätsel: Verkehrsmittel',
-    description: 'Ordne zehn Teile fünf Fahrzeugen zu. Jede Runde wählt fünf neue Modelle aus über 50 Fahrzeugen.',
+    description: `Wähle 5–15 Fahrzeuge und ordne zwei Teile pro Fahrzeug zu. Jede Runde wählt Modelle aus ${VEHICLE_CATALOG_SIZE} Fahrzeugen.`,
     icon: '🚗🚜🚂🚁',
     color: 'from-sky-500 to-blue-700',
   },

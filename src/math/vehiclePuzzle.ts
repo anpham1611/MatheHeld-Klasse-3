@@ -28,6 +28,7 @@ export interface VehiclePart {
   vehicleType: VehicleType;
   name: string;
   partIndex: number;
+  variant: number;
   bodyColor: string;
   accentColor: string;
 }
@@ -36,6 +37,9 @@ export interface VehiclePuzzleRound {
   vehicles: VehicleDesign[];
   parts: VehiclePart[];
 }
+
+export const MIN_VEHICLES_PER_ROUND = 5;
+export const MAX_VEHICLES_PER_ROUND = 15;
 
 const VEHICLE_MODELS: Array<{ type: VehicleType; names: [string, string, string, string, string]; parts: [string, string] }> = [
   { type: 'car', names: ['Kleinwagen', 'Sportwagen', 'Cabrio', 'Familienauto', 'Rennwagen'], parts: ['Rad', 'Autotür'] },
@@ -52,13 +56,17 @@ const VEHICLE_MODELS: Array<{ type: VehicleType; names: [string, string, string,
   { type: 'motorcycle', names: ['Motorrad', 'Roller', 'Moped', 'Geländemotorrad', 'Polizeimotorrad'], parts: ['Vorderrad', 'Sitz'] },
 ];
 
-const VEHICLE_CATALOG = VEHICLE_MODELS.flatMap((model) => model.names.map((name, variant) => ({
-  id: `${model.type}-${variant + 1}`,
-  type: model.type,
-  name,
-  variant,
-  parts: model.parts,
-})));
+const VEHICLE_CATALOG = VEHICLE_MODELS.flatMap((model) => model.names.flatMap((name, familyIndex) =>
+  Array.from({ length: 5 }, (_, editionIndex) => ({
+    id: `${model.type}-${familyIndex + 1}-${editionIndex + 1}`,
+    type: model.type,
+    name: editionIndex === 0 ? name : `${name} ${editionIndex + 1}`,
+    variant: editionIndex * 5 + familyIndex,
+    parts: model.parts,
+  })),
+));
+
+export const VEHICLE_CATALOG_SIZE = VEHICLE_CATALOG.length;
 
 const PALETTES = [
   ['#e65b47', '#ffd258'],
@@ -74,6 +82,9 @@ const PALETTES = [
   ['#8a6bb8', '#e9b64d'],
   ['#d95d69', '#64b49e'],
   ['#5881b2', '#f0a74a'],
+  ['#bb5479', '#67bed0'],
+  ['#759142', '#ef9c5e'],
+  ['#8066a8', '#8cc767'],
 ];
 
 function shuffle<T>(items: T[], random: () => number): T[] {
@@ -85,9 +96,16 @@ function shuffle<T>(items: T[], random: () => number): T[] {
   return shuffled;
 }
 
-export function generateVehiclePuzzle(random: () => number = Math.random): VehiclePuzzleRound {
+export function generateVehiclePuzzle(
+  requestedCount = MIN_VEHICLES_PER_ROUND,
+  random: () => number = Math.random,
+): VehiclePuzzleRound {
+  const count = Math.min(
+    MAX_VEHICLES_PER_ROUND,
+    Math.max(MIN_VEHICLES_PER_ROUND, Math.floor(Number.isFinite(requestedCount) ? requestedCount : MIN_VEHICLES_PER_ROUND)),
+  );
   const palettes = shuffle(PALETTES, random);
-  const vehicles = shuffle(VEHICLE_CATALOG, random).slice(0, 5).map((vehicle, index) => {
+  const vehicles = shuffle(VEHICLE_CATALOG, random).slice(0, count).map((vehicle, index) => {
     const [bodyColor, accentColor] = palettes[index];
     return {
       id: `vehicle-${vehicle.id}`,
@@ -107,6 +125,7 @@ export function generateVehiclePuzzle(random: () => number = Math.random): Vehic
       vehicleType: vehicle.type,
       name,
       partIndex,
+      variant: vehicle.variant,
       bodyColor: vehicle.bodyColor,
       accentColor: vehicle.accentColor,
     }))), random);

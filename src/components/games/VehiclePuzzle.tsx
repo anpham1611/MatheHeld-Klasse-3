@@ -2,7 +2,14 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, RefreshCw, Trophy, Volume2, VolumeX } from 'lucide-react';
 import { PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
-import { generateVehiclePuzzle, VehicleDesign, VehiclePart, VehicleType } from '../../math/vehiclePuzzle';
+import {
+  generateVehiclePuzzle,
+  MAX_VEHICLES_PER_ROUND,
+  MIN_VEHICLES_PER_ROUND,
+  VehicleDesign,
+  VehiclePart,
+  VehicleType,
+} from '../../math/vehiclePuzzle';
 
 interface VehiclePuzzleProps {
   player: PlayerProfile;
@@ -22,7 +29,7 @@ function VehicleArtwork({ vehicle }: { vehicle: VehicleDesign }) {
         <circle cx="63" cy="99" r="10" fill="#b9bbc4" stroke={outline} strokeWidth="3" />
         <circle cx="165" cy="99" r="22" fill="#30313a" stroke={outline} strokeWidth="4" />
         <circle cx="165" cy="99" r="10" fill="#b9bbc4" stroke={outline} strokeWidth="3" />
-        <path d={vehicle.variant === 0
+        <path d={vehicle.variant % 5 === 0
           ? 'M22 91 L32 63 Q36 52 60 49 L82 26 Q88 20 110 22 L139 50 L176 56 Q190 60 196 80 L199 94 L190 103 L31 103Z'
           : 'M22 91 L31 67 Q36 53 60 51 L78 32 Q86 24 110 24 L141 49 L177 57 Q191 63 197 82 L199 94 L189 103 L31 103Z'}
           fill={vehicle.bodyColor} stroke={outline} strokeWidth="4" strokeLinejoin="round" />
@@ -75,8 +82,8 @@ function VehicleArtwork({ vehicle }: { vehicle: VehicleDesign }) {
         <circle cx="165" cy="101" r="17" fill="#30313a" stroke={outline} strokeWidth="4" />
         <circle cx="165" cy="101" r="7" fill="#b9bbc4" stroke={outline} strokeWidth="3" />
         <path d="M25 42 Q25 31 39 31 L177 31 Q193 31 193 48 L193 98 L27 98Z" fill={vehicle.bodyColor} stroke={outline} strokeWidth="4" />
-        {[43, 73, 103, 133].map((x) => <rect key={x} x={x} y={39} width="23" height={vehicle.variant === 3 ? 19 : 29} rx="3" fill="#9fcee0" stroke={outline} strokeWidth="3" />)}
-        {vehicle.variant === 3 && [43, 73, 103, 133].map((x) => <rect key={`upper-${x}`} x={x} y="64" width="23" height="16" rx="3" fill="#9fcee0" stroke={outline} strokeWidth="3" />)}
+        {[43, 73, 103, 133].map((x) => <rect key={x} x={x} y={39} width="23" height={vehicle.variant % 5 === 3 ? 19 : 29} rx="3" fill="#9fcee0" stroke={outline} strokeWidth="3" />)}
+        {vehicle.variant % 5 === 3 && [43, 73, 103, 133].map((x) => <rect key={`upper-${x}`} x={x} y="64" width="23" height="16" rx="3" fill="#9fcee0" stroke={outline} strokeWidth="3" />)}
         <path d="M164 39 L186 39 L186 80 L164 80Z" fill="#9fcee0" stroke={outline} strokeWidth="3" />
         <path d="M29 84 L191 84" stroke={vehicle.accentColor} strokeWidth="7" />
       </>}
@@ -86,7 +93,7 @@ function VehicleArtwork({ vehicle }: { vehicle: VehicleDesign }) {
         <circle cx="62" cy="101" r="7" fill="#b9bbc4" stroke={outline} strokeWidth="3" />
         <circle cx="164" cy="101" r="18" fill="#30313a" stroke={outline} strokeWidth="4" />
         <circle cx="164" cy="101" r="7" fill="#b9bbc4" stroke={outline} strokeWidth="3" />
-        <path d={vehicle.variant === 2 ? 'M27 33 L133 33 L126 85 L27 85Z' : 'M27 33 L130 33 L130 85 L27 85Z'} fill={vehicle.accentColor} stroke={outline} strokeWidth="4" />
+        <path d={vehicle.variant % 5 === 2 ? 'M27 33 L133 33 L126 85 L27 85Z' : 'M27 33 L130 33 L130 85 L27 85Z'} fill={vehicle.accentColor} stroke={outline} strokeWidth="4" />
         <path d="M130 58 L163 58 L187 76 L190 98 L126 98Z" fill={vehicle.bodyColor} stroke={outline} strokeWidth="4" strokeLinejoin="round" />
         <path d="M143 63 L160 63 L178 77 L143 77Z" fill="#9fcee0" stroke={outline} strokeWidth="3" />
         <path d="M34 42 L120 42 M34 51 L120 51" stroke={vehicle.bodyColor} strokeWidth="4" opacity=".8" />
@@ -120,14 +127,14 @@ function VehicleArtwork({ vehicle }: { vehicle: VehicleDesign }) {
         <path d="M14 71 L86 61 L103 25 L118 25 L115 61 L192 67 Q202 69 202 77 Q202 84 192 85 L115 86 L120 111 L105 111 L86 88 L17 83Z" fill={vehicle.bodyColor} stroke={outline} strokeWidth="4" strokeLinejoin="round" />
         <path d="M44 69 L58 69 L49 79 L32 78Z M166 70 L179 70 L188 76 L166 78Z" fill="#9fcee0" stroke={outline} strokeWidth="3" />
         <path d="M98 65 L105 29 M99 85 L106 108" stroke={vehicle.accentColor} strokeWidth="7" />
-        {vehicle.variant === 0 && <path d="M24 64 L14 52 M24 84 L14 96" stroke={outline} strokeWidth="4" strokeLinecap="round" />}
+        {vehicle.variant % 5 === 0 && <path d="M24 64 L14 52 M24 84 L14 96" stroke={outline} strokeWidth="4" strokeLinecap="round" />}
       </>}
 
       {vehicle.type === 'boat' && <>
         <path d="M25 84 L194 84 L174 111 Q113 126 51 111Z" fill={vehicle.bodyColor} stroke={outline} strokeWidth="4" strokeLinejoin="round" />
         <path d="M104 83 L104 23 L153 75Z" fill={vehicle.accentColor} stroke={outline} strokeWidth="4" strokeLinejoin="round" />
         <path d="M96 84 L96 37 L62 75Z" fill="#f7edcf" stroke={outline} strokeWidth="4" strokeLinejoin="round" />
-        {vehicle.variant === 4 && <path d="M45 87 L65 61 L87 61 L103 87Z" fill={vehicle.accentColor} stroke={outline} strokeWidth="4" />}
+        {vehicle.variant % 5 === 4 && <path d="M45 87 L65 61 L87 61 L103 87Z" fill={vehicle.accentColor} stroke={outline} strokeWidth="4" />}
         <path d="M28 119 Q48 113 68 119 Q88 125 108 119 Q128 113 148 119 Q168 125 188 119" fill="none" stroke="#69b8d2" strokeWidth="5" strokeLinecap="round" />
       </>}
 
@@ -136,7 +143,7 @@ function VehicleArtwork({ vehicle }: { vehicle: VehicleDesign }) {
         <circle cx="169" cy="89" r="31" fill="none" stroke={outline} strokeWidth="5" />
         <path d="M53 89 L91 48 L125 89 L53 89 L77 89 L106 48 L145 48 L169 89 M145 48 L156 39 M91 48 L80 38" fill="none" stroke={vehicle.bodyColor} strokeWidth="7" strokeLinejoin="round" strokeLinecap="round" />
         <path d="M70 35 L93 35 M137 35 L160 35" stroke={vehicle.accentColor} strokeWidth="6" strokeLinecap="round" />
-        {vehicle.variant === 4 && <circle cx="110" cy="94" r="19" fill="none" stroke={outline} strokeWidth="4" />}
+        {vehicle.variant % 5 === 4 && <circle cx="110" cy="94" r="19" fill="none" stroke={outline} strokeWidth="4" />}
       </>}
 
       {vehicle.type === 'motorcycle' && <>
@@ -264,7 +271,8 @@ export const VehiclePuzzle: React.FC<VehiclePuzzleProps> = ({
   isMuted,
   onToggleMute,
 }) => {
-  const [round, setRound] = useState(() => generateVehiclePuzzle());
+  const [vehicleCount, setVehicleCount] = useState(MIN_VEHICLES_PER_ROUND);
+  const [round, setRound] = useState(() => generateVehiclePuzzle(MIN_VEHICLES_PER_ROUND));
   const [connections, setConnections] = useState<Record<string, string>>({});
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
   const [draggingPartId, setDraggingPartId] = useState<string | null>(null);
@@ -313,8 +321,9 @@ export const VehiclePuzzle: React.FC<VehiclePuzzleProps> = ({
     };
   }, [connectPart, draggingPartId]);
 
-  const startNewRound = () => {
-    setRound(generateVehiclePuzzle());
+  const startNewRound = (count = vehicleCount) => {
+    setVehicleCount(count);
+    setRound(generateVehiclePuzzle(count));
     setConnections({});
     setSelectedPartId(null);
     setDraggingPartId(null);
@@ -324,6 +333,7 @@ export const VehiclePuzzle: React.FC<VehiclePuzzleProps> = ({
 
   const partRows = new Map(round.parts.map((part, index) => [part.id, index]));
   const vehicleRows = new Map(round.vehicles.map((vehicle, index) => [vehicle.id, index]));
+  const boardHeight = Math.max(round.parts.length * 68 - 8, round.vehicles.length * 138 - 8);
   const matchedPartsPerVehicle = new Map<string, number>();
   for (const vehicleId of Object.values(connections)) {
     matchedPartsPerVehicle.set(vehicleId, (matchedPartsPerVehicle.get(vehicleId) || 0) + 1);
@@ -352,9 +362,25 @@ export const VehiclePuzzle: React.FC<VehiclePuzzleProps> = ({
               <h2 className="font-['Fredoka'] text-xl font-black text-indigo-950 sm:text-2xl">Was gehört wohin?</h2>
               <p className="max-w-xl text-sm font-bold text-slate-600 sm:text-base">Ziehe jedes Teil zum passenden Verkehrsmittel. Zwei Teile gehören zu jedem Fahrzeug.</p>
             </div>
-            <div className="min-w-24 rounded-2xl bg-amber-100 px-3 py-2 text-center">
-              <span className="block text-xs font-black uppercase tracking-wide text-amber-800">Geschafft</span>
-              <span className="font-['Fredoka'] text-xl font-black text-amber-950">{matchedCount} / {round.parts.length}</span>
+            <div className="flex items-center gap-2">
+              <label htmlFor="vehicle-count" className="flex flex-col rounded-2xl bg-sky-100 px-3 py-2 text-xs font-black text-sky-900">
+                <span>Fahrzeuge pro Runde</span>
+                <select
+                  id="vehicle-count"
+                  value={vehicleCount}
+                  onChange={(event) => startNewRound(Number(event.target.value))}
+                  className="mt-1 rounded-lg border border-sky-200 bg-white px-2 py-1 text-base font-black text-indigo-950 outline-offset-2"
+                >
+                  {Array.from(
+                    { length: MAX_VEHICLES_PER_ROUND - MIN_VEHICLES_PER_ROUND + 1 },
+                    (_, index) => MIN_VEHICLES_PER_ROUND + index,
+                  ).map((count) => <option key={count} value={count}>{count}</option>)}
+                </select>
+              </label>
+              <div className="min-w-24 rounded-2xl bg-amber-100 px-3 py-2 text-center">
+                <span className="block text-xs font-black uppercase tracking-wide text-amber-800">Geschafft</span>
+                <span className="font-['Fredoka'] text-xl font-black text-amber-950">{matchedCount} / {round.parts.length}</span>
+              </div>
             </div>
           </div>
 
@@ -364,7 +390,7 @@ export const VehiclePuzzle: React.FC<VehiclePuzzleProps> = ({
           </div>
 
           <div className="relative">
-            <svg viewBox="0 0 1000 682" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+            <svg viewBox={`0 0 1000 ${boardHeight}`} preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
               {Object.entries(connections).map(([partId, vehicleId]) => {
                 const startY = 30 + (partRows.get(partId) ?? 0) * 68;
                 const endY = 65 + (vehicleRows.get(vehicleId) ?? 0) * 138;
@@ -437,10 +463,10 @@ export const VehiclePuzzle: React.FC<VehiclePuzzleProps> = ({
         {complete && <section className="mt-5 rounded-[2rem] border-4 border-amber-300 bg-white p-5 text-center shadow-lg sm:p-7">
           <div className="mb-2 text-5xl" aria-hidden="true">🎉🚗🚁</div>
           <h2 className="font-['Fredoka'] text-2xl font-black text-indigo-950 sm:text-3xl">Alle Teile gefunden!</h2>
-          <p className="mt-1 font-bold text-slate-600">Du hast alle {round.parts.length} Teile richtig zugeordnet. Toll gemacht!</p>
+          <p className="mt-1 font-bold text-slate-600">Du hast alle {round.parts.length} Teile an {round.vehicles.length} Fahrzeuge verteilt. Toll gemacht!</p>
           <div className="my-3 flex items-center justify-center gap-2 font-black text-amber-600"><Trophy className="h-5 w-5" />{round.parts.length} von {round.parts.length} richtig</div>
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
-            <button onClick={startNewRound} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 font-black text-white shadow-md transition hover:bg-sky-500 active:scale-95"><RefreshCw className="h-5 w-5" />Neue Verkehrsmittel</button>
+            <button onClick={() => startNewRound()} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 font-black text-white shadow-md transition hover:bg-sky-500 active:scale-95"><RefreshCw className="h-5 w-5" />Neue Verkehrsmittel</button>
             <button onClick={onBack} className="rounded-2xl bg-amber-400 px-5 py-3 font-black text-amber-950 shadow-md transition hover:bg-amber-300 active:scale-95">Zur Spielauswahl</button>
           </div>
         </section>}
