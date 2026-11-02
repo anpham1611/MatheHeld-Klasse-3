@@ -10,6 +10,7 @@ import { TowerMath } from './components/games/TowerMath';
 import { PokemonArena } from './components/games/PokemonArena';
 import { MinecraftMathWorld } from './components/games/MinecraftMathWorld';
 import { LogicAdventure } from './components/games/LogicAdventure';
+import { MonsterParty } from './components/games/MonsterParty';
 import { MathBrickBuilder } from './components/games/MathBrickBuilder';
 import { RoboForge } from './components/games/RoboForge';
 import { CertificateModal } from './components/CertificateModal';
@@ -47,6 +48,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
     tower_math: 0,
     pokemon: 0,
     logic_game: 0,
+    monsterparty: 0,
     mathbrick: 0,
     roboforge: 0,
     maze_discovery: 0,
@@ -419,6 +421,18 @@ export default function App() {
           player={player}
           onUpdateStats={(stars, coins, score) =>
             handleUpdateStats('logic_game', stars, coins, score)
+          }
+          onBack={() => setScreen('world_map')}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+        />
+      )}
+
+      {screen === 'monsterparty' && (
+        <MonsterParty
+          player={player}
+          onUpdateStats={(stars, coins, score) =>
+            handleUpdateStats('monsterparty', stars, coins, score)
           }
           onBack={() => setScreen('world_map')}
           isMuted={isMuted}

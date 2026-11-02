@@ -86,6 +86,15 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
       color: 'from-fuchsia-600/30 to-rose-950/40 border-pink-500/40 text-pink-300',
     },
     {
+      key: 'monsterparty',
+      name: 'Vorschulblock: Monsterparty',
+      icon: '👾🌙',
+      score: player.scores.monsterparty || 0,
+      solved: gameScores['monsterparty']?.problemsSolved || 0,
+      timesPlayed: gameScores['monsterparty']?.timesPlayed || (player.scores.monsterparty ? 1 : 0),
+      color: 'from-violet-600/30 to-indigo-950/40 border-fuchsia-500/40 text-fuchsia-300',
+    },
+    {
       key: 'mathbrick',
       name: 'MathBrick Builder',
       icon: '🧱🛠️',
