@@ -221,6 +221,7 @@ export async function getPlayerByName(rawName: string) {
     pokemon: 0,
     logic_game: 0,
     monsterparty: 0,
+    vehicle_puzzle: 0,
     mathbrick: 0,
     roboforge: 0,
   };
@@ -612,7 +613,7 @@ export async function createPlayer(data: { name: string; avatar?: string }) {
   const newPlayerId = Number(insertRes.lastInsertRowid || 0);
 
   // Initialize base game scores with 0
-  const defaultGames = ['minecraft', 'number_line', 'einmaleins', 'euro_shop', 'tower_math', 'pokemon', 'logic_game', 'monsterparty', 'mathbrick', 'roboforge'];
+  const defaultGames = ['minecraft', 'number_line', 'einmaleins', 'euro_shop', 'tower_math', 'pokemon', 'logic_game', 'monsterparty', 'vehicle_puzzle', 'mathbrick', 'roboforge'];
   for (const g of defaultGames) {
     await db.execute({
       sql: `INSERT OR IGNORE INTO game_scores (player_id, player_name, game_key, high_score, times_played, problems_solved, stars_earned, coins_earned, level_reached)

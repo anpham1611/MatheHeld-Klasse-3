@@ -8,7 +8,9 @@ export type GameScreen =
   | 'tower_math' 
   | 'pokemon'
   | 'logic_game'
+  | 'preschool_collection'
   | 'monsterparty'
+  | 'vehicle_puzzle'
   | 'mathbrick'
   | 'roboforge'
   | 'maze_discovery'
@@ -37,6 +39,7 @@ export interface PlayerProfile {
     pokemon?: number;
     logic_game?: number;
     monsterparty?: number;
+    vehicle_puzzle?: number;
     mathbrick?: number;
     roboforge?: number;
     maze_discovery?: number;

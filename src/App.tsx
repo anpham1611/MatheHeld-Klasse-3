@@ -11,6 +11,8 @@ import { PokemonArena } from './components/games/PokemonArena';
 import { MinecraftMathWorld } from './components/games/MinecraftMathWorld';
 import { LogicAdventure } from './components/games/LogicAdventure';
 import { MonsterParty } from './components/games/MonsterParty';
+import { VehiclePuzzle } from './components/games/VehiclePuzzle';
+import { PreschoolCollection } from './components/PreschoolCollection';
 import { MathBrickBuilder } from './components/games/MathBrickBuilder';
 import { RoboForge } from './components/games/RoboForge';
 import { CertificateModal } from './components/CertificateModal';
@@ -49,6 +51,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
     pokemon: 0,
     logic_game: 0,
     monsterparty: 0,
+    vehicle_puzzle: 0,
     mathbrick: 0,
     roboforge: 0,
     maze_discovery: 0,
@@ -428,13 +431,32 @@ export default function App() {
         />
       )}
 
+      {screen === 'preschool_collection' && (
+        <PreschoolCollection
+          onBack={() => setScreen('world_map')}
+          onSelectGame={(game) => setScreen(game)}
+        />
+      )}
+
       {screen === 'monsterparty' && (
         <MonsterParty
           player={player}
           onUpdateStats={(stars, coins, score) =>
             handleUpdateStats('monsterparty', stars, coins, score)
           }
-          onBack={() => setScreen('world_map')}
+          onBack={() => setScreen('preschool_collection')}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+        />
+      )}
+
+      {screen === 'vehicle_puzzle' && (
+        <VehiclePuzzle
+          player={player}
+          onUpdateStats={(stars, coins, score) =>
+            handleUpdateStats('vehicle_puzzle', stars, coins, score)
+          }
+          onBack={() => setScreen('preschool_collection')}
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
         />

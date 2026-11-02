@@ -95,6 +95,15 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
       color: 'from-violet-600/30 to-indigo-950/40 border-fuchsia-500/40 text-fuchsia-300',
     },
     {
+      key: 'vehicle_puzzle',
+      name: 'Vorschulblock: Puzzle-Rätsel',
+      icon: '🚗🚜',
+      score: player.scores.vehicle_puzzle || 0,
+      solved: gameScores['vehicle_puzzle']?.problemsSolved || 0,
+      timesPlayed: gameScores['vehicle_puzzle']?.timesPlayed || (player.scores.vehicle_puzzle ? 1 : 0),
+      color: 'from-sky-600/30 to-blue-950/40 border-sky-500/40 text-sky-300',
+    },
+    {
       key: 'mathbrick',
       name: 'MathBrick Builder',
       icon: '🧱🛠️',

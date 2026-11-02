@@ -65,14 +65,14 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       score: player.scores.logic_game || 0,
     },
     {
-      id: 'monsterparty' as GameScreen,
+      id: 'preschool_collection' as GameScreen,
       title: 'Vorschulblock - Logisches Denken, rätseln und knobeln (ab 5 Jahre)',
-      desc: 'Monsterparty: Ziehe jedes bunte Monster zu seinem Schatten. Bei jedem Start warten neue Monster!',
-      icon: '👾🌙',
+      desc: 'Monsterparty und Puzzle-Rätsel: Finde passende Schatten und Fahrzeugteile. Jedes Mal neu!',
+      icon: '👾🚗',
       bgGradient: 'from-violet-600 via-fuchsia-700 to-indigo-950',
       borderColor: 'border-fuchsia-300',
       badge: '👾 AB 5 JAHRE · LOGIK',
-      score: player.scores.monsterparty || 0,
+      score: (player.scores.monsterparty || 0) + (player.scores.vehicle_puzzle || 0),
     },
     {
       id: 'number_line' as GameScreen,
@@ -372,7 +372,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                   <Sparkles className="w-4 h-4" />
                   <span>{w.id === 'logic_game'
                     ? (lang === 'de' ? 'Ab 3 Jahren' : 'Dành cho bé từ 3 tuổi')
-                    : w.id === 'monsterparty'
+                    : w.id === 'preschool_collection'
                     ? 'Ab 5 Jahren · Logik'
                     : w.id === 'mathbrick'
                     ? (lang === 'de' ? 'Ab 8 Jahren · 3D-Bau' : 'Từ 8 tuổi · Xây dựng 3D')
