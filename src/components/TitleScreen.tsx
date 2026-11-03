@@ -13,13 +13,11 @@ import {
   Coins,
   UserPlus,
 } from 'lucide-react';
-import { Language, CharacterAvatar, PlayerProfile } from '../types/game';
-import { t } from '../math/translations';
+import { CharacterAvatar, PlayerProfile } from '../types/game';
 import { sound } from '../audio/soundManager';
 import { totalGameScore } from '../math/gameScore';
 
 interface TitleScreenProps {
-  lang: Language;
   player: PlayerProfile;
   onSelectAvatar: (avatar: CharacterAvatar) => void;
   onStart: () => void;
@@ -35,16 +33,15 @@ interface TitleScreenProps {
   onToggleMute: () => void;
 }
 
-const AVATARS: { id: CharacterAvatar; emoji: string; nameDe: string; nameVi: string }[] = [
-  { id: 'fuchs', emoji: '🦊', nameDe: 'Leo Fuchs', nameVi: 'Cáo Leo' },
-  { id: 'eule', emoji: '🦉', nameDe: 'Mia Eule', nameVi: 'Cú Mia' },
-  { id: 'hase', emoji: '🐰', nameDe: 'Ben Hase', nameVi: 'Thỏ Ben' },
-  { id: 'baer', emoji: '🐻', nameDe: 'Bruno Bär', nameVi: 'Gấu Bruno' },
-  { id: 'drache', emoji: '🐲', nameDe: 'Fiete Drache', nameVi: 'Rồng Fiete' },
+const AVATARS: { id: CharacterAvatar; emoji: string; nameDe: string }[] = [
+  { id: 'fuchs', emoji: '🦊', nameDe: 'Leo Fuchs' },
+  { id: 'eule', emoji: '🦉', nameDe: 'Mia Eule' },
+  { id: 'hase', emoji: '🐰', nameDe: 'Ben Hase' },
+  { id: 'baer', emoji: '🐻', nameDe: 'Bruno Bär' },
+  { id: 'drache', emoji: '🐲', nameDe: 'Fiete Drache' },
 ];
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({
-  lang,
   player,
   onSelectAvatar,
   onStart,
@@ -106,7 +103,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-2.5 py-1.5 rounded-2xl backdrop-blur">
             <span className="text-sm">🇩🇪</span>
             <span className="text-xs font-bold text-slate-300 tracking-wide">
-              {lang === 'de' ? 'Klasse 3' : 'Toán Lớp 3'}
+              { 'Klasse 3' }
             </span>
           </div>
 
@@ -118,10 +115,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             }}
             disabled={isSaving}
             className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-emerald-600/25 hover:bg-emerald-600/35 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur shadow-sm active:scale-95"
-            title={t(lang, 'saveProgress')}
+            title={"Spielstand speichern"}
           >
             <Save className={`w-3.5 h-3.5 text-emerald-400 ${isSaving ? 'animate-spin' : ''}`} />
-            <span>{isSaving ? t(lang, 'saving') : t(lang, 'saveProgress')}</span>
+            <span>{isSaving ? "Wird gespeichert..." : "Spielstand speichern"}</span>
           </button>
         </div>
 
@@ -134,10 +131,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               onOpenNewPlayerModal();
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-emerald-600/25 hover:bg-emerald-600/35 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur shadow-sm active:scale-95"
-            title={t(lang, 'newHeroBtn')}
+            title={"+ Neuer Held"}
           >
             <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">{t(lang, 'newHeroBtn')}</span>
+            <span className="hidden sm:inline">{"+ Neuer Held"}</span>
           </button>
 
           {/* Switch Player / Load Old Profile */}
@@ -147,10 +144,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               onOpenSwitchModal();
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-indigo-600/25 hover:bg-indigo-600/35 text-indigo-300 border border-indigo-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur shadow-sm active:scale-95"
-            title={t(lang, 'switchPlayer')}
+            title={"Spieler wechseln / Laden"}
           >
             <Users className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">{t(lang, 'changeHero')}</span>
+            <span className="hidden sm:inline">{"Spieler wechseln"}</span>
           </button>
 
           {/* Individual Game Scores */}
@@ -160,10 +157,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               onOpenScoresModal();
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur shadow-sm active:scale-95"
-            title={t(lang, 'gameScoresTitle')}
+            title={"Ergebnisse & Rekorde je Spiel"}
           >
             <Trophy className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden md:inline">{t(lang, 'gameScoresTitle')}</span>
+            <span className="hidden md:inline">{"Ergebnisse & Rekorde je Spiel"}</span>
           </button>
 
           {/* Certificate */}
@@ -173,7 +170,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               onOpenCertificate();
             }}
             className="p-2 sm:px-3 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition backdrop-blur"
-            title={t(lang, 'certificateTitle')}
+            title={"Mein Mathe-Diplom"}
           >
             <Award className="w-4 h-4 text-amber-400" />
           </button>
@@ -185,7 +182,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               onToggleMute();
             }}
             className="p-2 sm:p-2 bg-slate-800/80 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded-xl cursor-pointer transition backdrop-blur"
-            title={isMuted ? t(lang, 'soundOn') : t(lang, 'soundOff')}
+            title={isMuted ? "Ton an" : "Ton aus"}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
           </button>
@@ -233,7 +230,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               strokeWidth="4"
               paintOrder="stroke fill"
             >
-              {lang === 'de' ? 'MATHEHELD' : 'VUA TOÁN HỌC'}
+              { 'MATHEHELD' }
             </text>
             <text
               x="250"
@@ -245,13 +242,13 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               fill="url(#blueGrad)"
               letterSpacing="6"
             >
-              {lang === 'de' ? 'KLASSE 3 · GRUNDSCHULE' : 'LỚP 3 · TIỂU HỌC'}
+              { 'KLASSE 3 · GRUNDSCHULE' }
             </text>
           </svg>
         </div>
 
         <p className="text-slate-300 text-xs sm:text-sm max-w-md mx-auto mb-4 font-medium">
-          {t(lang, 'appSubtitle')}
+          {"Das große Zahlenabenteuer für Grundschüler in Deutschland"}
         </p>
 
         {/* Hero Character Display & Interactive Profile Card */}
@@ -261,7 +258,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <div className="w-full h-full bg-slate-900 rounded-[22px] flex items-center justify-center text-6xl select-none relative overflow-hidden">
               <span className="animate-bounce">{AVATARS.find((a) => a.id === player.avatar)?.emoji || '🦊'}</span>
               <div className="absolute -bottom-1 text-[10px] font-bold text-amber-300 bg-slate-950/80 px-2 py-0.5 rounded-full border border-amber-500/30">
-                {lang === 'de' ? 'Dein Held' : 'Nhân vật của bạn'}
+                { 'Dein Held' }
               </div>
             </div>
           </div>
@@ -274,7 +271,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
                 onOpenRenameModal();
               }}
               className="flex items-center gap-2 bg-slate-900/90 border border-slate-700 hover:border-amber-400 px-3.5 py-1.5 rounded-xl backdrop-blur transition cursor-pointer group shadow-sm active:scale-98"
-              title={t(lang, 'renameHero')}
+              title={"Spitzname ändern"}
             >
               <span className="text-white font-extrabold text-base font-['Fredoka'] tracking-wide group-hover:text-amber-300 transition-colors">
                 {player.name}
@@ -297,10 +294,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             </span>
             <span
               className="flex items-center gap-1 text-indigo-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-indigo-500/30"
-              title={lang === 'de' ? 'Gesamtpunkte' : 'Tổng điểm'}
+              title={ 'Gesamtpunkte' }
             >
               <Trophy className="w-3.5 h-3.5" />
-              {totalGameScore(player.scores)} {lang === 'de' ? 'Pkt' : 'điểm'}
+              {totalGameScore(player.scores)} { 'Pkt' }
             </span>
           </div>
 
@@ -318,7 +315,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
                     ? 'bg-amber-500 border-yellow-300 scale-110 shadow-lg'
                     : 'bg-slate-800/80 border-slate-700 hover:bg-slate-700 opacity-80'
                 }`}
-                title={lang === 'de' ? av.nameDe : av.nameVi}
+                title={ av.nameDe }
               >
                 {av.emoji}
               </button>
@@ -336,18 +333,18 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             className="w-full py-3.5 sm:py-4 px-6 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xl rounded-2xl shadow-xl shadow-amber-500/30 flex items-center justify-center gap-3 cursor-pointer transform active:scale-95 transition tracking-wide font-['Fredoka'] group"
           >
             <Play className="w-6 h-6 fill-current text-slate-950 group-hover:scale-110 transition-transform" />
-            <span>{t(lang, 'startAdventure')}</span>
+            <span>{"Abenteuer starten"}</span>
           </button>
 
           <div className="text-xs text-amber-300 font-semibold tracking-wide">
-            {t(lang, 'pressSpaceToStart')}
+            {"Drücke LEERTASTE oder klicke zum Starten"}
           </div>
         </div>
       </main>
 
       {/* Flat Control-Hint Line Footer */}
       <footer className="relative z-10 px-4 py-2.5 bg-slate-950/90 border-t border-slate-800/80 text-center flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-slate-400">
-        <span>{t(lang, 'controlsHint')}</span>
+        <span>{"Tasten: WASD / Pfeiltasten · Leertaste: Aktion · Esc: Pause / Menü"}</span>
       </footer>
     </div>
   );

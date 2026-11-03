@@ -10,9 +10,7 @@ export interface StellenwertTask {
   z: number; // Zehner
   e: number; // Einer
   questionDe: string;
-  questionVi: string;
   hintDe: string;
-  hintVi: string;
   options: number[];
   answer: number;
   type: 'identify' | 'decompose' | 'neighbors';
@@ -28,26 +26,24 @@ export interface EinmaleinsTask {
   remainder?: number; // For division with remainder (Division mit Rest)
   options: { label: string; value: number; remainder?: number }[];
   hintDe: string;
-  hintVi: string;
 }
 
 export interface EuroItem {
   id: string;
   nameDe: string;
-  nameVi: string;
   icon: string;
   priceCents: number; // in cents
 }
 
 export const EURO_ITEMS: EuroItem[] = [
-  { id: 'brezel', nameDe: 'Frische Laugenbrezel', nameVi: 'Bánh mì xoắn Brezel Đức', icon: '🥨', priceCents: 120 },
-  { id: 'schorle', nameDe: 'Bio-Apfelschorle', nameVi: 'Nước táo có ga Apfelschorle', icon: '🧃', priceCents: 150 },
-  { id: 'franz', nameDe: 'Franzbrötchen', nameVi: 'Bánh quế Franzbrötchen', icon: '🥐', priceCents: 180 },
-  { id: 'schoko', nameDe: 'Tafel Schokolade', nameVi: 'Thanh sô-cô-la', icon: '🍫', priceCents: 95 },
-  { id: 'heft', nameDe: 'Matheheft DIN A4', nameVi: 'Vở ô li toán A4', icon: '📓', priceCents: 140 },
-  { id: 'stift', nameDe: 'Buntstifte-Set', nameVi: 'Hộp bút màu vẽ', icon: '✏️', priceCents: 260 },
-  { id: 'ball', nameDe: 'Mini-Fußball', nameVi: 'Quả bóng đá mini', icon: '⚽', priceCents: 450 },
-  { id: 'baer', nameDe: 'Gummibärchen', nameVi: 'Kẹo dẻo gấu Haribo', icon: '🍬', priceCents: 110 },
+  { id: 'brezel', nameDe: 'Frische Laugenbrezel', icon: '🥨', priceCents: 120 },
+  { id: 'schorle', nameDe: 'Bio-Apfelschorle', icon: '🧃', priceCents: 150 },
+  { id: 'franz', nameDe: 'Franzbrötchen', icon: '🥐', priceCents: 180 },
+  { id: 'schoko', nameDe: 'Tafel Schokolade', icon: '🍫', priceCents: 95 },
+  { id: 'heft', nameDe: 'Matheheft DIN A4', icon: '📓', priceCents: 140 },
+  { id: 'stift', nameDe: 'Buntstifte-Set', icon: '✏️', priceCents: 260 },
+  { id: 'ball', nameDe: 'Mini-Fußball', icon: '⚽', priceCents: 450 },
+  { id: 'baer', nameDe: 'Gummibärchen', icon: '🍬', priceCents: 110 },
 ];
 
 export interface EuroTask {
@@ -103,27 +99,21 @@ export function generateStellenwertTask(): StellenwertTask {
   const e = num % 10;
 
   let questionDe = '';
-  let questionVi = '';
   let hintDe = '';
-  let hintVi = '';
   let answer = num;
   const optionsSet = new Set<number>();
   optionsSet.add(num);
 
   if (type === 'identify') {
     questionDe = `Welche Zahl ist ${h} Hunderter (H), ${z} Zehner (Z) und ${e} Einer (E)?`;
-    questionVi = `Số nào gồm ${h} Trăm (H), ${z} Chục (Z) và ${e} Đơn vị (E)?`;
     hintDe = `${h}00 + ${z}0 + ${e} = ?`;
-    hintVi = `${h}00 + ${z}0 + ${e} = ?`;
     answer = num;
   } else if (type === 'decompose') {
     // ask for one specific place value
     const place = Math.random() > 0.5 ? 'Z' : 'H';
     if (place === 'H') {
       questionDe = `Wie viele HUNDERTER (H) hat die Zahl ${num}?`;
-      questionVi = `Số ${num} có bao nhiêu TRĂM (Hunderter)?`;
       hintDe = `Schau auf die erste Stelle von ${num}.`;
-      hintVi = `Nhìn vào chữ số hàng trăm đầu tiên của ${num}.`;
       answer = h;
       optionsSet.clear();
       optionsSet.add(h);
@@ -132,9 +122,7 @@ export function generateStellenwertTask(): StellenwertTask {
       optionsSet.add(Math.min(9, h + 1));
     } else {
       questionDe = `Wie viele ZEHNTER (Z) hat die Zahl ${num}?`;
-      questionVi = `Số ${num} có bao nhiêu CHỤC (Zehner)?`;
       hintDe = `Schau auf die mittlere Stelle von ${num}.`;
-      hintVi = `Nhìn vào chữ số hàng chục ở giữa của ${num}.`;
       answer = z;
       optionsSet.clear();
       optionsSet.add(z);
@@ -147,9 +135,7 @@ export function generateStellenwertTask(): StellenwertTask {
     const subType = Math.random() > 0.5 ? 'nachfolger' : 'nachbarzehner';
     if (subType === 'nachfolger') {
       questionDe = `Welche Zahl ist der NACHFOLGER von ${num}?`;
-      questionVi = `Số liền sau của ${num} là số nào?`;
       hintDe = `Rechne: ${num} + 1`;
-      hintVi = `Tính: ${num} + 1`;
       answer = num + 1;
       optionsSet.clear();
       optionsSet.add(num + 1);
@@ -159,9 +145,7 @@ export function generateStellenwertTask(): StellenwertTask {
     } else {
       const nextTen = Math.ceil((num + 1) / 10) * 10;
       questionDe = `Was ist der nächste NACHBARZEHNER von ${num}?`;
-      questionVi = `Số tròn chục tiếp theo (Nachbarzehner) của ${num} là gì?`;
       hintDe = `Runde auf den nächsten Zehner über ${num}.`;
-      hintVi = `Tìm số tròn chục lớn hơn gần nhất với ${num}.`;
       answer = nextTen;
       optionsSet.clear();
       optionsSet.add(nextTen);
@@ -187,9 +171,7 @@ export function generateStellenwertTask(): StellenwertTask {
     z,
     e,
     questionDe,
-    questionVi,
     hintDe,
-    hintVi,
     options,
     answer,
     type,
@@ -224,7 +206,6 @@ export function generateEinmaleinsTask(includeRemainder: boolean = false): Einma
       answer,
       options: opts.map(val => ({ label: `${val}`, value: val })),
       hintDe: `Tipp: ${a} mal die ${b} rechnen.`,
-      hintVi: `Gợi ý: ${a} lần số ${b}.`,
     };
   } else {
     // Division: either clean or with remainder (Klasse 3 Standard)
@@ -251,7 +232,6 @@ export function generateEinmaleinsTask(includeRemainder: boolean = false): Einma
         answer: quotient,
         options: opts.map(val => ({ label: `${val}`, value: val })),
         hintDe: `Umkehraufgabe: ? · ${divisor} = ${dividend}`,
-        hintVi: `Tính ngược lại: ? · ${divisor} = ${dividend}`,
       };
     } else {
       const remainder = Math.floor(Math.random() * (divisor - 1)) + 1; // 1 .. divisor-1
@@ -284,7 +264,6 @@ export function generateEinmaleinsTask(includeRemainder: boolean = false): Einma
         remainder,
         options: opts,
         hintDe: `Wie oft passt die ${divisor} in ${dividend}? ${quotient} · ${divisor} = ${quotient * divisor}. Bleibt Rest ${remainder}!`,
-        hintVi: `${divisor} vừa khít bao nhiêu lần trong ${dividend}? Thừa ra phần dư R ${remainder}!`,
       };
     }
   }

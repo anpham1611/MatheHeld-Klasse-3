@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Volume2, VolumeX } from 'lucide-react';
-import { Language, PlayerProfile } from '../../types/game';
+import { PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
 import { generateLogicRound, LOGIC_GROUPS, LOGIC_TIERS, type LogicPuzzle } from '../../math/logicPuzzles';
 
 interface LogicAdventureProps {
-  lang: Language;
   player: PlayerProfile;
   onUpdateStats: (stars: number, coins: number, score: number) => void;
   onBack: () => void;
@@ -14,7 +13,6 @@ interface LogicAdventureProps {
 }
 
 export const LogicAdventure: React.FC<LogicAdventureProps> = ({
-  lang,
   player,
   onUpdateStats,
   onBack,
@@ -39,7 +37,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
   const startTier = (tier: number) => {
     setStartingTotal(player.scores.logic_game || 0);
     setSelectedTier(tier);
-    setPuzzles(generateLogicRound(lang, tier));
+    setPuzzles(generateLogicRound(tier));
     setRound(0);
     setScore(0);
     setAnswered(false);
@@ -105,7 +103,6 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
     setFeedback(null);
   };
 
-  const text = (de: string, vi: string) => lang === 'de' ? de : vi;
 
   return (
     <main className="min-h-[100dvh] h-[100dvh] overflow-y-auto bg-gradient-to-b from-sky-100 via-violet-50 to-amber-100 text-slate-800 font-['Nunito',sans-serif] px-3 py-3 sm:px-6 sm:py-5">
@@ -113,22 +110,22 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
         <button
           onClick={onBack}
           className="rounded-2xl bg-white/90 border-2 border-sky-200 p-3 shadow-sm hover:bg-white active:scale-95"
-          aria-label={text('Zurück zur Karte', 'Về bản đồ')}
+          aria-label={'Zurück zur Karte'}
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="text-center">
           <p className="text-xs sm:text-sm font-extrabold text-violet-600">
-            {player.name} · {text('Gesamtpunkte', 'Tổng điểm')}: {player.scores.logic_game || 0}
+            {player.name} · {'Gesamtpunkte'}: {player.scores.logic_game || 0}
           </p>
           <h1 className="text-xl sm:text-3xl font-black text-indigo-950 font-['Fredoka']">
-            {text('Kleine Denker', 'Bé thông minh')} 🧩
+            {'Kleine Denker'} 🧩
           </h1>
         </div>
         <button
           onClick={onToggleMute}
           className="rounded-2xl bg-white/90 border-2 border-sky-200 p-3 shadow-sm hover:bg-white active:scale-95"
-          aria-label={isMuted ? text('Ton einschalten', 'Bật âm thanh') : text('Ton ausschalten', 'Tắt âm thanh')}
+          aria-label={isMuted ? 'Ton einschalten' : 'Ton ausschalten'}
         >
           {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
         </button>
@@ -138,36 +135,36 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
         <section className="max-w-xl mx-auto mt-10 sm:mt-16 rounded-[2rem] border-4 border-amber-300 bg-white p-6 sm:p-10 text-center shadow-xl">
           <div className="text-7xl mb-3" aria-hidden="true">🏆</div>
           <h2 className="text-3xl sm:text-4xl font-black text-indigo-950 font-['Fredoka']">
-            {text('Alle Rätsel geschafft!', 'Bé đã giải hết câu đố!')}
+            {'Alle Rätsel geschafft!'}
           </h2>
           <p className="mt-3 text-lg font-bold text-slate-600">
-            {text('Du hast 20 Rätsel gelöst. Toll gemacht!', 'Bé đã giải 20 câu đố. Giỏi lắm!')}
+            {'Du hast 20 Rätsel gelöst. Toll gemacht!'}
           </p>
-          <div className="my-6 text-4xl" aria-label={text('Drei Sterne', 'Ba ngôi sao')}>⭐ ⭐ ⭐</div>
-          <p className="text-lg font-bold text-slate-600">{text('Punkte in dieser Runde', 'Điểm vòng này')}: {score}</p>
-          <p className="my-3 mb-6 text-xl font-black text-violet-700">{text('Gesamtpunkte', 'Tổng điểm')}: {startingTotal + score}</p>
+          <div className="my-6 text-4xl" aria-label={'Drei Sterne'}>⭐ ⭐ ⭐</div>
+          <p className="text-lg font-bold text-slate-600">{'Punkte in dieser Runde'}: {score}</p>
+          <p className="my-3 mb-6 text-xl font-black text-violet-700">{'Gesamtpunkte'}: {startingTotal + score}</p>
           <div className="grid gap-3 sm:grid-cols-3">
             <button
               onClick={restart}
               className="rounded-2xl bg-violet-600 px-4 py-4 text-lg font-black text-white shadow-lg hover:bg-violet-500 active:scale-95"
-            >{text('Nochmal spielen', 'Chơi lại')}</button>
+            >{'Nochmal spielen'}</button>
             <button
               onClick={chooseAnotherTier}
               className="rounded-2xl bg-sky-500 px-4 py-4 text-lg font-black text-white shadow-lg hover:bg-sky-400 active:scale-95"
-            >{text('Stufe wechseln', 'Đổi cấp độ')}</button>
+            >{'Stufe wechseln'}</button>
             <button
               onClick={onBack}
               className="rounded-2xl bg-amber-400 px-4 py-4 text-lg font-black text-amber-950 shadow-lg hover:bg-amber-300 active:scale-95"
-            >{text('Zur Karte', 'Về bản đồ')}</button>
+            >{'Zur Karte'}</button>
           </div>
         </section>
       ) : selectedTier === null ? (
         <section className="max-w-3xl mx-auto mt-8 rounded-[2rem] border-4 border-white bg-white/90 p-5 sm:p-8 shadow-xl">
           <h2 className="text-center text-2xl sm:text-3xl font-black text-indigo-950 font-['Fredoka']">
-            {text('Wähle eine Rätselstufe', 'Chọn cấp độ câu đố')}
+            {'Wähle eine Rätselstufe'}
           </h2>
           <p className="mt-2 mb-5 text-center font-bold text-slate-600">
-            {text('Jede Stufe enthält 20 verschiedene Themen.', 'Mỗi cấp có 20 chủ đề khác nhau.')}
+            {'Jede Stufe enthält 20 verschiedene Themen.'}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {LOGIC_TIERS.map((tier) => (
@@ -177,10 +174,10 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
                 className="rounded-2xl border-4 border-violet-100 bg-gradient-to-br from-sky-50 to-pink-100 p-4 text-left shadow-sm transition hover:border-violet-300 hover:-translate-y-1"
               >
                 <span className="block text-sm font-black uppercase tracking-wide text-violet-600">
-                  {text('Stufe', 'Cấp')} {tier.id}
+                  {'Stufe'} {tier.id}
                 </span>
                 <span className="block text-xl font-black text-indigo-950">
-                  {text(tier.de, tier.vi)}
+                  {tier.de}
                 </span>
               </button>
             ))}
@@ -191,7 +188,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
           <div className="mb-4 rounded-2xl bg-white/80 p-3 sm:p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="font-black text-indigo-900">
-                {LOGIC_GROUPS[puzzle.group].emoji} {text(LOGIC_GROUPS[puzzle.group].de, LOGIC_GROUPS[puzzle.group].vi)} · {puzzle.topicName}
+                {LOGIC_GROUPS[puzzle.group].emoji} {LOGIC_GROUPS[puzzle.group].de} · {puzzle.topicName}
               </span>
               <span className="font-black text-violet-700 tabular-nums">
                 {round + 1} / {puzzles.length}
@@ -232,7 +229,7 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
                         ? 'border-rose-500 bg-rose-100 scale-[0.98]'
                         : 'border-white bg-gradient-to-br from-amber-50 to-pink-100 hover:border-violet-300 hover:-translate-y-1'
                     }`}
-                    aria-label={choice.label || choice.art || text('Bären der Größe nach', 'Gấu xếp theo kích thước')}
+                    aria-label={choice.label || choice.art || 'Bären der Größe nach'}
                   >
                     {choice.sizes ? (
                       <span className="flex items-center justify-center gap-0.5 h-16">
@@ -254,9 +251,9 @@ export const LogicAdventure: React.FC<LogicAdventureProps> = ({
             </div>
 
             <p className="min-h-8 mt-4 text-center text-lg sm:text-xl font-black" aria-live="polite">
-              {feedback === 'correct' && <span className="text-emerald-600 font-black">{text('Richtig (+1 Punkt)! 🌟', 'Đúng rồi (+1 điểm)! 🌟')}</span>}
-              {feedback === 'wrong' && <span className="text-rose-600 font-black">{text('Falsch (-1 Punkt)! Nächste Frage... ❌', 'Chưa đúng (-1 điểm)! Qua câu tiếp theo... ❌')}</span>}
-              {!feedback && <span className="text-slate-400">{text('Tippe auf das passende Bild!', 'Chạm vào hình đúng nhé!')}</span>}
+              {feedback === 'correct' && <span className="text-emerald-600 font-black">{'Richtig (+1 Punkt)! 🌟'}</span>}
+              {feedback === 'wrong' && <span className="text-rose-600 font-black">{'Falsch (-1 Punkt)! Nächste Frage... ❌'}</span>}
+              {!feedback && <span className="text-slate-400">{'Tippe auf das passende Bild!'}</span>}
             </p>
           </div>
         </section>

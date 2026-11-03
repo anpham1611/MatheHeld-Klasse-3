@@ -1,4 +1,5 @@
 import { PlayerProfile } from '../types/game';
+import { GAME_CATALOG, GAME_SCORE_KEYS } from './gameCatalog';
 
 export function scoreAfterGame(
   scores: PlayerProfile['scores'],
@@ -7,18 +8,13 @@ export function scoreAfterGame(
 ): number {
   const safeScore = Math.max(0, scoreAchieved);
 
-  // Live / continuous modes where score increments on correct and decrements on wrong
-  if (gameKey === 'minecraft' || gameKey === 'pokemon' || gameKey === 'mathbrick' || gameKey === 'logic_game' || gameKey === 'roboforge') {
+  if (GAME_CATALOG[gameKey].scoreMode === 'running') {
     return safeScore;
   }
 
-  // Session quest games: save highest score achieved in that quest
   return Math.max(scores[gameKey] || 0, safeScore);
 }
 
 export function totalGameScore(scores: PlayerProfile['scores']): number {
-  return Object.values(scores).reduce(
-    (total, score) => total + (typeof score === 'number' ? score : 0),
-    0,
-  );
+  return GAME_SCORE_KEYS.reduce((total, key) => total + (scores[key] || 0), 0);
 }

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Sparkles, Check, X, AlertCircle, ArrowRight } from 'lucide-react';
-import { Language, CharacterAvatar } from '../types/game';
-import { t } from '../math/translations';
+import { CharacterAvatar } from '../types/game';
 import { sound } from '../audio/soundManager';
 import { checkPlayerNameAvailability, fetchSavedPlayersList } from '../services/playerService';
 
 interface NewPlayerModalProps {
-  lang: Language;
   isOpen: boolean;
   isFirstTime?: boolean;
   onCreatePlayer: (name: string, avatar: CharacterAvatar) => Promise<{ success: boolean; error?: string }>;
@@ -14,16 +12,15 @@ interface NewPlayerModalProps {
   onClose: () => void;
 }
 
-const AVATAR_OPTIONS: { id: CharacterAvatar; emoji: string; nameDe: string; nameVi: string }[] = [
-  { id: 'fuchs', emoji: '🦊', nameDe: 'Leo Fuchs', nameVi: 'Cáo Leo' },
-  { id: 'eule', emoji: '🦉', nameDe: 'Mia Eule', nameVi: 'Cú Mia' },
-  { id: 'hase', emoji: '🐰', nameDe: 'Ben Hase', nameVi: 'Thỏ Ben' },
-  { id: 'baer', emoji: '🐻', nameDe: 'Bruno Bär', nameVi: 'Gấu Bruno' },
-  { id: 'drache', emoji: '🐲', nameDe: 'Fiete Drache', nameVi: 'Rồng Fiete' },
+const AVATAR_OPTIONS: { id: CharacterAvatar; emoji: string; nameDe: string }[] = [
+  { id: 'fuchs', emoji: '🦊', nameDe: 'Leo Fuchs' },
+  { id: 'eule', emoji: '🦉', nameDe: 'Mia Eule' },
+  { id: 'hase', emoji: '🐰', nameDe: 'Ben Hase' },
+  { id: 'baer', emoji: '🐻', nameDe: 'Bruno Bär' },
+  { id: 'drache', emoji: '🐲', nameDe: 'Fiete Drache' },
 ];
 
 export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
-  lang,
   isOpen,
   isFirstTime = false,
   onCreatePlayer,
@@ -86,17 +83,17 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
     const clean = nameInput.trim();
 
     if (!clean) {
-      setErrorMessage(lang === 'de' ? 'Bitte gib einen Namen ein.' : 'Vui lòng nhập tên biệt danh.');
+      setErrorMessage( 'Bitte gib einen Namen ein.' );
       return;
     }
 
     if (clean.length < 2 || clean.length > 20) {
-      setErrorMessage(t(lang, 'nameMinChars'));
+      setErrorMessage("Name muss 2 bis 20 Zeichen lang sein.");
       return;
     }
 
     if (availability?.exists) {
-      setErrorMessage(t(lang, 'nameAlreadyTaken'));
+      setErrorMessage("Dieser Name ist bereits vergeben! Bitte wähle einen anderen.");
       return;
     }
 
@@ -111,7 +108,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
       onClose();
     } else {
       sound.playWrong();
-      setErrorMessage(result.error || (lang === 'de' ? 'Fehler beim Erstellen!' : 'Lỗi khi tạo tài khoản!'));
+      setErrorMessage(result.error || ( 'Fehler beim Erstellen!' ));
     }
   };
 
@@ -138,10 +135,10 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-amber-300 font-['Fredoka']">
-              {isFirstTime ? t(lang, 'welcomeFirstTimeTitle') : t(lang, 'createNewProfile')}
+              {isFirstTime ? "Willkommen bei MatheHeld! 🦊" : "Neues Profil erstellen"}
             </h2>
             <p className="text-xs text-slate-300 mt-0.5">
-              {isFirstTime ? t(lang, 'welcomeFirstTimeDesc') : (lang === 'de' ? 'Erstelle ein neues Benutzerkonto mit eigenen Sternen & Münzen:' : 'Tạo hồ sơ mới riêng biệt (bắt đầu từ 0 sao, 0 xu, điểm độc lập):')}
+              {isFirstTime ? "Erstelle deinen eigenen Mathe-Helden, um Sterne, Münzen und Trophäen sicher zu speichern!" : ( 'Erstelle ein neues Benutzerkonto mit eigenen Sternen & Münzen:' )}
             </p>
           </div>
         </div>
@@ -151,7 +148,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
           {/* Avatar Selection */}
           <div className="bg-slate-800/80 p-3 sm:p-4 rounded-2xl border border-slate-700">
             <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-              {t(lang, 'chooseStarterAvatar')}
+              {"Wähle deinen Begleiter:"}
             </label>
             <div className="grid grid-cols-5 gap-2 sm:gap-3">
               {AVATAR_OPTIONS.map((av) => (
@@ -170,7 +167,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
                 >
                   <span className="text-3xl sm:text-4xl">{av.emoji}</span>
                   <span className="text-[10px] font-bold text-slate-300 mt-1 truncate max-w-full font-['Fredoka']">
-                    {lang === 'de' ? av.nameDe.split(' ')[0] : av.nameVi.split(' ')[1] || av.nameVi}
+                    { av.nameDe.split(' ')[0] }
                   </span>
                 </button>
               ))}
@@ -180,7 +177,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
           {/* Nickname Input */}
           <div className="bg-slate-800/80 p-3 sm:p-4 rounded-2xl border border-slate-700">
             <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-              {t(lang, 'enterPlayerName')} (2 - 20 {lang === 'de' ? 'Zeichen' : 'ký tự'})
+              {"Dein Name / Spitzname"} (2 - 20 { 'Zeichen' })
             </label>
             <div className="relative">
               <input
@@ -197,7 +194,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
               />
               {checking && (
                 <div className="absolute right-3 top-3 text-xs text-amber-300 animate-pulse font-bold">
-                  {lang === 'de' ? 'Prüfe...' : 'Kiểm tra...'}
+                  { 'Prüfe...' }
                 </div>
               )}
             </div>
@@ -205,7 +202,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
             {/* Too short hint */}
             {isTooShort && (
               <div className="mt-2 text-xs font-semibold text-amber-300/80 px-2">
-                {t(lang, 'nameMinChars')}
+                {"Name muss 2 bis 20 Zeichen lang sein."}
               </div>
             )}
 
@@ -213,7 +210,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
             {availability?.checked && availability.exists && (
               <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30">
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>{t(lang, 'nameAlreadyTaken')}</span>
+                <span>{"Dieser Name ist bereits vergeben! Bitte wähle einen anderen."}</span>
               </div>
             )}
 
@@ -221,7 +218,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
             {availability?.checked && !availability.exists && availability.available && trimmed.length >= 2 && (
               <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>{t(lang, 'nameAvailableNotice')}</span>
+                <span>{"Name ist frei! Du kannst ihn wählen."}</span>
               </div>
             )}
 
@@ -242,7 +239,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
                 onClick={onPickExisting}
                 className="text-xs font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer py-1"
               >
-                {t(lang, 'orChooseExisting')}
+                {"Oder bestehenden Helden wählen"}
               </button>
             ) : !isFirstTime ? (
               <button
@@ -250,7 +247,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
                 onClick={onClose}
                 className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded-xl transition cursor-pointer w-full sm:w-auto"
               >
-                {t(lang, 'cancelBtn')}
+                {"Abbrechen"}
               </button>
             ) : <div />}
 
@@ -265,7 +262,7 @@ export const NewPlayerModal: React.FC<NewPlayerModalProps> = ({
               className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 disabled:opacity-50 text-slate-950 font-black text-sm rounded-xl cursor-pointer transition flex items-center justify-center gap-2 shadow-lg font-['Fredoka'] active:scale-95"
             >
               <Sparkles className="w-4 h-4 text-slate-950" />
-              <span>{isSubmitting ? (lang === 'de' ? 'Erstelle...' : 'Đang tạo...') : t(lang, 'createAndStart')}</span>
+              <span>{isSubmitting ? ( 'Erstelle...' ) : "Held erstellen & Abenteuer starten"}</span>
               <ArrowRight className="w-4 h-4 text-slate-950" />
             </button>
           </div>

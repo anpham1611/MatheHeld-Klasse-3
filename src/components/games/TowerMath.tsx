@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Pause, Check, RotateCcw, Building2, HelpCircle, PenTool } from 'lucide-react';
-import { Language, PlayerProfile } from '../../types/game';
-import { t } from '../../math/translations';
+import { PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
 import { generateTowerTask, TowerTask } from '../../math/curriculum';
 import { PauseModal } from '../PauseModal';
@@ -9,7 +8,6 @@ import { VictoryModal } from '../VictoryModal';
 import { Scratchpad } from '../Scratchpad';
 
 interface TowerMathProps {
-  lang: Language;
   player: PlayerProfile;
   onUpdateStats: (stars: number, coins: number, score: number) => void;
   onBack: () => void;
@@ -18,7 +16,6 @@ interface TowerMathProps {
 }
 
 export const TowerMath: React.FC<TowerMathProps> = ({
-  lang,
   player,
   onUpdateStats,
   onBack,
@@ -89,10 +86,8 @@ export const TowerMath: React.FC<TowerMathProps> = ({
       const nextScore = Math.max(0, score - 1);
       setScore(nextScore);
       setErrorFeedback(
-        lang === 'de'
-          ? `Leider falsch (${fullAnswer}). Die richtige Antwort war ${task.answer} (-1 Punkt). Nächste Aufgabe...`
-          : `Chưa đúng (${fullAnswer}). Đáp án đúng là ${task.answer} (-1 điểm). Đang chuyển câu tiếp...`
-      );
+         `Leider falsch (${fullAnswer}). Die richtige Antwort war ${task.answer} (-1 Punkt). Nächste Aufgabe...`
+          );
 
       // Advance to next task without allowing retry on this problem
       setTimeout(() => {
@@ -134,7 +129,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
             className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
           >
             <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">{t(lang, 'scratchpad')}</span>
+            <span className="hidden sm:inline">{"Schmierzettel"}</span>
           </button>
         </div>
 
@@ -142,19 +137,18 @@ export const TowerMath: React.FC<TowerMathProps> = ({
           <div className="text-[11px] sm:text-xs text-amber-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
             <Building2 className="w-3.5 h-3.5" />
             <span>
-              {lang === 'de'
-                ? 'Turmbau: Schriftlich'
-                : 'Xây tháp đặt tính'}
+              { 'Turmbau: Schriftlich'
+                }
             </span>
           </div>
           <div className="text-xs sm:text-sm font-semibold text-slate-300">
-            {lang === 'de' ? `Etage: ${towerHeight}/5` : `Tầng: ${towerHeight}/5`}
+            { `Etage: ${towerHeight}/5` }
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="bg-slate-800/90 border border-slate-700 px-2.5 py-1 rounded-xl text-right">
-            <div className="text-[9px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
+            <div className="text-[9px] text-slate-400 uppercase font-bold">{"Punkte"}</div>
             <div className="text-sm sm:text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
               {score}
             </div>
@@ -167,7 +161,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
         {/* Left: The Math Castle Tower Graphic (order-2 on mobile so table comes first) */}
         <div className="order-2 md:order-1 flex flex-col items-center justify-end h-48 sm:h-80 w-full sm:w-44 max-w-xs bg-slate-900/60 rounded-3xl border-2 border-indigo-900/60 p-3 relative">
           <div className="absolute top-2.5 text-xs text-indigo-300 font-bold uppercase">
-            {lang === 'de' ? '🏰 Mathe-Turm' : '🏰 Tháp Toán Học'}
+            { '🏰 Mathe-Turm' }
           </div>
 
           {/* Tower Blocks stacked bottom to top */}
@@ -183,7 +177,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
                       : 'border-2 border-dashed border-slate-800 bg-slate-950/40 text-slate-600'
                   }`}
                 >
-                  {isBuilt ? (lang === 'de' ? `Etage ${idx + 1} ⭐` : `Tầng ${idx + 1} ⭐`) : `...`}
+                  {isBuilt ? ( `Etage ${idx + 1} ⭐` ) : `...`}
                 </div>
               );
             })}
@@ -218,7 +212,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
 
           {/* Carrying Row (Übertrag) */}
           <div className="grid grid-cols-4 gap-2 w-full text-center mb-2 items-center text-xs">
-            <div className="text-slate-400 font-bold">{t(lang, 'carryingLabel')}</div>
+            <div className="text-slate-400 font-bold">{"Übertrag"}</div>
             <input
               type="text"
               maxLength={1}
@@ -297,7 +291,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
               className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-lg rounded-2xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer transform active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-5 h-5" />
-              <span>{t(lang, 'checkAnswer')}</span>
+              <span>{"Prüfen"}</span>
             </button>
           </div>
 
@@ -323,14 +317,13 @@ export const TowerMath: React.FC<TowerMathProps> = ({
 
       {/* Scratchpad Window */}
       {showScratchpad && (
-        <Scratchpad lang={lang} onClose={() => setShowScratchpad(false)} />
+        <Scratchpad  onClose={() => setShowScratchpad(false)} />
       )}
 
       {/* Pause Modal */}
       {isPaused && (
         <PauseModal
-          lang={lang}
-          onResume={() => setIsPaused(false)}
+                    onResume={() => setIsPaused(false)}
           onRestart={() => {
             setIsPaused(false);
             setScore(0);
@@ -348,8 +341,7 @@ export const TowerMath: React.FC<TowerMathProps> = ({
       {/* Victory Modal */}
       {showVictory && (
         <VictoryModal
-          lang={lang}
-          score={score}
+                    score={score}
           starsEarned={3}
           streak={streak}
           coinsEarned={30}

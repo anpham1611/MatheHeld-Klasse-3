@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { Play, RotateCcw, Home, Volume2, VolumeX, Save, Check } from 'lucide-react';
-import { Language } from '../types/game';
-import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
 
 interface PauseModalProps {
-  lang: Language;
   onResume: () => void;
   onRestart: () => void;
   onQuit: () => void;
@@ -15,7 +12,6 @@ interface PauseModalProps {
 }
 
 export const PauseModal: React.FC<PauseModalProps> = ({
-  lang,
   onResume,
   onRestart,
   onQuit,
@@ -47,10 +43,10 @@ export const PauseModal: React.FC<PauseModalProps> = ({
         </div>
 
         <h2 className="text-3xl font-extrabold text-amber-300 font-['Fredoka'] mb-2">
-          {t(lang, 'pause')}
+          {"Pause"}
         </h2>
         <p className="text-slate-300 text-sm mb-6">
-          {lang === 'de' ? 'Kurze Verschnaufpause für den Mathe-Helden!' : 'Nghỉ giải lao một chút nào bé yêu!'}
+          { 'Kurze Verschnaufpause für den Mathe-Helden!' }
         </p>
 
         <div className="space-y-3">
@@ -62,7 +58,7 @@ export const PauseModal: React.FC<PauseModalProps> = ({
             className="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 text-lg cursor-pointer transform active:scale-95 transition"
           >
             <Play className="w-5 h-5 fill-current" />
-            <span>{t(lang, 'resume')}</span>
+            <span>{"Weiterspielen"}</span>
           </button>
 
           {onSave && (
@@ -78,12 +74,12 @@ export const PauseModal: React.FC<PauseModalProps> = ({
               {justSaved ? (
                 <>
                   <Check className="w-4 h-4 text-emerald-400" />
-                  <span>{t(lang, 'savedSuccess')}</span>
+                  <span>{"Erfolgreich gespeichert!"}</span>
                 </>
               ) : (
                 <>
                   <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
-                  <span>{isSaving ? t(lang, 'saving') : t(lang, 'saveProgress')}</span>
+                  <span>{isSaving ? "Wird gespeichert..." : "Spielstand speichern"}</span>
                 </>
               )}
             </button>
@@ -97,7 +93,7 @@ export const PauseModal: React.FC<PauseModalProps> = ({
             className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl border border-slate-700 flex items-center justify-center gap-2 text-base cursor-pointer transform active:scale-95 transition"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>{t(lang, 'restart')}</span>
+            <span>{"Nochmal versuchen"}</span>
           </button>
 
           <button
@@ -108,7 +104,7 @@ export const PauseModal: React.FC<PauseModalProps> = ({
             className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl border border-slate-700 flex items-center justify-center gap-2 text-base cursor-pointer transform active:scale-95 transition"
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
-            <span>{isMuted ? t(lang, 'soundOn') : t(lang, 'soundOff')}</span>
+            <span>{isMuted ? "Ton an" : "Ton aus"}</span>
           </button>
 
           <button
@@ -119,7 +115,7 @@ export const PauseModal: React.FC<PauseModalProps> = ({
             className="w-full py-3 px-4 bg-red-600/20 hover:bg-red-600/30 text-red-300 font-bold rounded-2xl border border-red-500/30 flex items-center justify-center gap-2 text-base cursor-pointer transform active:scale-95 transition"
           >
             <Home className="w-4 h-4" />
-            <span>{t(lang, 'quitToMap')}</span>
+            <span>{"Zum Hauptmenü"}</span>
           </button>
         </div>
       </div>

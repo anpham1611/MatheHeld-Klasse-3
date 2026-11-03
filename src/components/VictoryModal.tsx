@@ -1,12 +1,9 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Star, Trophy, RotateCcw, ArrowRight } from 'lucide-react';
-import { Language } from '../types/game';
-import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
 
 interface VictoryModalProps {
-  lang: Language;
   score: number;
   starsEarned: number;
   streak: number;
@@ -17,7 +14,6 @@ interface VictoryModalProps {
 }
 
 export const VictoryModal: React.FC<VictoryModalProps> = ({
-  lang,
   score,
   starsEarned,
   streak,
@@ -47,16 +43,16 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
         </div>
 
         <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-400 font-['Fredoka'] mb-1">
-          {t(lang, 'wellDone')}
+          {"Super gerechnet!"}
         </h2>
         <p className="text-emerald-400 font-bold text-sm tracking-wide uppercase mb-6">
-          {lang === 'de' ? 'Klasse 3 Mathe-Champion!' : 'Nhà vô địch toán lớp 3!'}
+          { 'Klasse 3 Mathe-Champion!' }
         </p>
 
         {/* Reward Badges */}
         <div className="grid grid-cols-3 gap-3 mb-6 bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60">
           <div className="flex flex-col items-center">
-            <span className="text-xs text-slate-400 mb-1">{t(lang, 'stars')}</span>
+            <span className="text-xs text-slate-400 mb-1">{"Sterne"}</span>
             <div className="flex items-center gap-1 text-yellow-400 font-black text-xl font-['Fredoka']">
               <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
               <span>+{starsEarned}</span>
@@ -64,7 +60,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           </div>
 
           <div className="flex flex-col items-center border-x border-slate-700/60 px-2">
-            <span className="text-xs text-slate-400 mb-1">{t(lang, 'score')}</span>
+            <span className="text-xs text-slate-400 mb-1">{"Punkte"}</span>
             <div className="flex items-center gap-1 text-indigo-400 font-black text-xl font-['Fredoka']">
               <Trophy className="w-5 h-5 text-indigo-400" />
               <span>{score}</span>
@@ -72,7 +68,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           </div>
 
           <div className="flex flex-col items-center">
-            <span className="text-xs text-slate-400 mb-1">{t(lang, 'coins')}</span>
+            <span className="text-xs text-slate-400 mb-1">{"Smaragde & Gold"}</span>
             <div className="flex items-center gap-1 text-amber-400 font-black text-xl font-['Fredoka']">
               <span className="text-lg">🪙</span>
               <span>+{coinsEarned}</span>
@@ -84,9 +80,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           <div className="mb-6 py-2 px-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-amber-300 text-xs font-bold flex items-center justify-center gap-2">
             <span>🔥</span>
             <span>
-              {lang === 'de'
-                ? `Mega Serie von ${streak} richtigen Antworten am Stück!`
-                : `Chuỗi siêu phàm: ${streak} câu trả lời đúng liên tiếp!`}
+              { `Mega Serie von ${streak} richtigen Antworten am Stück!`
+                }
             </span>
           </div>
         )}
@@ -99,7 +94,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
             }}
             className="w-full py-3.5 px-5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black rounded-2xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 text-lg cursor-pointer transform active:scale-95 transition"
           >
-            <span>{lang === 'de' ? 'Nächste Runde spielen' : 'Chơi hiệp tiếp theo'}</span>
+            <span>{ 'Nächste Runde spielen' }</span>
             <ArrowRight className="w-5 h-5" />
           </button>
 
@@ -112,7 +107,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
               className="py-3 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-700 flex items-center justify-center gap-2 text-sm cursor-pointer transform active:scale-95 transition"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>{t(lang, 'restart')}</span>
+              <span>{"Nochmal versuchen"}</span>
             </button>
 
             <button
@@ -122,7 +117,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
               }}
               className="py-3 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-700 flex items-center justify-center gap-2 text-sm cursor-pointer transform active:scale-95 transition"
             >
-              <span>{t(lang, 'quitToMap')}</span>
+              <span>{"Zum Hauptmenü"}</span>
             </button>
           </div>
         </div>

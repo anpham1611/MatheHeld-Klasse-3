@@ -5,7 +5,7 @@ import {
   PenTool, CheckCircle2, Trophy, Star, Volume2, VolumeX,
   Layers, Hammer, Compass, Sun, Eye, ChevronRight
 } from 'lucide-react';
-import { Language, PlayerProfile } from '../../types/game';
+import { PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
 import { 
   MinecraftModuleId, 
@@ -20,7 +20,6 @@ import { Scratchpad } from '../Scratchpad';
 import { PauseModal } from '../PauseModal';
 
 interface MinecraftMathWorldProps {
-  lang: Language;
   player: PlayerProfile;
   onUpdateStats: (stars: number, coins: number, score: number) => void;
   onBack: () => void;
@@ -29,7 +28,6 @@ interface MinecraftMathWorldProps {
 }
 
 export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
-  lang,
   player,
   onUpdateStats,
   onBack,
@@ -142,49 +140,37 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
   const modulesList = [
     {
       id: 'multiplication_division' as MinecraftModuleId,
-      labelVi: '1. Nông Trại & Kho Báu',
       labelDe: '1. Farm & Schatz',
-      subVi: 'Nhân mảng & Chia đều',
       subDe: '1x1 & Division',
       icon: '🌾',
     },
     {
       id: 'perimeter_area' as MinecraftModuleId,
-      labelVi: '2. Nền Nhà & Hàng Rào',
       labelDe: '2. Villa & Zaun',
-      subVi: 'Diện tích & Chu vi',
       subDe: 'Fläche & Umfang',
       icon: '📐',
     },
     {
       id: 'place_values' as MinecraftModuleId,
-      labelVi: '3. Khối Đất - Gỗ - Đá - Sắt',
       labelDe: '3. Block-Stellenwerte',
-      subVi: 'Cấu tạo số đến 1000',
       subDe: 'Zahlenraum bis 1000',
       icon: '💎',
     },
     {
       id: 'math_quests' as MinecraftModuleId,
-      labelVi: '4. Nhiệm Vụ Vượt Sông',
       labelDe: '4. Mathe-Quests',
-      subVi: 'Toán có lời văn',
       subDe: 'Sachaufgaben',
       icon: '🌉',
     },
     {
       id: 'time_fractions' as MinecraftModuleId,
-      labelVi: '5. Đồng Hồ & Bánh Kem',
       labelDe: '5. Zeit & Brüche',
-      subVi: 'Xem giờ & Phân số',
       subDe: 'Uhrzeit & Kuchen',
       icon: '🎂',
     },
     {
       id: 'creative_sandbox' as MinecraftModuleId,
-      labelVi: '6. Xưởng Sáng Tạo 3D',
       labelDe: '6. 3D Kreativ-Labor',
-      subVi: 'Thử nghiệm tự do',
       subDe: 'Freies Bauen',
       icon: '🔨',
     },
@@ -211,7 +197,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs sm:text-sm font-bold cursor-pointer border border-slate-700 transition"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">{lang === 'de' ? 'Zurück' : 'Trở về'}</span>
+            <span className="hidden sm:inline">{ 'Zurück' }</span>
           </button>
 
           <div className="flex items-center gap-2">
@@ -220,9 +206,9 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
             </div>
             <div>
               <h1 className="text-sm sm:text-base font-black text-white font-['Fredoka'] tracking-wide flex items-center gap-1.5">
-                <span>{lang === 'de' ? 'Minecraft Mathe-Welt' : 'Minecraft Math World'}</span>
+                <span>{ 'Minecraft Mathe-Welt' }</span>
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded uppercase font-mono">
-                  {lang === 'de' ? 'Klasse 3' : 'Lớp 3'}
+                  { 'Klasse 3' }
                 </span>
               </h1>
             </div>
@@ -233,12 +219,12 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
         <div className="hidden md:flex items-center gap-3 bg-black/40 border border-slate-700 px-3.5 py-1.5 rounded-2xl">
           <div className="flex items-center gap-1 text-emerald-400 text-xs font-black">
             <span>🟢</span>
-            <span>{player.euroCoins} {lang === 'de' ? 'Smaragde' : 'Ngọc / Vàng'}</span>
+            <span>{player.euroCoins} { 'Smaragde' }</span>
           </div>
           <div className="h-3 w-px bg-slate-700" />
           <div className="flex items-center gap-1 text-yellow-400 text-xs font-black">
             <Star className="w-3.5 h-3.5 fill-yellow-400" />
-            <span>{player.stars} {lang === 'de' ? 'Sterne' : 'Sao'}</span>
+            <span>{player.stars} { 'Sterne' }</span>
           </div>
           <div className="h-3 w-px bg-slate-700" />
           <div className="flex items-center gap-1 text-amber-300 text-xs font-black">
@@ -256,11 +242,11 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
               setShowTeacherGuide(true);
             }}
             className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 rounded-xl text-xs font-black cursor-pointer transition shadow"
-            title={lang === 'de' ? 'Leitfaden für Lehrkräfte & Eltern' : 'Sổ tay giáo viên / Teacher Guide'}
+            title={ 'Leitfaden für Lehrkräfte & Eltern' }
           >
             <BookOpen className="w-4 h-4 text-emerald-400" />
             <span className="hidden sm:inline">
-              {lang === 'de' ? 'Lehrer-Tafel' : 'Sổ tay Giáo Viên'}
+              { 'Lehrer-Tafel' }
             </span>
           </button>
 
@@ -271,10 +257,10 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
               setShowScratchpad(true);
             }}
             className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 rounded-xl text-xs font-bold cursor-pointer transition"
-            title={lang === 'de' ? 'Schmierzettel / Notizen' : 'Bảng nháp tính toán'}
+            title={ 'Schmierzettel / Notizen' }
           >
             <PenTool className="w-4 h-4 text-indigo-400" />
-            <span className="hidden sm:inline">{lang === 'de' ? 'Notizen' : 'Nháp'}</span>
+            <span className="hidden sm:inline">{ 'Notizen' }</span>
           </button>
 
           {/* Sound Toggle */}
@@ -307,10 +293,10 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
               <span className="text-base">{m.icon}</span>
               <div className="text-left">
                 <div className="leading-tight font-['Fredoka']">
-                  {lang === 'de' ? m.labelDe : m.labelVi}
+                  { m.labelDe }
                 </div>
                 <div className="text-[10px] text-slate-300 opacity-80 font-normal">
-                  {lang === 'de' ? m.subDe : m.subVi}
+                  { m.subDe }
                 </div>
               </div>
             </button>
@@ -327,8 +313,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
             editable={activeModule === 'creative_sandbox'}
             activeBlockType={creativeBlockType}
             onBlocksChange={setCurrentBlocks}
-            lang={lang}
-          />
+                      />
         </div>
 
         {/* Right Column: Minecraft Task & Question Board (lg: 5 cols) */}
@@ -342,10 +327,10 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                     <span className="text-2xl">🔨</span>
                     <div>
                       <h3 className="text-lg font-black text-white font-['Fredoka']">
-                        {lang === 'de' ? '3D Kreativ-Labor' : 'Xưởng Sáng Tạo Tự Do'}
+                        { '3D Kreativ-Labor' }
                       </h3>
                       <p className="text-xs text-emerald-400 font-bold">
-                        {lang === 'de' ? 'Baue und beobachte Stellenwerte live' : 'Đặt khối & quan sát trực quan Toán 3D'}
+                        { 'Baue und beobachte Stellenwerte live' }
                       </p>
                     </div>
                   </div>
@@ -354,7 +339,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                 {/* Block Selector */}
                 <div className="mb-4">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                    {lang === 'de' ? 'Block-Typ wählen:' : 'Chọn loại khối để đặt:'}
+                    { 'Block-Typ wählen:' }
                   </label>
                   <div className="grid grid-cols-4 gap-2">
                     {(['dirt', 'wood', 'cobblestone', 'iron'] as VoxelBlock['type'][]).map((type) => {
@@ -378,7 +363,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                             style={{ backgroundColor: info.color }}
                           />
                           <span className="text-[11px] font-black truncate max-w-full">
-                            {lang === 'de' ? info.nameDe : info.nameVi.split(' ')[1]}
+                            { info.nameDe }
                           </span>
                           <span className="text-[10px] text-amber-400 font-mono font-bold">
                             ={info.value}
@@ -392,20 +377,20 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                 {/* Real-time Math Analysis of placed blocks */}
                 <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2.5">
                   <h4 className="text-xs font-black text-amber-300 uppercase tracking-wider">
-                    {lang === 'de' ? 'Live-Mathematik-Analyse:' : 'Phân tích Toán Học Trực Quan:'}
+                    { 'Live-Mathematik-Analyse:' }
                   </h4>
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-slate-900 p-2 rounded-lg border border-slate-800">
                       <span className="text-slate-400 block text-[10px]">
-                        {lang === 'de' ? 'Gesamtblöcke:' : 'Tổng số khối:'}
+                        { 'Gesamtblöcke:' }
                       </span>
                       <span className="text-base font-black text-white">{currentBlocks.length}</span>
                     </div>
 
                     <div className="bg-slate-900 p-2 rounded-lg border border-slate-800">
                       <span className="text-slate-400 block text-[10px]">
-                        {lang === 'de' ? 'Zahlenwert (T-H-Z-E):' : 'Giá trị số (H-Z-E):'}
+                        { 'Zahlenwert (T-H-Z-E):' }
                       </span>
                       <span className="text-base font-black text-amber-400">{totalSandboxValue}</span>
                     </div>
@@ -413,19 +398,19 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
 
                   <div className="text-[11px] text-slate-400 bg-slate-900/60 p-2 rounded-lg border border-slate-800/80">
                     <div className="flex justify-between py-0.5">
-                      <span>{lang === 'de' ? 'Eisen' : 'Sắt'} ({totalIron} × 1000):</span>
+                      <span>{ 'Eisen' } ({totalIron} × 1000):</span>
                       <span className="font-mono font-bold text-white">{totalIron * 1000}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
-                      <span>{lang === 'de' ? 'Bruchstein' : 'Đá'} ({totalCobble} × 100):</span>
+                      <span>{ 'Bruchstein' } ({totalCobble} × 100):</span>
                       <span className="font-mono font-bold text-white">{totalCobble * 100}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
-                      <span>{lang === 'de' ? 'Holz' : 'Gỗ'} ({totalWood} × 10):</span>
+                      <span>{ 'Holz' } ({totalWood} × 10):</span>
                       <span className="font-mono font-bold text-white">{totalWood * 10}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
-                      <span>{lang === 'de' ? 'Erde' : 'Đất'} ({totalDirt} × 1):</span>
+                      <span>{ 'Erde' } ({totalDirt} × 1):</span>
                       <span className="font-mono font-bold text-white">{totalDirt * 1}</span>
                     </div>
                   </div>
@@ -438,7 +423,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                   className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs cursor-pointer shadow transition flex items-center justify-center gap-1.5"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  <span>{lang === 'de' ? 'Neue Aufgabe generieren' : 'Tạo thử thách mới'}</span>
+                  <span>{ 'Neue Aufgabe generieren' }</span>
                 </button>
               </div>
             </div>
@@ -450,10 +435,10 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                 <div className="flex items-start justify-between gap-2 mb-3 pb-3 border-b border-slate-800">
                   <div>
                     <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/30">
-                      {lang === 'de' ? 'Mathe-Aufgabe' : 'Bài Tập Toán 3'}
+                      { 'Mathe-Aufgabe' }
                     </span>
                     <h3 className="text-base sm:text-lg font-black text-white font-['Fredoka'] mt-1">
-                      {lang === 'de' ? currentTask.titleDe : currentTask.titleVi}
+                      { currentTask.titleDe }
                     </h3>
                   </div>
 
@@ -463,23 +448,23 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                       setShowHint(!showHint);
                     }}
                     className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 cursor-pointer transition text-xs flex items-center gap-1 shrink-0"
-                    title={lang === 'de' ? 'Rechen-Tipp anzeigen' : 'Gợi ý cách giải'}
+                    title={ 'Rechen-Tipp anzeigen' }
                   >
                     <HelpCircle className="w-4 h-4" />
-                    <span className="text-[11px] font-bold">{lang === 'de' ? 'Tipp' : 'Gợi ý'}</span>
+                    <span className="text-[11px] font-bold">{ 'Tipp' }</span>
                   </button>
                 </div>
 
                 {/* Question Text in Wooden Blackboard */}
                 <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs sm:text-sm font-medium leading-relaxed mb-4 shadow-inner">
-                  {lang === 'de' ? currentTask.questionDe : currentTask.questionVi}
+                  { currentTask.questionDe }
                 </div>
 
                 {/* Hint Banner if toggled */}
                 {showHint && (
                   <div className="mb-4 p-3 rounded-xl bg-amber-950/60 border border-amber-500/40 text-amber-200 text-xs leading-relaxed flex items-start gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    <span>{lang === 'de' ? currentTask.hintDe : currentTask.hintVi}</span>
+                    <span>{ currentTask.hintDe }</span>
                   </div>
                 )}
 
@@ -529,19 +514,19 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                         <>
                           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                           <span className="text-emerald-300 font-black">
-                            {lang === 'de' ? 'Exzellent gelöst! +1 Punkt' : 'Chính xác xuất sắc! +1 điểm'}
+                            { 'Exzellent gelöst! +1 Punkt' }
                           </span>
                         </>
                       ) : (
                         <>
                           <span className="text-rose-400 font-black">
-                            {lang === 'de' ? 'Falsch! -1 Punkt (nächste Quest...)' : 'Chưa chính xác! -1 điểm (chuyển câu tiếp...)'}
+                            { 'Falsch! -1 Punkt (nächste Quest...)' }
                           </span>
                         </>
                       )}
                     </div>
                     <p className="opacity-95">
-                      {lang === 'de' ? currentTask.explanationDe : currentTask.explanationVi}
+                      { currentTask.explanationDe }
                     </p>
                   </div>
                 )}
@@ -552,7 +537,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                 <div className="text-[11px] text-slate-400 font-mono">
                   {streak > 1 && (
                     <span className="text-amber-400 font-bold">
-                      🔥 {lang === 'de' ? `Serie: ${streak} richtige Antworten!` : `Chuỗi ${streak} câu đúng!`}
+                      🔥 { `Serie: ${streak} richtige Antworten!` }
                     </span>
                   )}
                 </div>
@@ -561,7 +546,7 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
                   onClick={handleNextTask}
                   className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black rounded-xl text-xs sm:text-sm cursor-pointer shadow-lg transition"
                 >
-                  <span>{lang === 'de' ? 'Nächste Quest' : 'Câu tiếp theo'}</span>
+                  <span>{ 'Nächste Quest' }</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -573,24 +558,21 @@ export const MinecraftMathWorld: React.FC<MinecraftMathWorldProps> = ({
       {/* Teacher Guide Pedagogical Modal */}
       {showTeacherGuide && (
         <TeacherGuideModal
-          lang={lang}
-          onClose={() => setShowTeacherGuide(false)}
+                    onClose={() => setShowTeacherGuide(false)}
         />
       )}
 
       {/* Scratchpad Modal */}
       {showScratchpad && (
         <Scratchpad
-          lang={lang}
-          onClose={() => setShowScratchpad(false)}
+                    onClose={() => setShowScratchpad(false)}
         />
       )}
 
       {/* Pause Modal */}
       {isPaused && (
         <PauseModal
-          lang={lang}
-          onResume={() => setIsPaused(false)}
+                    onResume={() => setIsPaused(false)}
           onRestart={handleNextTask}
           onQuit={onBack}
           isMuted={isMuted}

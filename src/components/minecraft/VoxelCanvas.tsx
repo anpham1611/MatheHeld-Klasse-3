@@ -20,7 +20,6 @@ interface VoxelCanvasProps {
   onBlocksChange?: (newBlocks: VoxelBlock[]) => void;
   onBlockPlace?: (block: VoxelBlock) => boolean | void;
   onBlockRemove?: (block: VoxelBlock) => boolean | void;
-  lang?: 'de' | 'vi';
   gridSize?: BaseGridSize;
 }
 
@@ -209,7 +208,6 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
   onBlocksChange,
   onBlockPlace,
   onBlockRemove,
-  lang = 'vi',
   gridSize = DEFAULT_BASE_GRID_SIZE,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -607,7 +605,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
         <button
           onClick={handleResetView}
           className="p-1.5 hover:bg-white/20 rounded-lg cursor-pointer transition text-xs flex items-center gap-1"
-          title={lang === 'de' ? 'Kamera zentrieren' : 'Đặt lại góc nhìn'}
+          title={ 'Kamera zentrieren' }
         >
           <RotateCw className="w-4 h-4 text-emerald-400" />
         </button>
@@ -615,7 +613,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
         <button
           onClick={() => handleZoom(-1)}
           className="p-1.5 hover:bg-white/20 rounded-lg cursor-pointer transition"
-          title={lang === 'de' ? 'Heranzoomen' : 'Phóng to'}
+          title={ 'Heranzoomen' }
         >
           <ZoomIn className="w-4 h-4 text-amber-300" />
         </button>
@@ -623,7 +621,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
         <button
           onClick={() => handleZoom(1)}
           className="p-1.5 hover:bg-white/20 rounded-lg cursor-pointer transition"
-          title={lang === 'de' ? 'Herauszoomen' : 'Thu nhỏ'}
+          title={ 'Herauszoomen' }
         >
           <ZoomOut className="w-4 h-4 text-amber-300" />
         </button>
@@ -636,13 +634,9 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
           className="p-1.5 hover:bg-white/20 rounded-lg cursor-pointer transition"
           title={
             isNight
-              ? lang === 'de'
-                ? 'Tag-Modus aktivieren'
-                : 'Chuyển Ban Ngày (Day)'
-              : lang === 'de'
-              ? 'Nacht-Modus aktivieren'
-              : 'Chuyển Ban Đêm (Night)'
-          }
+              ?  'Tag-Modus aktivieren'
+                :  'Nacht-Modus aktivieren'
+              }
         >
           {isNight ? <Sun className="w-4 h-4 text-yellow-300" /> : <Moon className="w-4 h-4 text-indigo-300" />}
         </button>
@@ -657,7 +651,7 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
               className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-black cursor-pointer shadow transition"
             >
               <Plus className="w-4 h-4" />
-              <span>{lang === 'de' ? 'Block setzen' : 'Đặt khối'}</span>
+              <span>{ 'Block setzen' }</span>
             </button>
 
             <button
@@ -665,19 +659,19 @@ export const VoxelCanvas: React.FC<VoxelCanvasProps> = ({
               className="flex items-center gap-1 px-3 py-1.5 bg-rose-600/80 hover:bg-rose-600 text-white rounded-lg text-xs font-bold cursor-pointer transition"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>{lang === 'de' ? 'Leeren' : 'Xoá hết'}</span>
+              <span>{ 'Leeren' }</span>
             </button>
           </div>
 
           <div className="text-xs text-amber-300 font-mono font-bold">
-            {blocks.length} {lang === 'de' ? 'Blöcke' : 'khối'}
+            {blocks.length} { 'Blöcke' }
           </div>
         </div>
       )}
 
       {/* Touch drag indicator for kids */}
       <div className="absolute bottom-2 left-3 pointer-events-none text-[10px] text-white/70 font-mono bg-black/40 px-2 py-0.5 rounded-md">
-        {lang === 'de' ? '🖱️ Ziehen: 3D Drehen' : '🖱️ Kéo chuột: Xoay 3D'}
+        { '🖱️ Ziehen: 3D Drehen' }
       </div>
     </div>
   );

@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { ShieldAlert, Trash2, X, Lock } from 'lucide-react';
-import { Language } from '../types/game';
-import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
 
 interface DeletePlayerConfirmModalProps {
-  lang: Language;
   playerName: string;
   onConfirmDelete: () => Promise<void>;
   onClose: () => void;
 }
 
 export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> = ({
-  lang,
   playerName,
   onConfirmDelete,
   onClose,
@@ -28,7 +24,7 @@ export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> =
     e.preventDefault();
     if (!isPinCorrect) {
       sound.playWrong();
-      setErrorMsg(t(lang, 'wrongCode8888'));
+      setErrorMsg("Falscher Sicherheits-PIN! Zugriff verweigert.");
       return;
     }
 
@@ -39,7 +35,7 @@ export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> =
       sound.playWrong();
       onClose();
     } catch {
-      setErrorMsg(lang === 'de' ? 'Fehler beim Löschen!' : 'Lỗi khi xoá!');
+      setErrorMsg( 'Fehler beim Löschen!' );
       setIsDeleting(false);
     }
   };
@@ -62,10 +58,10 @@ export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> =
           </div>
           <div>
             <h2 className="text-xl font-black text-rose-400 font-['Fredoka']">
-              {t(lang, 'deleteConfirmTitle')}
+              {"Sicherheitsabfrage: Spieler löschen"}
             </h2>
             <p className="text-xs text-slate-300 mt-0.5 font-medium">
-              {lang === 'de' ? `Spieler: "${playerName}"` : `Tài khoản: "${playerName}"`}
+              { `Spieler: "${playerName}"` }
             </p>
           </div>
         </div>
@@ -74,7 +70,7 @@ export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> =
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-rose-950/30 border border-rose-500/30 p-4 rounded-2xl">
             <p className="text-xs text-slate-200 mb-3 leading-relaxed">
-              {t(lang, 'deleteConfirmPrompt')}
+              {"Zur Kindersicherung gib bitte den 4-stelligen Sicherheits-PIN ein:"}
             </p>
 
             <div className="flex flex-col items-center gap-2">
@@ -112,7 +108,7 @@ export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> =
               disabled={isDeleting}
               className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded-xl transition cursor-pointer"
             >
-              {t(lang, 'cancelBtn')}
+              {"Abbrechen"}
             </button>
 
             <button
@@ -123,8 +119,8 @@ export const DeletePlayerConfirmModal: React.FC<DeletePlayerConfirmModalProps> =
               <Trash2 className="w-4 h-4" />
               <span>
                 {isDeleting
-                  ? (lang === 'de' ? 'Wird gelöscht...' : 'Đang xoá...')
-                  : t(lang, 'confirmDeletePermanently')}
+                  ? ( 'Wird gelöscht...' )
+                  : "Endgültig löschen"}
               </span>
             </button>
           </div>

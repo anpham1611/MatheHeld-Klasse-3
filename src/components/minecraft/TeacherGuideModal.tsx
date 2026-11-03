@@ -1,16 +1,14 @@
 import React from 'react';
 import { X, BookOpen, Clock, Users, Lightbulb, CheckCircle2, Sparkles, Printer } from 'lucide-react';
 import { TEACHER_PEDAGOGICAL_GUIDE } from '../../math/minecraftCurriculum';
-import { Language } from '../../types/game';
 import { sound } from '../../audio/soundManager';
 
 interface TeacherGuideModalProps {
-  lang: Language;
   onClose: () => void;
 }
 
-export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onClose }) => {
-  const guide = TEACHER_PEDAGOGICAL_GUIDE[lang];
+export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ onClose }) => {
+  const guide = TEACHER_PEDAGOGICAL_GUIDE.de;
 
   const handlePrint = () => {
     sound.playCoin();
@@ -31,7 +29,7 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onCl
                 {guide.title}
               </h2>
               <p className="text-xs text-emerald-300 font-bold">
-                {lang === 'de' ? 'Didaktisches Konzept & Unterrichtsplanung' : 'Giáo án & Phương pháp sư phạm Toán Lớp 3'}
+                { 'Didaktisches Konzept & Unterrichtsplanung' }
               </p>
             </div>
           </div>
@@ -40,10 +38,10 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onCl
             <button
               onClick={handlePrint}
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold cursor-pointer transition shadow"
-              title={lang === 'de' ? 'Lehrplan drucken' : 'In giáo án / Print'}
+              title={ 'Lehrplan drucken' }
             >
               <Printer className="w-4 h-4" />
-              <span>{lang === 'de' ? 'Drucken' : 'In / Lưu'}</span>
+              <span>{ 'Drucken' }</span>
             </button>
 
             <button
@@ -72,7 +70,7 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onCl
           <div className="space-y-4">
             <h3 className="text-lg font-black text-amber-400 font-['Fredoka'] flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-400" />
-              <span>{lang === 'de' ? '5 Unterrichts-Bausteine' : '5 Chuyên Đề Bài Học Chuẩn Lớp 3'}</span>
+              <span>{ '5 Unterrichts-Bausteine' }</span>
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -111,7 +109,7 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onCl
           <div className="p-5 rounded-2xl bg-slate-800/60 border border-amber-500/30">
             <h4 className="font-black text-amber-300 text-base font-['Fredoka'] mb-3 flex items-center gap-2">
               <Users className="w-5 h-5 text-amber-400" />
-              <span>{lang === 'de' ? 'Tipps für Lehrkräfte & Eltern' : 'Mẹo Triển Khai Cho Giáo Viên & Phụ Huynh'}</span>
+              <span>{ 'Tipps für Lehrkräfte & Eltern' }</span>
             </h4>
 
             <div className="space-y-2">
@@ -130,9 +128,8 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onCl
           <div className="text-xs text-slate-400 flex items-center gap-2">
             <Clock className="w-4 h-4 text-emerald-400" />
             <span>
-              {lang === 'de'
-                ? '15 Min Theorie ➔ 20 Min Spielpraxis ➔ 5 Min Reflexion'
-                : '15m lý thuyết ➔ 20m thực hành ➔ 5m tổng kết'}
+              { '15 Min Theorie ➔ 20 Min Spielpraxis ➔ 5 Min Reflexion'
+                }
             </span>
           </div>
 
@@ -143,7 +140,7 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({ lang, onCl
             }}
             className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black cursor-pointer shadow-lg transition"
           >
-            {lang === 'de' ? 'Verstanden & Loslegen' : 'Đã hiểu & Bắt đầu học'}
+            { 'Verstanden & Loslegen' }
           </button>
         </div>
       </div>

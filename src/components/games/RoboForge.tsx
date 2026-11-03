@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Play, Trash2, Undo2, Volume2, VolumeX, Zap } from 'lucide-react';
 import { sound } from '../../audio/soundManager';
-import { Language, PlayerProfile } from '../../types/game';
+import { PlayerProfile } from '../../types/game';
 
 type Direction = 'up' | 'right' | 'down' | 'left';
 type Command = Direction | 'loop';
@@ -261,7 +261,6 @@ const CHAPTERS = [
 ];
 
 interface RoboForgeProps {
-  lang: Language;
   player: PlayerProfile;
   onUpdateStats: (stars: number, coins: number, score: number) => void;
   onBack: () => void;
@@ -269,7 +268,7 @@ interface RoboForgeProps {
   onToggleMute: () => void;
 }
 
-export const RoboForge: React.FC<RoboForgeProps> = ({ lang, player, onUpdateStats, onBack, isMuted, onToggleMute }) => {
+export const RoboForge: React.FC<RoboForgeProps> = ({ player, onUpdateStats, onBack, isMuted, onToggleMute }) => {
   const [progress, setProgress] = useState<Progress>(() => loadProgress(player.name));
   const [missionIndex, setMissionIndex] = useState(0);
   const [selectedChapterIndex, setSelectedChapterIndex] = useState(() => {
@@ -418,7 +417,7 @@ export const RoboForge: React.FC<RoboForgeProps> = ({ lang, player, onUpdateStat
           <h1 className="font-['Fredoka'] text-2xl font-black text-emerald-950 sm:text-3xl">🤖 RoboForge: Mathe-Rettung</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={onToggleMute} className="rounded-2xl border-2 border-white bg-white/90 p-2 shadow-sm" aria-label={isMuted ? (lang === 'de' ? 'Ton einschalten' : 'Bật âm thanh') : (lang === 'de' ? 'Ton ausschalten' : 'Tắt âm thanh')}>
+          <button onClick={onToggleMute} className="rounded-2xl border-2 border-white bg-white/90 p-2 shadow-sm" aria-label={isMuted ? ( 'Ton einschalten' ) : ( 'Ton ausschalten' )}>
             {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
           </button>
           <div className="rounded-2xl border-2 border-white bg-white/90 px-3 py-2 text-sm font-black text-amber-700 shadow-sm">⭐ {player.scores.roboforge || 0}</div>

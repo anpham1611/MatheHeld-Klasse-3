@@ -11,12 +11,11 @@ export type GameScreen =
   | 'preschool_collection'
   | 'monsterparty'
   | 'vehicle_puzzle'
+  | 'sudoku'
   | 'mathbrick'
   | 'roboforge'
   | 'maze_discovery'
   | 'certificate';
-
-export type Language = 'de';
 
 export type CharacterAvatar = 'fuchs' | 'eule' | 'hase' | 'baer' | 'drache';
 
@@ -40,6 +39,7 @@ export interface PlayerProfile {
     logic_game?: number;
     monsterparty?: number;
     vehicle_puzzle?: number;
+    sudoku?: number;
     mathbrick?: number;
     roboforge?: number;
     maze_discovery?: number;

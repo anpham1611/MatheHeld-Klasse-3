@@ -1,11 +1,10 @@
 import React from 'react';
 import { X, Trophy, Star, Coins, Sparkles, Check, Save } from 'lucide-react';
-import { Language, PlayerProfile, GameScoreDetail } from '../types/game';
-import { t } from '../math/translations';
+import { PlayerProfile, GameScoreDetail } from '../types/game';
 import { sound } from '../audio/soundManager';
+import { GAME_CATALOG, GAME_SCORE_KEYS } from '../math/gameCatalog';
 
 interface GameScoresModalProps {
-  lang: Language;
   player: PlayerProfile;
   gameScores?: Record<string, GameScoreDetail>;
   onSave: () => Promise<void>;
@@ -14,123 +13,19 @@ interface GameScoresModalProps {
 }
 
 export const GameScoresModal: React.FC<GameScoresModalProps> = ({
-  lang,
   player,
   gameScores = {},
   onSave,
   isSaving,
   onClose,
 }) => {
-  const games = [
-    {
-      key: 'minecraft',
-      name: lang === 'de' ? 'Minecraft 3D Mathe-Welt' : 'Minecraft Toán 3D',
-      icon: '🧱🟩',
-      score: player.scores.minecraft || 0,
-      solved: gameScores['minecraft']?.problemsSolved || 0,
-      timesPlayed: gameScores['minecraft']?.timesPlayed || (player.scores.minecraft ? 1 : 0),
-      color: 'from-emerald-600/30 to-teal-950/40 border-emerald-500/40 text-emerald-300',
-    },
-    {
-      key: 'number_line',
-      name: lang === 'de' ? 'Zahlenstrahl bis 1000' : 'Bay trên trục số 1000',
-      icon: '🚀',
-      score: player.scores.number_line || 0,
-      solved: gameScores['number_line']?.problemsSolved || 0,
-      timesPlayed: gameScores['number_line']?.timesPlayed || (player.scores.number_line ? 1 : 0),
-      color: 'from-blue-600/30 to-indigo-950/40 border-blue-500/40 text-blue-300',
-    },
-    {
-      key: 'einmaleins',
-      name: lang === 'de' ? 'Einmaleins & Division' : 'Võ đài Bảng Cửu Chương',
-      icon: '⚡',
-      score: player.scores.einmaleins || 0,
-      solved: gameScores['einmaleins']?.problemsSolved || 0,
-      timesPlayed: gameScores['einmaleins']?.timesPlayed || (player.scores.einmaleins ? 1 : 0),
-      color: 'from-amber-600/30 to-red-950/40 border-amber-500/40 text-amber-300',
-    },
-    {
-      key: 'euro_shop',
-      name: lang === 'de' ? 'Euro & Cent Supermarkt' : 'Siêu thị Tiền Euro & Cent',
-      icon: '💶',
-      score: player.scores.euro_shop || 0,
-      solved: gameScores['euro_shop']?.problemsSolved || 0,
-      timesPlayed: gameScores['euro_shop']?.timesPlayed || (player.scores.euro_shop ? 1 : 0),
-      color: 'from-teal-600/30 to-emerald-950/40 border-teal-500/40 text-teal-300',
-    },
-    {
-      key: 'tower_math',
-      name: lang === 'de' ? 'Schriftliches Rechnen' : 'Xây tháp Đặt tính rồi tính',
-      icon: '🏰',
-      score: player.scores.tower_math || 0,
-      solved: gameScores['tower_math']?.problemsSolved || 0,
-      timesPlayed: gameScores['tower_math']?.timesPlayed || (player.scores.tower_math ? 1 : 0),
-      color: 'from-purple-600/30 to-indigo-950/40 border-purple-500/40 text-purple-300',
-    },
-    {
-      key: 'pokemon',
-      name: lang === 'de' ? 'PokéMath Arena' : 'Đấu trường PokéMath',
-      icon: '⚡🐭',
-      score: player.scores.pokemon || 0,
-      solved: gameScores['pokemon']?.problemsSolved || 0,
-      timesPlayed: gameScores['pokemon']?.timesPlayed || (player.scores.pokemon ? 1 : 0),
-      color: 'from-rose-600/30 to-red-950/40 border-rose-500/40 text-rose-300',
-    },
-    {
-      key: 'logic_game',
-      name: lang === 'de' ? 'Kleine Denker: Logik-Abenteuer' : 'Bé thông minh: Phiêu lưu tư duy',
-      icon: '🧩🌈',
-      score: player.scores.logic_game || 0,
-      solved: gameScores['logic_game']?.problemsSolved || 0,
-      timesPlayed: gameScores['logic_game']?.timesPlayed || (player.scores.logic_game ? 1 : 0),
-      color: 'from-fuchsia-600/30 to-rose-950/40 border-pink-500/40 text-pink-300',
-    },
-    {
-      key: 'monsterparty',
-      name: 'Vorschulblock: Monsterparty',
-      icon: '👾🌙',
-      score: player.scores.monsterparty || 0,
-      solved: gameScores['monsterparty']?.problemsSolved || 0,
-      timesPlayed: gameScores['monsterparty']?.timesPlayed || (player.scores.monsterparty ? 1 : 0),
-      color: 'from-violet-600/30 to-indigo-950/40 border-fuchsia-500/40 text-fuchsia-300',
-    },
-    {
-      key: 'vehicle_puzzle',
-      name: 'Vorschulblock: Puzzle-Rätsel',
-      icon: '🚗🚜',
-      score: player.scores.vehicle_puzzle || 0,
-      solved: gameScores['vehicle_puzzle']?.problemsSolved || 0,
-      timesPlayed: gameScores['vehicle_puzzle']?.timesPlayed || (player.scores.vehicle_puzzle ? 1 : 0),
-      color: 'from-sky-600/30 to-blue-950/40 border-sky-500/40 text-sky-300',
-    },
-    {
-      key: 'mathbrick',
-      name: 'MathBrick Builder',
-      icon: '🧱🛠️',
-      score: player.scores.mathbrick || 0,
-      solved: gameScores['mathbrick']?.problemsSolved || 0,
-      timesPlayed: gameScores['mathbrick']?.timesPlayed || (player.scores.mathbrick ? 1 : 0),
-      color: 'from-cyan-600/30 to-slate-950/40 border-cyan-500/40 text-cyan-300',
-    },
-    {
-      key: 'roboforge',
-      name: 'RoboForge: Mathe-Rettung',
-      icon: '🤖🌳',
-      score: player.scores.roboforge || 0,
-      solved: gameScores['roboforge']?.problemsSolved || 0,
-      timesPlayed: gameScores['roboforge']?.timesPlayed || (player.scores.roboforge ? 1 : 0),
-      color: 'from-emerald-600/30 to-sky-950/40 border-emerald-500/40 text-emerald-300',
-    },
-    {
-      key: 'maze_discovery',
-      name: 'Wegfinder 3D',
-      icon: '🤖🧩',
-      score: player.scores.maze_discovery || 0,
-      solved: gameScores['maze_discovery']?.problemsSolved || 0,
-      timesPlayed: gameScores['maze_discovery']?.timesPlayed || (player.scores.maze_discovery ? 1 : 0),
-      color: 'from-cyan-600/30 to-violet-950/40 border-cyan-500/40 text-cyan-300',
-    },
-  ];
+  const games = GAME_SCORE_KEYS.map((key) => ({
+    key,
+    ...GAME_CATALOG[key],
+    score: player.scores[key] || 0,
+    solved: gameScores[key]?.problemsSolved || 0,
+    timesPlayed: gameScores[key]?.timesPlayed || (player.scores[key] ? 1 : 0),
+  }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-200">
@@ -150,7 +45,7 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-amber-300 font-['Fredoka']">
-              {t(lang, 'gameScoresTitle')}
+              {"Ergebnisse & Rekorde je Spiel"}
             </h2>
             <div className="flex items-center gap-3 text-xs text-slate-300 mt-0.5">
               <span className="font-bold text-white">{player.name}</span>
@@ -183,11 +78,11 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
                   </h3>
                   <div className="flex items-center gap-3 text-xs text-slate-300 mt-0.5">
                     <span>
-                      {t(lang, 'timesPlayed')}: <strong className="text-white">{g.timesPlayed}</strong>
+                      {"Gespielt"}: <strong className="text-white">{g.timesPlayed}</strong>
                     </span>
                     {g.solved > 0 && (
                       <span>
-                        {t(lang, 'problemsSolved')}: <strong className="text-emerald-300">{g.solved}</strong>
+                        {"Aufgaben gelöst"}: <strong className="text-emerald-300">{g.solved}</strong>
                       </span>
                     )}
                   </div>
@@ -200,9 +95,7 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
                   <span>{g.score} Pkt</span>
                 </div>
                 <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
-                  {g.key === 'logic_game'
-                    ? (lang === 'de' ? 'Gesamtpunkte' : 'Tổng điểm')
-                    : t(lang, 'bestScore')}
+                  {g.scoreMode === 'running' ? 'Gesamtpunkte' : 'Höchstpunktzahl'}
                 </span>
               </div>
             </div>
@@ -222,12 +115,12 @@ export const GameScoresModal: React.FC<GameScoresModalProps> = ({
             {isSaving ? (
               <>
                 <span className="animate-spin text-sm">⏳</span>
-                <span>{t(lang, 'saving')}</span>
+                <span>{"Wird gespeichert..."}</span>
               </>
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>{t(lang, 'saveBtn')}</span>
+                <span>{"Speichern"}</span>
               </>
             )}
           </button>

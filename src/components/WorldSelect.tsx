@@ -12,13 +12,11 @@ import {
   Check,
   Coins,
 } from 'lucide-react';
-import { GameScreen, Language, PlayerProfile, CharacterAvatar } from '../types/game';
-import { t } from '../math/translations';
+import { GameScreen, PlayerProfile, CharacterAvatar } from '../types/game';
 import { sound } from '../audio/soundManager';
 import { totalGameScore } from '../math/gameScore';
 
 interface WorldSelectProps {
-  lang: Language;
   player: PlayerProfile;
   onSelectWorld: (world: GameScreen) => void;
   onBackToTitle: () => void;
@@ -40,7 +38,6 @@ const AVATAR_EMOJIS: Record<CharacterAvatar, string> = {
 };
 
 export const WorldSelect: React.FC<WorldSelectProps> = ({
-  lang,
   player,
   onSelectWorld,
   onBackToTitle,
@@ -55,49 +52,49 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
   const totalPoints = totalGameScore(player.scores);
   const worlds = [
     {
-      id: 'logic_game' as GameScreen,
-      title: t(lang, 'worldLogicTitle'),
-      desc: t(lang, 'worldLogicDesc'),
-      icon: '🧩🌈',
-      bgGradient: 'from-fuchsia-600 via-pink-700 to-rose-950',
-      borderColor: 'border-pink-300',
-      badge: lang === 'de' ? '🧠 20 BILDER-RÄTSEL' : '🧠 20 CÂU ĐỐ HÌNH',
-      score: player.scores.logic_game || 0,
-    },
-    {
       id: 'preschool_collection' as GameScreen,
-      title: 'Vorschulblock - Logisches Denken, rätseln und knobeln (ab 5 Jahre)',
+      title: 'Vorschulblock – Logisches Denken',
       desc: 'Monsterparty und Puzzle-Rätsel: Finde passende Schatten und Fahrzeugteile. Jedes Mal neu!',
       icon: '👾🚗',
       bgGradient: 'from-violet-600 via-fuchsia-700 to-indigo-950',
       borderColor: 'border-fuchsia-300',
       badge: '👾 AB 5 JAHRE · LOGIK',
-      score: (player.scores.monsterparty || 0) + (player.scores.vehicle_puzzle || 0),
+      score: (player.scores.monsterparty || 0) + (player.scores.vehicle_puzzle || 0) + (player.scores.sudoku || 0),
+    },
+    {
+      id: 'logic_game' as GameScreen,
+      title: "Kleine Denker: Logik-Abenteuer",
+      desc: "20 Bilderrätsel zu Farben, Formen, Mustern, Tieren und Alltag!",
+      icon: '🧩🌈',
+      bgGradient: 'from-fuchsia-600 via-pink-700 to-rose-950',
+      borderColor: 'border-pink-300',
+      badge:  '🧠 20 BILDER-RÄTSEL' ,
+      score: player.scores.logic_game || 0,
     },
     {
       id: 'number_line' as GameScreen,
-      title: t(lang, 'world1Title'),
-      desc: t(lang, 'world1Desc'),
+      title: "Zahlenstrahl-Flug",
+      desc: "Zahlenraum bis 1000 & Stellenwerte (H-Z-E) im Sternenhimmel erkunden",
       icon: '🚀',
       bgGradient: 'from-blue-600 to-indigo-900',
       borderColor: 'border-blue-400',
-      badge: lang === 'de' ? 'Zahlen bis 1000' : 'Số đến 1000',
+      badge:  'Zahlen bis 1000' ,
       score: player.scores.number_line,
     },
     {
       id: 'einmaleins' as GameScreen,
-      title: t(lang, 'world2Title'),
-      desc: t(lang, 'world2Desc'),
+      title: "Einmaleins-Dojo",
+      desc: "Das 1x1 meistern & Division mit Rest im Monster-Duell",
       icon: '⚡',
       bgGradient: 'from-amber-600 to-red-900',
       borderColor: 'border-amber-400',
-      badge: lang === 'de' ? '1x1 & Division' : '1x1 & Phép chia',
+      badge:  '1x1 & Division' ,
       score: player.scores.einmaleins,
     },
     {
       id: 'euro_shop' as GameScreen,
-      title: t(lang, 'world3Title'),
-      desc: t(lang, 'world3Desc'),
+      title: "Wunder-Supermarkt",
+      desc: "Rechnen mit Geld: Euro & Cent Wechselgeld an der Kasse auszahlen",
       icon: '💶',
       bgGradient: 'from-emerald-600 to-teal-950',
       borderColor: 'border-emerald-400',
@@ -106,42 +103,42 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
     },
     {
       id: 'tower_math' as GameScreen,
-      title: t(lang, 'world4Title'),
-      desc: t(lang, 'world4Desc'),
+      title: "Turmbau der Zahlen",
+      desc: "Schriftliche Addition & Subtraktion mit Übertrag Schritt für Schritt",
       icon: '🏰',
       bgGradient: 'from-purple-600 to-indigo-950',
       borderColor: 'border-purple-400',
-      badge: lang === 'de' ? 'Schriftl. Rechnen' : 'Đặt tính rồi tính',
+      badge:  'Schriftl. Rechnen' ,
       score: player.scores.tower_math,
     },
     {
       id: 'pokemon' as GameScreen,
-      title: t(lang, 'worldPokemonTitle'),
-      desc: t(lang, 'worldPokemonDesc'),
+      title: "PokéMath: Arena & Safari",
+      desc: "Fange wilde Pokémon & meistere Mathe-Duelle mit Pokéball!",
       icon: '⚡🐭',
       bgGradient: 'from-red-600 via-amber-600 to-rose-950',
       borderColor: 'border-amber-300',
-      badge: lang === 'de' ? 'POKÉMON' : 'POKÉMON',
+      badge:  'POKÉMON' ,
       score: player.scores.pokemon || 0,
     },
     {
       id: 'minecraft' as GameScreen,
-      title: t(lang, 'worldMinecraftTitle'),
-      desc: t(lang, 'worldMinecraftDesc'),
+      title: "Minecraft Mathe-Welt 3D",
+      desc: "Hühnerfarm-Multiplikation, Schatz-Division, Villa-Fläche & Zaun, Block-Stellenwerte und Quests!",
       icon: '🧱🟩',
       bgGradient: 'from-emerald-600 via-teal-800 to-green-950',
       borderColor: 'border-emerald-300',
-      badge: lang === 'de' ? '⭐ 3D VOXEL MINECRAFT' : '⭐ MINECRAFT TOÁN 3',
+      badge:  '⭐ 3D VOXEL MINECRAFT' ,
       score: player.scores.minecraft || 0,
     },
     {
       id: 'mathbrick' as GameScreen,
-      title: t(lang, 'worldMathBrickTitle'),
-      desc: t(lang, 'worldMathBrickDesc'),
+      title: "MathBrick Builder",
+      desc: "Baue in 3D, löse Mathe-Challenges und verdiene neue Bausteine!",
       icon: '🧱🛠️',
       bgGradient: 'from-cyan-600 via-blue-800 to-slate-950',
       borderColor: 'border-cyan-300',
-      badge: lang === 'de' ? '🧠 MATHE & 3D-BAUEN · 8+' : '🧠 TOÁN & XÂY 3D · 8+',
+      badge:  '🧠 MATHE & 3D-BAUEN · 8+' ,
       score: player.scores.mathbrick || 0,
     },
     {
@@ -181,7 +178,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs sm:text-sm font-bold cursor-pointer transition border border-slate-700 shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>{lang === 'de' ? 'Menü' : 'Menu'}</span>
+              <span>{ 'Menü' }</span>
             </button>
 
             {/* SAVE BUTTON AT MENU */}
@@ -192,10 +189,10 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               }}
               disabled={isSaving}
               className="flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold rounded-xl text-xs sm:text-sm cursor-pointer transition shadow-md shadow-emerald-600/30 border border-emerald-400/40 active:scale-95 disabled:opacity-50 font-['Fredoka']"
-              title={t(lang, 'saveProgress')}
+              title={"Spielstand speichern"}
             >
               <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
-              <span>{isSaving ? t(lang, 'saving') : t(lang, 'saveProgress')}</span>
+              <span>{isSaving ? "Wird gespeichert..." : "Spielstand speichern"}</span>
             </button>
           </div>
 
@@ -206,7 +203,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
               onOpenSwitchModal();
             }}
             className="hidden md:flex items-center gap-3 bg-slate-900/90 hover:bg-slate-850 border border-slate-700 hover:border-amber-400/60 px-3.5 py-1.5 rounded-2xl shadow-inner cursor-pointer transition"
-            title={t(lang, 'switchPlayer')}
+            title={"Spieler wechseln / Laden"}
           >
             <div className="flex items-center gap-1.5">
               <span className="text-lg">{AVATAR_EMOJIS[player.avatar] || '🦊'}</span>
@@ -225,14 +222,14 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
             </div>
             <div
               className="flex items-center gap-1 text-indigo-300 font-black text-xs"
-              title={lang === 'de' ? 'Gesamtpunkte' : 'Tổng điểm'}
+              title={ 'Gesamtpunkte' }
             >
               <Trophy className="w-3.5 h-3.5" />
               <span>{totalPoints}</span>
             </div>
           </div>
 
-          {/* Right: Scores breakdown, Certificate, Language, Sound */}
+          {/* Right: Scores breakdown, Certificate, Sound */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* View All Game Scores Modal */}
             <button
@@ -241,10 +238,10 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                 onOpenScoresModal();
               }}
               className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition font-['Fredoka']"
-              title={t(lang, 'gameScoresTitle')}
+              title={"Ergebnisse & Rekorde je Spiel"}
             >
               <Trophy className="w-4 h-4 text-amber-400" />
-              <span className="hidden sm:inline">{lang === 'de' ? 'Spielstände' : 'Bảng điểm'}</span>
+              <span className="hidden sm:inline">{ 'Spielstände' }</span>
             </button>
 
             {/* Certificate */}
@@ -254,7 +251,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                 onSelectWorld('certificate');
               }}
               className="p-2 sm:px-3 sm:py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold cursor-pointer transition"
-              title={t(lang, 'certificateTitle')}
+              title={"Mein Mathe-Diplom"}
             >
               <Award className="w-4 h-4 text-amber-400" />
             </button>
@@ -266,7 +263,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                 onToggleMute();
               }}
               className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl cursor-pointer transition"
-              title={isMuted ? t(lang, 'soundOn') : t(lang, 'soundOff')}
+              title={isMuted ? "Ton an" : "Ton aus"}
             >
               {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
             </button>
@@ -296,7 +293,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
             </div>
             <div
               className="flex items-center gap-1 text-indigo-300 font-bold"
-              title={lang === 'de' ? 'Gesamtpunkte' : 'Tổng điểm'}
+              title={ 'Gesamtpunkte' }
             >
               <Trophy className="w-3 h-3" />
               <span>{totalPoints}</span>
@@ -319,12 +316,11 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       <main className="max-w-4xl w-full mx-auto my-auto py-6">
         <div className="text-center mb-8">
           <h2 className="text-3xl sm:text-4xl font-black text-white font-['Fredoka'] mb-2">
-            {t(lang, 'modesTitle')}
+            {"Wähle dein Rechen-Reich"}
           </h2>
           <p className="text-slate-400 text-sm">
-            {lang === 'de'
-              ? 'Wähle ein Fachgebiet der 3. Klasse und sammle goldene Sterne für dein Mathe-Diplom!'
-              : 'Chọn chủ đề toán lớp 3 và tích luỹ thật nhiều sao vàng để nhận Bằng Khen!'}
+            { 'Wähle ein Fachgebiet der 3. Klasse und sammle goldene Sterne für dein Mathe-Diplom!'
+              }
           </p>
         </div>
 
@@ -371,19 +367,19 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                 <span className="flex items-center gap-1 text-yellow-300">
                   <Sparkles className="w-4 h-4" />
                   <span>{w.id === 'logic_game'
-                    ? (lang === 'de' ? 'Ab 3 Jahren' : 'Dành cho bé từ 3 tuổi')
+                    ? ( 'Ab 3 Jahren' )
                     : w.id === 'preschool_collection'
                     ? 'Ab 5 Jahren · Logik'
                     : w.id === 'mathbrick'
-                    ? (lang === 'de' ? 'Ab 8 Jahren · 3D-Bau' : 'Từ 8 tuổi · Xây dựng 3D')
+                    ? ( 'Ab 8 Jahren · 3D-Bau' )
                     : w.id === 'roboforge'
                     ? 'Ab 8 Jahren · Mathe & Code'
                     : w.id === 'maze_discovery'
                     ? 'Ab 8 Jahren · 3D & Logik'
-                    : (lang === 'de' ? '3. Klasse Lehrplan' : 'Chương trình Lớp 3')}</span>
+                    : ( '3. Klasse Lehrplan' )}</span>
                 </span>
                 <span className="group-hover:translate-x-1 transition-transform">
-                  {lang === 'de' ? 'Spielen ▶' : 'Vào chơi ▶'}
+                  { 'Spielen ▶' }
                 </span>
               </div>
             </div>
@@ -393,7 +389,7 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
 
       {/* Footer Info */}
       <footer className="text-center py-2 text-xs text-slate-500 font-mono">
-        {lang === 'de' ? 'Grundschule Deutschland · Klasse 3 Mathematik' : 'Toán Lớp 3 · Tiêu Chuẩn Tiểu Học Quốc Tế'}
+        { 'Grundschule Deutschland · Klasse 3 Mathematik' }
       </footer>
     </div>
   );

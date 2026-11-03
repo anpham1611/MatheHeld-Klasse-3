@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Edit3, Check, X, AlertCircle, Sparkles, Info } from 'lucide-react';
-import { Language } from '../types/game';
-import { t } from '../math/translations';
 import { sound } from '../audio/soundManager';
 import { checkPlayerNameAvailability } from '../services/playerService';
 
 interface RenamePlayerModalProps {
-  lang: Language;
   currentName: string;
   onRename: (newName: string) => Promise<{ success: boolean; error?: string }>;
   onClose: () => void;
 }
 
 export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
-  lang,
   currentName,
   onRename,
   onClose,
@@ -65,12 +61,12 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
     const clean = nameInput.trim();
 
     if (!clean) {
-      setErrorMessage(lang === 'de' ? 'Bitte gib einen Namen ein.' : 'Vui lòng nhập tên biệt danh.');
+      setErrorMessage( 'Bitte gib einen Namen ein.' );
       return;
     }
 
     if (clean.length < 2 || clean.length > 20) {
-      setErrorMessage(t(lang, 'nameMinChars'));
+      setErrorMessage("Name muss 2 bis 20 Zeichen lang sein.");
       return;
     }
 
@@ -80,7 +76,7 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
     }
 
     if (availability?.exists) {
-      setErrorMessage(t(lang, 'nameAlreadyTaken'));
+      setErrorMessage("Dieser Name ist bereits vergeben! Bitte wähle einen anderen.");
       return;
     }
 
@@ -95,7 +91,7 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
       onClose();
     } else {
       sound.playWrong();
-      setErrorMessage(result.error || (lang === 'de' ? 'Fehler beim Speichern!' : 'Lỗi khi đổi tên!'));
+      setErrorMessage(result.error || ( 'Fehler beim Speichern!' ));
     }
   };
 
@@ -121,12 +117,11 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
           </div>
           <div>
             <h2 className="text-xl font-black text-amber-300 font-['Fredoka']">
-              {t(lang, 'renameHero')}
+              {"Spitzname ändern"}
             </h2>
             <p className="text-xs text-slate-400">
-              {lang === 'de'
-                ? `Ändere den Namen für "${currentName}". Alle Punkte & Sterne bleiben erhalten!`
-                : `Đổi tên cho "${currentName}". Toàn bộ điểm số & ngôi sao được giữ nguyên!`}
+              { `Ändere den Namen für "${currentName}". Alle Punkte & Sterne bleiben erhalten!`
+                }
             </p>
           </div>
         </div>
@@ -135,7 +130,7 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-slate-800/80 p-3 sm:p-4 rounded-2xl border border-slate-700">
             <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-              {t(lang, 'enterPlayerName')} (2 - 20 {lang === 'de' ? 'Zeichen' : 'ký tự'})
+              {"Dein Name / Spitzname"} (2 - 20 { 'Zeichen' })
             </label>
 
             <div className="relative">
@@ -153,7 +148,7 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
               />
               {checking && (
                 <div className="absolute right-3 top-3 text-xs text-amber-300 animate-pulse font-bold">
-                  {lang === 'de' ? 'Prüfe...' : 'Kiểm tra...'}
+                  { 'Prüfe...' }
                 </div>
               )}
             </div>
@@ -162,14 +157,14 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
             {isSameAsCurrent && (
               <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 border border-slate-700">
                 <Info className="w-4 h-4 text-slate-400 shrink-0" />
-                <span>{t(lang, 'currentNameNotice')}</span>
+                <span>{"Das ist dein aktueller Name."}</span>
               </div>
             )}
 
             {/* Too short hint */}
             {isTooShort && (
               <div className="mt-2 text-xs font-semibold text-amber-300/80 px-2">
-                {t(lang, 'nameMinChars')}
+                {"Name muss 2 bis 20 Zeichen lang sein."}
               </div>
             )}
 
@@ -177,7 +172,7 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
             {availability?.checked && availability.exists && !isSameAsCurrent && (
               <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30">
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>{t(lang, 'nameAlreadyTaken')}</span>
+                <span>{"Dieser Name ist bereits vergeben! Bitte wähle einen anderen."}</span>
               </div>
             )}
 
@@ -185,7 +180,7 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
             {availability?.checked && !availability.exists && availability.available && !isSameAsCurrent && trimmed.length >= 2 && (
               <div className="mt-2.5 text-xs font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>{t(lang, 'nameAvailableNotice')}</span>
+                <span>{"Name ist frei! Du kannst ihn wählen."}</span>
               </div>
             )}
 
@@ -204,7 +199,7 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
               onClick={onClose}
               className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded-xl transition cursor-pointer"
             >
-              {t(lang, 'cancelBtn')}
+              {"Abbrechen"}
             </button>
             <button
               type="submit"
@@ -218,7 +213,7 @@ export const RenamePlayerModal: React.FC<RenamePlayerModalProps> = ({
               className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 disabled:opacity-50 text-slate-950 font-black text-sm rounded-xl cursor-pointer transition flex items-center gap-1.5 shadow-lg font-['Fredoka']"
             >
               <Sparkles className="w-4 h-4" />
-              <span>{isSubmitting ? (lang === 'de' ? 'Speichern...' : 'Đang lưu...') : t(lang, 'saveNewName')}</span>
+              <span>{isSubmitting ? ( 'Speichern...' ) : "Neuen Namen speichern"}</span>
             </button>
           </div>
         </form>

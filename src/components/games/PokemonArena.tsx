@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { ArrowLeft, Pause, BookOpen, Sparkles, RefreshCw, HelpCircle, PenTool, CheckCircle2, Trash2 } from 'lucide-react';
-import { Language, PlayerProfile } from '../../types/game';
-import { t } from '../../math/translations';
+import { PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
 import {
   POKEMON_ROSTER,
@@ -18,7 +17,6 @@ import { PauseModal } from '../PauseModal';
 import { Scratchpad } from '../Scratchpad';
 
 interface PokemonArenaProps {
-  lang: Language;
   player: PlayerProfile;
   onUpdateStats: (stars: number, coins: number, score: number, caughtPokemonId?: string) => void;
   onCapturedPokemonChange: (capturedPokemon: string[]) => void;
@@ -28,7 +26,6 @@ interface PokemonArenaProps {
 }
 
 export const PokemonArena: React.FC<PokemonArenaProps> = ({
-  lang,
   player,
   onUpdateStats,
   onCapturedPokemonChange,
@@ -55,10 +52,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
   // Logs & Animations
   const [battleLog, setBattleLog] = useState<string>(
-    lang === 'de'
-      ? `Ein wildes ${wildPokemon.nameDe} (Lv. 3) erscheint im hohen Gras!`
-      : `Một chú ${wildPokemon.nameVi} hoang dã xuất hiện trong bụi cỏ!`
-  );
+     `Ein wildes ${wildPokemon.nameDe} (Lv. 3) erscheint im hohen Gras!`
+      );
   const [isHitWild, setIsHitWild] = useState<boolean>(false);
   const [attackEffect, setAttackEffect] = useState<PokemonAttackStyle | null>(null);
 
@@ -119,18 +114,15 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
     setBattlePhase('math');
     setShowHint(false);
     setBattleLog(
-      lang === 'de'
-        ? `Löse die Mathe-Aufgabe für eine mächtige Attacke!`
-        : `Giải đúng phép toán để tung đòn tấn công uy lực!`
-    );
+       `Löse die Mathe-Aufgabe für eine mächtige Attacke!`
+        );
   };
 
   // Start Catch Action (Pokéball)
   const handleStartCatch = () => {
     if (capturedList.length >= MAX_CAPTURED_POKEMON) {
-      setBattleLog(lang === 'de'
-        ? 'Deine Tasche ist voll. Lass zuerst ein Pokémon frei!'
-        : 'Túi Pokémon đã đầy. Hãy thả một Pokémon trước!');
+      setBattleLog( 'Deine Tasche ist voll. Lass zuerst ein Pokémon frei!'
+        );
       return;
     }
     sound.playPokeballThrow();
@@ -139,10 +131,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
     setBattlePhase('math');
     setShowHint(false);
     setBattleLog(
-      lang === 'de'
-        ? `Rechen-Fang-Aufgabe: Berechne das Ergebnis, um den Pokéball perfekt zu werfen!`
-        : `Phép toán thu phục: Tính đúng để ném trúng bóng Pokéball!`
-    );
+       `Rechen-Fang-Aufgabe: Berechne das Ergebnis, um den Pokéball perfekt zu werfen!`
+        );
   };
 
   // Encounter New Wild Pokemon (Run / Suche)
@@ -158,10 +148,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
     setBattlePhase('menu');
     setCurrentTask(null);
     setBattleLog(
-      lang === 'de'
-        ? `Rascheln im hohen Gras... Ein wildes ${randomMon.nameDe} erscheint!`
-        : `Lá cỏ xào xạc... Một chú ${randomMon.nameVi} xuất hiện!`
-    );
+       `Rascheln im hohen Gras... Ein wildes ${randomMon.nameDe} erscheint!`
+        );
   };
 
   // Handle Math Answer
@@ -181,9 +169,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         const remainingHp = Math.max(0, wildHp - damage);
         setAttackEffect(attackStyle);
         setBattlePhase('attacking');
-        setBattleLog(lang === 'de'
-          ? `${activePokemon.nameDe} setzt ${activePokemon.moveDe} ein!`
-          : `${activePokemon.nameVi} dùng ${activePokemon.moveVi}!`);
+        setBattleLog( `${activePokemon.nameDe} setzt ${activePokemon.moveDe} ein!`
+          );
 
         scheduleAttackTimer(() => {
           setIsHitWild(true);
@@ -193,17 +180,13 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
           if (remainingHp <= 0) {
             sound.playFanfare();
             setBattleLog(
-              lang === 'de'
-                ? `Volltreffer! Das wilde ${wildPokemon.nameDe} wurde besiegt (+1 Punkt)!`
-                : `Chí mạng! ${wildPokemon.nameVi} đã bị đánh bại (+1 điểm)!`
-            );
+               `Volltreffer! Das wilde ${wildPokemon.nameDe} wurde besiegt (+1 Punkt)!`
+                );
             onUpdateStats(1, 10, nextScore);
           } else {
             setBattleLog(
-              lang === 'de'
-                ? `Klasse gerechnet (+1 Punkt)! Du landest einen Treffer mit ${damage} KP Schaden!`
-                : `Bé tính chuẩn lắm (+1 điểm)! Đòn đánh gây ${damage} sát thương!`
-            );
+               `Klasse gerechnet (+1 Punkt)! Du landest einen Treffer mit ${damage} KP Schaden!`
+                );
           }
         }, impactDelay);
 
@@ -218,10 +201,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
         // Catch Attempt (Pokéball Throw)
         setBattlePhase('wobbling');
         setBattleLog(
-          lang === 'de'
-            ? `Perfekter Wurf (+1 Punkt)! Der Pokéball wackelt...`
-            : `Cú ném hoàn hảo (+1 điểm)! Bóng Pokéball đang rung lắc...`
-        );
+           `Perfekter Wurf (+1 Punkt)! Der Pokéball wackelt...`
+            );
 
         // Shake sequence: 1... 2... 3... Catch!
         let shake = 1;
@@ -257,10 +238,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
             setBattlePhase('caught');
             setBattleLog(
-              lang === 'de'
-                ? `Klick! Hurra! Du hast ${wildPokemon.nameDe} gefangen und in den Pokédex eingetragen!`
-                : `Tách! Tuyệt vời! Bé đã thu phục thành công ${wildPokemon.nameVi} vào Pokédex!`
-            );
+               `Klick! Hurra! Du hast ${wildPokemon.nameDe} gefangen und in den Pokédex eingetragen!`
+                );
           }
         }, 850);
       }
@@ -273,10 +252,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
       setBattlePhase('fleeing');
       setBattleLog(
-        lang === 'de'
-          ? `Daneben gerechnet (-1 Punkt)! Das wilde ${wildPokemon.nameDe} ist geflohen... Neue Suche!`
-          : `Tính nhầm rồi bé ơi (-1 điểm)! ${wildPokemon.nameVi} đã hoảng sợ chạy mất... Đang tìm Pokémon mới!`
-      );
+         `Daneben gerechnet (-1 Punkt)! Das wilde ${wildPokemon.nameDe} ist geflohen... Neue Suche!`
+          );
 
       // Automatically encounter a new wild pokemon so player cannot retry
       setTimeout(() => {
@@ -337,7 +314,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
             className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
           >
             <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">{t(lang, 'scratchpad')}</span>
+            <span className="hidden sm:inline">{"Schmierzettel"}</span>
           </button>
         </div>
 
@@ -357,7 +334,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
           {/* Score Readout */}
           <div className="bg-slate-800/90 border border-slate-700 px-2.5 py-1 rounded-xl text-right">
-            <div className="text-[9px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
+            <div className="text-[9px] text-slate-400 uppercase font-bold">{"Punkte"}</div>
             <div className="text-sm sm:text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
               {score}
             </div>
@@ -391,14 +368,14 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="font-black text-white text-base font-['Fredoka']">
-                  {lang === 'de' ? wildPokemon.nameDe : wildPokemon.nameVi}
+                  { wildPokemon.nameDe }
                 </span>
                 <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-bold">
                   Lv. 3
                 </span>
               </div>
               <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${wildPokemon.badgeBg}`}>
-                {wildPokemon.typeIcon} {lang === 'de' ? wildPokemon.typeDe : wildPokemon.typeVi}
+                {wildPokemon.typeIcon} { wildPokemon.typeDe }
               </span>
             </div>
 
@@ -490,14 +467,14 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                   <span className="font-black text-white text-base font-['Fredoka']">
-                    {lang === 'de' ? activePokemon.nameDe : activePokemon.nameVi}
+                    { activePokemon.nameDe }
                   </span>
                 <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-bold">
                   Lv. 3
                 </span>
               </div>
               <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${activePokemon.badgeBg}`}>
-                {activePokemon.typeIcon} {lang === 'de' ? activePokemon.typeDe : activePokemon.typeVi}
+                {activePokemon.typeIcon} { activePokemon.typeDe }
               </span>
             </div>
 
@@ -528,7 +505,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                 className="py-3 px-4 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-sm sm:text-base rounded-2xl shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 cursor-pointer transform active:scale-95 transition font-['Fredoka']"
               >
                 <span>⚔️</span>
-                <span>{lang === 'de' ? 'Angriff' : 'Tấn công'}</span>
+                <span>{ 'Angriff' }</span>
               </button>
 
               <button
@@ -537,7 +514,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                 className="py-3 px-4 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:shadow-none text-slate-950 font-black text-sm sm:text-base rounded-2xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed transform active:scale-95 transition font-['Fredoka']"
               >
                 <span>🔴</span>
-                <span>{isPocketFull ? (lang === 'de' ? 'Tasche voll' : 'Túi đầy') : (lang === 'de' ? 'Pokéball' : 'Ném bóng')}</span>
+                <span>{isPocketFull ? ( 'Tasche voll' ) : ( 'Pokéball' )}</span>
               </button>
 
               <button
@@ -545,7 +522,7 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                 className="py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-black text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2 cursor-pointer transform active:scale-95 transition font-['Fredoka']"
               >
                 <RefreshCw className="w-4 h-4 text-emerald-400" />
-                <span>{lang === 'de' ? 'Neues Pokémon' : 'Đổi Pokemon'}</span>
+                <span>{ 'Neues Pokémon' }</span>
               </button>
 
               <button
@@ -560,9 +537,8 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
           {battlePhase === 'menu' && isPocketFull && (
             <div className="mt-3 rounded-xl border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-center text-xs font-bold text-amber-200">
-              {lang === 'de'
-                ? 'Deine Tasche ist voll. Lass im Pokédex ein Pokémon frei, um weiterzufangen.'
-                : 'Túi đã đầy. Hãy thả một Pokémon trong Pokédex để tiếp tục thu phục.'}
+              { 'Deine Tasche ist voll. Lass im Pokédex ein Pokémon frei, um weiterzufangen.'
+                }
             </div>
           )}
 
@@ -575,12 +551,12 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                     {currentTask.actionType === 'attack' ? '⚡' : '🔴'}
                   </span>
                   <span className="text-sm font-black text-white font-['Fredoka']">
-                    {lang === 'de' ? currentTask.mathPromptDe : currentTask.mathPromptVi}
+                    { currentTask.mathPromptDe }
                   </span>
                 </div>
 
                 <div className="text-2xl font-black text-amber-300 font-['Fredoka'] px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-                  {lang === 'de' ? currentTask.questionStrDe : currentTask.questionStrVi}
+                  { currentTask.questionStrDe }
                 </div>
               </div>
 
@@ -608,13 +584,13 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                   className="text-xs text-indigo-300 hover:text-amber-300 flex items-center gap-1 cursor-pointer transition font-semibold"
                 >
                   <HelpCircle className="w-3.5 h-3.5" />
-                  <span>{lang === 'de' ? 'Rechen-Tipp' : 'Gợi ý giải'}</span>
+                  <span>{ 'Rechen-Tipp' }</span>
                 </button>
               </div>
 
               {showHint && (
                 <div className="mt-1 text-xs text-amber-300 font-medium">
-                  💡 {lang === 'de' ? currentTask.hintDe : currentTask.hintVi}
+                  💡 { currentTask.hintDe }
                 </div>
               )}
             </div>
@@ -629,13 +605,13 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                 </div>
                 <div>
                   <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider">
-                    🎉 {lang === 'de' ? 'Erfolgreich Gefangen!' : 'Thu phục thành công!'}
+                    🎉 { 'Erfolgreich Gefangen!' }
                   </div>
                   <div className="text-xl font-black text-white font-['Fredoka']">
-                    {lang === 'de' ? wildPokemon.nameDe : wildPokemon.nameVi}
+                    { wildPokemon.nameDe }
                   </div>
                   <div className="text-xs text-slate-400">
-                    {lang === 'de' ? wildPokemon.habitatDe : wildPokemon.habitatVi}
+                    { wildPokemon.habitatDe }
                   </div>
                 </div>
               </div>
@@ -697,27 +673,27 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                   >
                     <div className="text-4xl mb-1" style={isCaught ? { color: mon.themeColor } : undefined}>{isCaught ? mon.sprite : '❓'}</div>
                     <div className="font-black text-sm text-white font-['Fredoka']">
-                      {isCaught ? (lang === 'de' ? mon.nameDe : mon.nameVi) : '???'}
+                      {isCaught ? ( mon.nameDe ) : '???'}
                     </div>
                     <div className="text-[10px] text-slate-400">
-                      No. {mon.pokedexNo} · {lang === 'de' ? mon.typeDe : mon.typeVi}
+                      No. {mon.pokedexNo} · { mon.typeDe }
                     </div>
                     {isCaught && (
                       <div className="mt-1 flex flex-col items-center gap-1.5">
                         <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>{lang === 'de' ? 'Gefangen' : 'Đã bắt'}</span>
+                          <span>{ 'Gefangen' }</span>
                         </div>
                         {activePokemonId === mon.id ? (
                           <span className="rounded-lg bg-indigo-500/20 px-2 py-1 text-[10px] font-black text-indigo-200">
-                            {lang === 'de' ? 'Im Kampf' : 'Đang chiến đấu'}
+                            { 'Im Kampf' }
                           </span>
                         ) : (
                           <button
                             onClick={() => setActivePokemonId(mon.id)}
                             className="rounded-lg bg-indigo-600 px-2 py-1 text-[10px] font-black text-white hover:bg-indigo-500 cursor-pointer"
                           >
-                            {lang === 'de' ? 'Kämpfer wählen' : 'Chọn chiến binh'}
+                            { 'Kämpfer wählen' }
                           </button>
                         )}
                         {releaseCandidateId === mon.id ? (
@@ -726,13 +702,13 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                               onClick={() => handleReleasePokemon(mon.id)}
                               className="rounded-lg bg-rose-600 px-2 py-1 text-[10px] font-black text-white hover:bg-rose-500 cursor-pointer"
                             >
-                              {lang === 'de' ? 'Freilassen' : 'Thả Pokémon'}
+                              { 'Freilassen' }
                             </button>
                             <button
                               onClick={() => setReleaseCandidateId(null)}
                               className="rounded-lg bg-slate-700 px-2 py-1 text-[10px] font-black text-white hover:bg-slate-600 cursor-pointer"
                             >
-                              {lang === 'de' ? 'Abbrechen' : 'Hủy'}
+                              { 'Abbrechen' }
                             </button>
                           </div>
                         ) : (
@@ -740,12 +716,12 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
                             onClick={() => setReleaseCandidateId(mon.id)}
                             disabled={capturedList.length <= 1}
                             title={capturedList.length <= 1
-                              ? (lang === 'de' ? 'Das letzte Pokémon bleibt bei dir.' : 'Bạn cần giữ lại Pokémon cuối cùng.')
-                              : (lang === 'de' ? 'Pokémon freilassen' : 'Thả Pokémon')}
+                              ? ( 'Das letzte Pokémon bleibt bei dir.' )
+                              : ( 'Pokémon freilassen' )}
                             className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold text-rose-300 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                           >
                             <Trash2 className="h-3 w-3" />
-                            {lang === 'de' ? 'Freilassen' : 'Thả'}
+                            { 'Freilassen' }
                           </button>
                         )}
                       </div>
@@ -760,14 +736,13 @@ export const PokemonArena: React.FC<PokemonArenaProps> = ({
 
       {/* Scratchpad Window */}
       {showScratchpad && (
-        <Scratchpad lang={lang} onClose={() => setShowScratchpad(false)} />
+        <Scratchpad  onClose={() => setShowScratchpad(false)} />
       )}
 
       {/* Pause Modal */}
       {isPaused && (
         <PauseModal
-          lang={lang}
-          onResume={() => setIsPaused(false)}
+                    onResume={() => setIsPaused(false)}
           onRestart={handleNewEncounter}
           onQuit={onBack}
           isMuted={isMuted}

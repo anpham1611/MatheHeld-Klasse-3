@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Pause, Star, Zap, Shield, Flame, HelpCircle, PenTool } from 'lucide-react';
-import { Language, PlayerProfile } from '../../types/game';
-import { t } from '../../math/translations';
+import { PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
 import { generateEinmaleinsTask, EinmaleinsTask } from '../../math/curriculum';
 import { PauseModal } from '../PauseModal';
@@ -9,7 +8,6 @@ import { VictoryModal } from '../VictoryModal';
 import { Scratchpad } from '../Scratchpad';
 
 interface EinmaleinsArenaProps {
-  lang: Language;
   player: PlayerProfile;
   onUpdateStats: (stars: number, coins: number, score: number) => void;
   onBack: () => void;
@@ -26,7 +24,6 @@ const MONSTER_TYPES = [
 ];
 
 export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
-  lang,
   player,
   onUpdateStats,
   onBack,
@@ -175,7 +172,7 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
             className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-400 cursor-pointer transition"
           >
             <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">{t(lang, 'scratchpad')}</span>
+            <span className="hidden sm:inline">{"Schmierzettel"}</span>
           </button>
         </div>
 
@@ -206,7 +203,7 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
         {/* Score & Streak */}
         <div className="flex items-center gap-2">
           <div className="bg-slate-800/90 border border-slate-700 px-2.5 py-1 rounded-xl text-right">
-            <div className="text-[9px] text-slate-400 uppercase font-bold">{t(lang, 'score')}</div>
+            <div className="text-[9px] text-slate-400 uppercase font-bold">{"Punkte"}</div>
             <div className="text-sm sm:text-base font-black text-amber-400 tabular-nums font-['Fredoka']">
               {score}
             </div>
@@ -227,12 +224,9 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
           <div className="bg-slate-900/95 border-3 border-amber-400 rounded-3xl px-8 py-3.5 shadow-2xl text-center mb-4 transform hover:scale-105 transition">
             <div className="text-xs text-amber-400 font-bold uppercase tracking-wider mb-1">
               {task.op === 'x'
-                ? lang === 'de'
-                  ? 'Multiplikation (Einmaleins)'
-                  : 'Phép nhân (Bảng cửu chương)'
-                : lang === 'de'
-                ? 'Division mit Rest'
-                : 'Phép chia có số dư'}
+                ?  'Multiplikation (Einmaleins)'
+                  :  'Division mit Rest'
+                }
             </div>
             <div className="text-4xl sm:text-5xl font-black text-white font-['Fredoka'] tracking-wide">
               {task.questionStr}
@@ -245,12 +239,12 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
                 className="text-xs text-indigo-300 hover:text-amber-300 flex items-center gap-1 cursor-pointer transition font-semibold"
               >
                 <HelpCircle className="w-3.5 h-3.5" />
-                <span>{lang === 'de' ? 'Rechen-Tipp' : 'Gợi ý giải'}</span>
+                <span>{ 'Rechen-Tipp' }</span>
               </button>
             </div>
             {showHint && (
               <div className="mt-1 text-xs text-amber-300 font-medium animate-in fade-in">
-                💡 {lang === 'de' ? task.hintDe : task.hintVi}
+                💡 { task.hintDe }
               </div>
             )}
           </div>
@@ -313,7 +307,7 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
                   }`}
                 >
                   <span className="text-xs text-slate-400 bg-slate-900/60 px-2 py-1 rounded-lg">
-                    {lang === 'de' ? 'Taste' : 'Phím'} {i + 1}
+                    { 'Taste' } {i + 1}
                   </span>
                   <span className="tracking-wide">{opt.label}</span>
                   <Zap className="w-5 h-5 text-amber-400 opacity-60" />
@@ -326,14 +320,13 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
 
       {/* Scratchpad Window */}
       {showScratchpad && (
-        <Scratchpad lang={lang} onClose={() => setShowScratchpad(false)} />
+        <Scratchpad  onClose={() => setShowScratchpad(false)} />
       )}
 
       {/* Pause Modal */}
       {isPaused && (
         <PauseModal
-          lang={lang}
-          onResume={() => setIsPaused(false)}
+                    onResume={() => setIsPaused(false)}
           onRestart={() => {
             setIsPaused(false);
             setScore(0);
@@ -351,8 +344,7 @@ export const EinmaleinsArena: React.FC<EinmaleinsArenaProps> = ({
       {/* Victory Modal */}
       {showVictory && (
         <VictoryModal
-          lang={lang}
-          score={score}
+                    score={score}
           starsEarned={3}
           streak={streak}
           coinsEarned={20}

@@ -1,14 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Pen, Eraser, RotateCcw, X } from 'lucide-react';
-import { Language } from '../types/game';
-import { t } from '../math/translations';
-
 interface ScratchpadProps {
-  lang: Language;
   onClose: () => void;
 }
 
-export const Scratchpad: React.FC<ScratchpadProps> = ({ lang, onClose }) => {
+export const Scratchpad: React.FC<ScratchpadProps> = ({ onClose }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
@@ -130,15 +126,15 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({ lang, onClose }) => {
       {/* Header */}
       <div className="bg-indigo-600 px-4 py-2.5 flex items-center justify-between text-white select-none">
         <div className="flex items-center gap-2 font-bold font-['Fredoka'] text-sm tracking-wide">
-          <span>📝 {t(lang, 'scratchpad')}</span>
+          <span>📝 {"Schmierzettel"}</span>
           <span className="text-xs bg-indigo-500 text-indigo-100 px-2 py-0.5 rounded-full font-normal">
-            {lang === 'de' ? 'Kariert' : 'Ô ly'}
+            { 'Kariert' }
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={clearCanvas}
-            title={t(lang, 'clearScratchpad')}
+            title={"Löschen"}
             className="p-1.5 hover:bg-indigo-500 rounded-lg transition-colors cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
@@ -162,7 +158,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({ lang, onClose }) => {
             }`}
           >
             <Pen className="w-3.5 h-3.5" />
-            <span>{lang === 'de' ? 'Stift' : 'Bút'}</span>
+            <span>{ 'Stift' }</span>
           </button>
           <button
             onClick={() => setTool('eraser')}
@@ -171,7 +167,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({ lang, onClose }) => {
             }`}
           >
             <Eraser className="w-3.5 h-3.5" />
-            <span>{lang === 'de' ? 'Radierer' : 'Tẩy'}</span>
+            <span>{ 'Radierer' }</span>
           </button>
         </div>
 

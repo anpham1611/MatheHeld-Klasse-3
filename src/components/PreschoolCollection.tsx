@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { VEHICLE_CATALOG_SIZE } from '../math/vehiclePuzzle';
 
-type PreschoolMiniGame = 'monsterparty' | 'vehicle_puzzle';
+type PreschoolMiniGame = 'monsterparty' | 'vehicle_puzzle' | 'sudoku';
 
 interface PreschoolCollectionProps {
   onBack: () => void;
@@ -29,6 +29,13 @@ const miniGames: Array<{
     description: `Wähle 5–15 Fahrzeuge und ordne zwei Teile pro Fahrzeug zu. Jede Runde wählt Modelle aus ${VEHICLE_CATALOG_SIZE} Fahrzeugen.`,
     icon: '🚗🚜🚂🚁',
     color: 'from-sky-500 to-blue-700',
+  },
+  {
+    id: 'sudoku',
+    title: 'Sudoku',
+    description: 'Sechs Schwierigkeitsstufen, passende Zahlen und ein Timer ohne Zeitdruck.',
+    icon: '🔢🧩',
+    color: 'from-amber-500 to-orange-700',
   },
 ];
 

@@ -161,7 +161,7 @@ export async function renamePlayerInDb(
   } catch (err: any) {
     return {
       success: false,
-      error: err.message || 'Lỗi kết nối khi đổi tên',
+      error: err.message || 'Verbindungsfehler beim Ändern des Namens.',
     };
   }
 }
@@ -188,7 +188,7 @@ export async function createPlayerInDb(
   } catch (err: any) {
     return {
       success: false,
-      error: err.message || 'Lỗi kết nối khi tạo tài khoản',
+      error: err.message || 'Verbindungsfehler beim Erstellen des Spielers.',
     };
   }
 }
@@ -200,11 +200,11 @@ export async function deletePlayerInDb(name: string): Promise<{ success: boolean
     });
     const data = await res.json();
     if (!res.ok) {
-      return { success: false, error: data.error || 'Xoá thất bại' };
+      return { success: false, error: data.error || 'Löschen fehlgeschlagen.' };
     }
     return { success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Lỗi kết nối' };
+    return { success: false, error: err.message || 'Verbindungsfehler.' };
   }
 }
 

@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { Award, Printer, ArrowLeft, Star, Sparkles, CheckCircle2 } from 'lucide-react';
-import { Language, PlayerProfile } from '../types/game';
-import { t } from '../math/translations';
+import { PlayerProfile } from '../types/game';
 import { sound } from '../audio/soundManager';
+import { GAME_CATALOG, GAME_SCORE_KEYS } from '../math/gameCatalog';
 
 interface CertificateModalProps {
-  lang: Language;
   player: PlayerProfile;
   onRenamePlayer: (name: string) => Promise<{ success: boolean; error?: string }>;
   onBack: () => void;
 }
 
 export const CertificateModal: React.FC<CertificateModalProps> = ({
-  lang,
   player,
   onRenamePlayer,
   onBack,
@@ -21,23 +19,16 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   const [tempName, setTempName] = useState(player.name || 'Felix');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const today = new Date().toLocaleDateString(lang === 'de' ? 'de-DE' : 'vi-VN', {
+  const today = new Date().toLocaleDateString( 'de-DE' , {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
   });
-  const masteredGames = [
-    { icon: '🚀', title: lang === 'de' ? 'Zahlen bis 1000' : 'Số đến 1000', detail: lang === 'de' ? 'H-Z-E Meister' : 'Trăm - Chục - Đơn vị' },
-    { icon: '⚡', title: lang === 'de' ? '1x1 & Division' : 'Bảng 1x1 & Chia', detail: lang === 'de' ? 'Multiplikation' : 'Nhân chia chuẩn' },
-    { icon: '💶', title: 'Euro & Cent', detail: lang === 'de' ? 'Wechselgeld' : 'Đếm tiền thừa' },
-    { icon: '🏰', title: lang === 'de' ? 'Schriftliches Rechnen' : 'Đặt tính rồi tính', detail: lang === 'de' ? 'Mit Übertrag' : 'Cộng trừ có nhớ' },
-    { icon: '⚡🐭', title: 'PokéMath Arena', detail: lang === 'de' ? 'Mathe mit Pokémon' : 'Toán cùng Pokémon' },
-    { icon: '🧩', title: lang === 'de' ? 'Logik-Abenteuer' : 'Phiêu lưu tư duy', detail: lang === 'de' ? 'Muster & Rätsel' : 'Quy luật & câu đố' },
-    { icon: '🧱', title: 'Minecraft 3D', detail: lang === 'de' ? 'Fläche & Quests' : 'Hình học & Quests' },
-    { icon: '🧱🛠️', title: 'MathBrick Builder', detail: lang === 'de' ? 'Mathe & 3D-Bauen' : 'Toán & xây dựng 3D' },
-    { icon: '🤖🌳', title: 'RoboForge', detail: lang === 'de' ? 'Mathe & Code' : 'Toán & lập trình' },
-    { icon: '🤖🧩', title: 'Wegfinder 3D', detail: lang === 'de' ? 'Planen & Labyrinth' : 'Lập kế hoạch & mê cung' },
-  ];
+  const masteredGames = GAME_SCORE_KEYS.map((key) => ({
+    icon: GAME_CATALOG[key].icon,
+    title: GAME_CATALOG[key].name,
+    detail: GAME_CATALOG[key].certificateDetail,
+  }));
 
   const handlePrint = () => {
     sound.playCoin();
@@ -60,7 +51,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
       setIsEditing(false);
     } else {
       sound.playWrong();
-      setErrorMsg(res.error || t(lang, 'nameAlreadyTaken'));
+      setErrorMsg(res.error || "Dieser Name ist bereits vergeben! Bitte wähle einen anderen.");
     }
   };
 
@@ -76,7 +67,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold cursor-pointer transition border border-slate-700"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>{t(lang, 'backToMap')}</span>
+          <span>{"Zur Weltkarte"}</span>
         </button>
 
         <div className="flex items-center gap-3">
@@ -85,7 +76,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black rounded-xl shadow-lg cursor-pointer transition"
           >
             <Printer className="w-5 h-5" />
-            <span>{t(lang, 'printCertificate')}</span>
+            <span>{"Urkunde drucken / speichern"}</span>
           </button>
         </div>
       </div>
@@ -105,17 +96,17 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           </div>
 
           <h1 className="font-serif text-xl font-black uppercase tracking-wide text-amber-950 sm:text-4xl sm:tracking-wider">
-            {t(lang, 'certificateHeading')}
+            {"OFFIZIELLES MATHE-DIPLOM KLASSE 3"}
           </h1>
           <p className="text-amber-800 font-semibold text-sm sm:text-base mt-1 italic">
-            {t(lang, 'certificateSub')}
+            {"Verliehen für herausragende Leistungen im Rechnen an der Grundschule"}
           </p>
         </div>
 
         {/* Recipient Name Section */}
         <div className="my-4 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-100/60 p-3 text-center sm:my-8 sm:p-6">
           <div className="text-sm text-amber-900 font-medium mb-1">
-            {lang === 'de' ? 'Diese Ehrenurkunde wird mit Stolz verliehen an:' : 'Chứng nhận vinh danh trao cho:'}
+            { 'Diese Ehrenurkunde wird mit Stolz verliehen an:' }
           </div>
 
           {isEditing ? (
@@ -137,7 +128,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   disabled={saving || !tempName.trim()}
                   className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl font-bold cursor-pointer transition text-sm"
                 >
-                  {saving ? (lang === 'de' ? 'Speichern...' : 'Đang lưu...') : (lang === 'de' ? 'Speichern' : 'Lưu')}
+                  {saving ? ( 'Speichern...' ) : ( 'Speichern' )}
                 </button>
               </div>
               {errorMsg && (
@@ -149,22 +140,21 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           ) : (
             <div className="group mt-1 flex min-w-0 flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
               <span className="max-w-full break-words border-b-2 border-amber-600 px-2 pb-1 font-serif text-2xl font-black tracking-wide text-amber-950 sm:px-4 sm:text-5xl">
-                {player.name || (lang === 'de' ? 'Leo der Fuchs' : 'Cáo Leo')}
+                {player.name || ( 'Leo der Fuchs' )}
               </span>
               <button
                 onClick={() => setIsEditing(true)}
                 className="text-xs bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold px-2 py-1 rounded-lg print:hidden cursor-pointer"
-                title={lang === 'de' ? 'Name ändern' : 'Đổi tên'}
+                title={ 'Name ändern' }
               >
-                ✏️ {lang === 'de' ? 'Ändern' : 'Đổi tên'}
+                ✏️ { 'Ändern' }
               </button>
             </div>
           )}
 
           <p className="text-xs sm:text-sm text-amber-800/90 mt-3 font-serif">
-            {lang === 'de'
-              ? 'für das erfolgreiche Beherrschen des Lehrplans der 3. Klasse Grundschule'
-              : 'vì đã xuất sắc hoàn thành các bài học toán lớp 3 trường tiểu học'}
+            { 'für das erfolgreiche Beherrschen des Lehrplans der 3. Klasse Grundschule'
+              }
           </p>
         </div>
 
@@ -188,10 +178,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </div>
             <div>
               <div className="text-xs text-amber-800 font-bold uppercase">
-                {lang === 'de' ? 'Sterne gesammelt' : 'Sao đã tích luỹ'}
+                { 'Sterne gesammelt' }
               </div>
               <div className="text-lg font-black text-amber-950 font-['Fredoka']">
-                {player.stars} {lang === 'de' ? 'Sternstunden' : 'Sao vàng'}
+                {player.stars} { 'Sternstunden' }
               </div>
             </div>
           </div>
@@ -200,7 +190,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-4 text-center sm:gap-8">
             <div>
               <div className="text-xs text-amber-800 font-semibold mb-1">
-                {lang === 'de' ? 'Datum:' : 'Ngày cấp:'}
+                { 'Datum:' }
               </div>
               <div className="text-sm font-bold text-amber-950 border-b border-amber-400 pb-0.5 px-3">
                 {today}
@@ -209,10 +199,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
             <div>
               <div className="text-xs text-amber-800 font-semibold mb-1">
-                {lang === 'de' ? 'Unterschrift Lehrkraft / Eltern:' : 'Chữ ký Giáo viên / Phụ huynh:'}
+                { 'Unterschrift Lehrkraft / Eltern:' }
               </div>
               <div className="w-36 h-7 border-b border-amber-800 italic text-amber-800 text-sm font-serif flex items-end justify-center">
-                {lang === 'de' ? 'MatheHeld 3. Klasse' : 'Vua Toán Lớp 3'}
+                { 'MatheHeld 3. Klasse' }
               </div>
             </div>
           </div>

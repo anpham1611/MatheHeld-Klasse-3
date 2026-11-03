@@ -191,7 +191,7 @@ app.post('/api/players/save', async (req: Request, res: Response) => {
     if (capturedPokemon !== undefined && !isValidCapturedPokemonCollection(capturedPokemon)) {
       return res.status(400).json({
         success: false,
-        error: 'Captured Pokémon must be a unique list of up to 50 valid Pokémon IDs',
+      error: 'Die Pokémon-Sammlung muss bis zu 50 unterschiedliche, gültige Pokémon-IDs enthalten.',
       });
     }
 

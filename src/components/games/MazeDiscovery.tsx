@@ -3,13 +3,12 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { MapControls, OrthographicCamera } from '@react-three/drei';
 import { ArrowLeft, Coins, LocateFixed, Maximize, Minimize, Play, RotateCcw, Sparkles, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
 import { BoxGeometry, Color, MathUtils, MeshStandardMaterial, MOUSE, Object3D, OrthographicCamera as OrthographicCameraType, PlaneGeometry, SphereGeometry, TOUCH, Vector3, type Group, type InstancedMesh, type Mesh } from 'three';
-import { Language, PlayerProfile } from '../../types/game';
+import { PlayerProfile } from '../../types/game';
 import { sound } from '../../audio/soundManager';
 import { Cell, findCell, getMazeLevel, MAZE_MATRIX_SIZES, MazeMatrixSize, sameCell } from './mazeLevels';
 import { useGameStore } from './useGameStore';
 
 interface MazeDiscoveryProps {
-  lang: Language;
   player: PlayerProfile;
   onUpdateStats: (stars: number, coins: number, score: number) => void;
   onBack: () => void;
@@ -403,7 +402,6 @@ function MazeBoard({ levelNumber, matrixSize, controlsRef }: {
 }
 
 export const MazeDiscovery: React.FC<MazeDiscoveryProps> = ({
-  lang,
   player,
   onUpdateStats,
   onBack,
