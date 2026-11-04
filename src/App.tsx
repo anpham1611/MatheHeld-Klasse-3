@@ -375,6 +375,10 @@ export default function App() {
         <EinmaleinsTest onBack={() => setScreen('world_map')} />
       )}
 
+      {screen === 'einmaleins_test_v2' && (
+        <EinmaleinsTest mode="full-page" onBack={() => setScreen('world_map')} />
+      )}
+
       {screen === 'euro_shop' && (
         <EuroShop
                     player={player}

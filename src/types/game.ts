@@ -5,6 +5,7 @@ export type GameScreen =
   | 'number_line' 
   | 'einmaleins' 
   | 'einmaleins_test'
+  | 'einmaleins_test_v2'
   | 'euro_shop' 
   | 'tower_math' 
   | 'pokemon'

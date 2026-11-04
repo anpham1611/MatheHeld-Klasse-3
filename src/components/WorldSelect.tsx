@@ -102,6 +102,16 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       score: undefined,
     },
     {
+      id: 'einmaleins_test_v2' as GameScreen,
+      title: '1×1-Prüfung · Alle auf einer Seite',
+      desc: 'Alle 60 Aufgaben auf einen Blick. Tippe ein beliebiges Feld an und rechne in deiner Reihenfolge.',
+      icon: '📝⏱️',
+      bgGradient: 'from-cyan-600 via-sky-700 to-indigo-950',
+      borderColor: 'border-cyan-300',
+      badge: 'VERSION 2 · FREIE REIHENFOLGE',
+      score: undefined,
+    },
+    {
       id: 'euro_shop' as GameScreen,
       title: "Wunder-Supermarkt",
       desc: "Rechnen mit Geld: Euro & Cent Wechselgeld an der Kasse auszahlen",

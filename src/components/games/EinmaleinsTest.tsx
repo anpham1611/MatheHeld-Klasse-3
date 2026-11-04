@@ -13,6 +13,7 @@ import {
 
 interface EinmaleinsTestProps {
   onBack: () => void;
+  mode?: 'sequential' | 'full-page';
 }
 
 type TestPhase = 'intro' | 'running' | 'result';
@@ -41,7 +42,8 @@ function formatTime(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-export const EinmaleinsTest: React.FC<EinmaleinsTestProps> = ({ onBack }) => {
+export const EinmaleinsTest: React.FC<EinmaleinsTestProps> = ({ onBack, mode = 'sequential' }) => {
+  const isFullPage = mode === 'full-page';
   const [phase, setPhase] = useState<TestPhase>('intro');
   const [questions, setQuestions] = useState<EinmaleinsQuestion[]>([]);
   const [answers, setAnswers] = useState<Array<number | null>>([]);
@@ -158,9 +160,26 @@ export const EinmaleinsTest: React.FC<EinmaleinsTestProps> = ({ onBack }) => {
     setQuestionIndex((index) => index + 1);
   };
 
+  const updateListedAnswer = (index: number, value: string) => {
+    const answer = value === '' ? null : Number(value);
+    if (answer !== null && (!Number.isInteger(answer) || answer < 0 || answer > 100)) return;
+
+    setAnswers((currentAnswers) => {
+      const updatedAnswers = [...currentAnswers];
+      updatedAnswers[index] = answer;
+      return updatedAnswers;
+    });
+  };
+
+  const submitFullPageTest = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (Date.now() >= (deadline.current ?? 0)) setTimeLeft(0);
+    finishTest();
+  };
+
   return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-4 py-5 text-white sm:px-8">
-      <header className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
+      <header className={`mx-auto flex w-full max-w-4xl items-center justify-between gap-3 ${isFullPage ? 'sticky top-0 z-20 bg-slate-950/90 py-2 backdrop-blur' : ''}`}>
         <button
           onClick={handleBack}
           className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 font-bold hover:bg-white/15"
@@ -176,14 +195,16 @@ export const EinmaleinsTest: React.FC<EinmaleinsTestProps> = ({ onBack }) => {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-col items-center py-8 sm:py-12">
+      <main className={`mx-auto flex w-full flex-col items-center py-8 sm:py-12 ${isFullPage ? 'max-w-5xl' : 'max-w-3xl'}`}>
         {phase === 'intro' && (
           <section className="w-full rounded-[2rem] border border-indigo-300/20 bg-slate-900/80 p-6 shadow-2xl sm:p-10">
             <div className="mb-5 text-center text-6xl" aria-hidden="true">🦊</div>
             <p className="text-center text-sm font-black uppercase tracking-[0.2em] text-indigo-300">Der 1×1-Test</p>
             <h1 className="mt-2 text-center font-['Fredoka'] text-3xl font-black sm:text-5xl">Schaffst du alle 60?</h1>
             <p className="mx-auto mt-4 max-w-xl text-center leading-relaxed text-slate-300">
-              Du hast 5 Minuten. Tippe jedes Ergebnis ein. Die Reihen 4, 6, 7 und 8 kommen besonders oft dran.
+              {isFullPage
+                ? 'Du hast 5 Minuten. Alle Aufgaben stehen auf einer Seite. Tippe ein beliebiges Antwortfeld an und löse sie in deiner Reihenfolge.'
+                : 'Du hast 5 Minuten. Tippe jedes Ergebnis ein. Die Reihen 4, 6, 7 und 8 kommen besonders oft dran.'}
             </p>
 
             <div className="my-7 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
@@ -217,7 +238,59 @@ export const EinmaleinsTest: React.FC<EinmaleinsTestProps> = ({ onBack }) => {
           </section>
         )}
 
-        {phase === 'running' && currentQuestion && (
+        {phase === 'running' && isFullPage && (
+          <section className="w-full">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-indigo-200">
+              <span>Tippe eine Aufgabe an, um ihre Antwort einzutragen.</span>
+              <span>{answers.filter((answer) => answer !== null).length} von {EINMALEINS_TEST_SIZE} beantwortet</span>
+            </div>
+            <form onSubmit={submitFullPageTest}>
+              <ol className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 lg:grid-cols-3">
+                {questions.map((question, index) => (
+                  <li key={`${question.a}-${question.b}`}>
+                    <label
+                      htmlFor={`einmaleins-answer-${index}`}
+                      className={`flex min-h-16 cursor-text items-center gap-2 rounded-xl border px-3 py-2 transition focus-within:border-amber-300 ${
+                        answers[index] === null
+                          ? 'border-slate-700 bg-slate-900/80 hover:border-indigo-400'
+                          : 'border-indigo-400/40 bg-indigo-500/10'
+                      }`}
+                    >
+                      <span className="shrink-0 text-xs font-bold text-slate-400">{index + 1})</span>
+                      <span className="flex-1 whitespace-nowrap font-black text-white">
+                        {question.a} · {question.b} =
+                      </span>
+                      <input
+                        id={`einmaleins-answer-${index}`}
+                        type="number"
+                        inputMode="numeric"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={answers[index] ?? ''}
+                        onChange={(event) => updateListedAnswer(index, event.target.value)}
+                        aria-label={`Antwort für Aufgabe ${index + 1}: ${question.a} mal ${question.b}`}
+                        className="w-16 rounded-lg border border-slate-600 bg-slate-950 px-2 py-2 text-center font-black text-amber-200 outline-none focus:border-amber-300"
+                      />
+                    </label>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-6 flex flex-col items-center gap-3">
+                <button
+                  type="submit"
+                  className="flex w-full max-w-sm items-center justify-center gap-2 rounded-2xl bg-indigo-500 px-6 py-4 text-lg font-black text-white transition hover:bg-indigo-400"
+                >
+                  <CheckCircle2 className="h-5 w-5" />
+                  Test beenden & auswerten
+                </button>
+                <p className="text-center text-sm text-slate-400">Nicht ausgefüllte Aufgaben zählen als falsch. Die Zeit läuft weiter.</p>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {phase === 'running' && !isFullPage && currentQuestion && (
           <section className="w-full">
             <div className="mb-5 flex items-center justify-between text-sm font-bold text-indigo-200">
               <span>Aufgabe {questionIndex + 1} von {EINMALEINS_TEST_SIZE}</span>
