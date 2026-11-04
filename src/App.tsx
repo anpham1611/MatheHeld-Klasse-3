@@ -5,6 +5,7 @@ import { TitleScreen } from './components/TitleScreen';
 import { WorldSelect } from './components/WorldSelect';
 import { NumberLineGlider } from './components/games/NumberLineGlider';
 import { EinmaleinsArena } from './components/games/EinmaleinsArena';
+import { EinmaleinsTest } from './components/games/EinmaleinsTest';
 import { EuroShop } from './components/games/EuroShop';
 import { TowerMath } from './components/games/TowerMath';
 import { PokemonArena } from './components/games/PokemonArena';
@@ -368,6 +369,10 @@ export default function App() {
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
         />
+      )}
+
+      {screen === 'einmaleins_test' && (
+        <EinmaleinsTest onBack={() => setScreen('world_map')} />
       )}
 
       {screen === 'euro_shop' && (

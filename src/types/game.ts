@@ -4,6 +4,7 @@ export type GameScreen =
   | 'minecraft'
   | 'number_line' 
   | 'einmaleins' 
+  | 'einmaleins_test'
   | 'euro_shop' 
   | 'tower_math' 
   | 'pokemon'

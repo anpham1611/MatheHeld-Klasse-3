@@ -92,6 +92,16 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       score: player.scores.einmaleins,
     },
     {
+      id: 'einmaleins_test' as GameScreen,
+      title: '1×1-Prüfung',
+      desc: '60 Aufgaben in 5 Minuten – mit extra vielen Aufgaben aus den 4er-, 6er-, 7er- und 8er-Reihen.',
+      icon: '⏱️✏️',
+      bgGradient: 'from-indigo-600 via-violet-700 to-slate-950',
+      borderColor: 'border-indigo-300',
+      badge: '60 AUFGABEN · 5 MINUTEN',
+      score: undefined,
+    },
+    {
       id: 'euro_shop' as GameScreen,
       title: "Wunder-Supermarkt",
       desc: "Rechnen mit Geld: Euro & Cent Wechselgeld an der Kasse auszahlen",
@@ -340,10 +350,12 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                   {w.badge}
                 </span>
 
-                <div className="flex items-center gap-1 text-xs font-bold text-amber-200 bg-black/30 px-2.5 py-1 rounded-full">
-                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{w.score} Pkt</span>
-                </div>
+                {w.score !== undefined && (
+                  <div className="flex items-center gap-1 text-xs font-bold text-amber-200 bg-black/30 px-2.5 py-1 rounded-full">
+                    <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{w.score} Pkt</span>
+                  </div>
+                )}
               </div>
 
               {/* Title & Icon */}
