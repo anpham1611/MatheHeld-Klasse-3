@@ -17,6 +17,7 @@ export type GameScreen =
   | 'mathbrick'
   | 'roboforge'
   | 'maze_discovery'
+  | 'super_intellect_tic_tac_toe'
   | 'certificate';
 
 export type CharacterAvatar = 'fuchs' | 'eule' | 'hase' | 'baer' | 'drache';

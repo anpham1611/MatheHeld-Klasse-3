@@ -29,8 +29,10 @@ import {
   createPlayerInDb,
 } from './services/playerService';
 import { scoreAfterGame } from './math/gameScore';
+import type { OnlineTransport } from './games/ticTacToe/network';
 
 const MazeDiscovery = lazy(() => import('./components/games/MazeDiscovery').then((module) => ({ default: module.MazeDiscovery })));
+const SuperIntellectTicTacToe = lazy(() => import('./components/games/SuperIntellectTicTacToe').then((module) => ({ default: module.SuperIntellectTicTacToe })));
 
 const STORAGE_KEY = 'matheheld_klasse3_profile_v1';
 
@@ -62,7 +64,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
   totalProblemsSolved: 0,
 };
 
-export default function App() {
+export default function App({ ticTacToeTransport }: { ticTacToeTransport?: OnlineTransport } = {}) {
   const [screen, setScreen] = useState<GameScreen>('title');
   const [isMuted, setIsMuted] = useState(false);
 
@@ -505,6 +507,18 @@ export default function App() {
             onBack={() => setScreen('world_map')}
             isMuted={isMuted}
             onToggleMute={handleToggleMute}
+          />
+        </Suspense>
+      )}
+
+      {screen === 'super_intellect_tic_tac_toe' && (
+        <Suspense fallback={<div className="grid min-h-[100dvh] place-items-center bg-sky-50 font-bold text-sky-800">Pfoten-Spiel wird geladen … 🐾</div>}>
+          <SuperIntellectTicTacToe
+            player={player}
+            onBack={() => setScreen('world_map')}
+            isMuted={isMuted}
+            onToggleMute={handleToggleMute}
+            onlineTransport={ticTacToeTransport}
           />
         </Suspense>
       )}

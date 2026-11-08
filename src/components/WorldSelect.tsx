@@ -181,6 +181,16 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
       badge: '🧠 PLANEN · PROGRAMMIEREN · LOS!',
       score: player.scores.maze_discovery || 0,
     },
+    {
+      id: 'super_intellect_tic_tac_toe' as GameScreen,
+      title: 'Super Intellect Tic Tac Toe',
+      desc: 'Kätzchen gegen Hündchen! Plane schlaue Reihen auf deinem bunten 3D-Spielfeld.',
+      icon: '🐱🐶',
+      bgGradient: 'from-sky-500 via-indigo-500 to-pink-500',
+      borderColor: 'border-pink-200',
+      badge: '🐾 3D · STRATEGIE · PFOTEN-DUELL',
+      score: undefined,
+    },
   ];
 
   return (
@@ -398,6 +408,8 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
                     ? 'Ab 8 Jahren · Mathe & Code'
                     : w.id === 'maze_discovery'
                     ? 'Ab 8 Jahren · 3D & Logik'
+                    : w.id === 'super_intellect_tic_tac_toe'
+                    ? '3D · Logik & Strategie'
                     : ( '3. Klasse Lehrplan' )}</span>
                 </span>
                 <span className="group-hover:translate-x-1 transition-transform">
