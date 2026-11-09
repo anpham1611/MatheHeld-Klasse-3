@@ -1,8 +1,9 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Color, ConeGeometry, Object3D, SphereGeometry, type InstancedMesh, type OrthographicCamera } from 'three';
+import { Color, Object3D, TorusGeometry, type InstancedMesh, type OrthographicCamera } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import type { Animal, Round } from './engine';
+import { SYMBOL_BY_SEAT } from './symbols';
 
 interface BoardProps {
   round: Round; enabled: boolean; reducedMotion: boolean; zoom: number;
@@ -28,66 +29,42 @@ function FitCamera({ size, zoom }: { size: number; zoom: number }) {
 }
 
 type Vec3 = [number, number, number];
-interface Part { position: Vec3; scale: Vec3; color: string; cone?: boolean; rotation?: Vec3 }
-function animalParts(animal: Animal): Part[] {
-  const kitten = animal === 'kitten';
-  const fur = kitten ? '#ffb9ce' : '#c79870';
-  const light = kitten ? '#ffe7ef' : '#ffead2';
-  const parts: Part[] = [
-    { position: [0, .24, 0], scale: [.22, .24, .19], color: fur },
-    { position: [0, .55, .03], scale: [.29, .25, .24], color: fur },
-    { position: [0, .44, .22], scale: [.19, .1, .065], color: light },
-    { position: [-.11, .56, .247], scale: [.034, .049, .02], color: '#35465d' },
-    { position: [.11, .56, .247], scale: [.034, .049, .02], color: '#35465d' },
-    { position: [-.119, .578, .263], scale: [.009, .013, .008], color: '#ffffff' },
-    { position: [.101, .578, .263], scale: [.009, .013, .008], color: '#ffffff' },
-    { position: [0, .467, .294], scale: [.035, .025, .017], color: kitten ? '#d95789' : '#59433c' },
-    { position: [-.12, .065, .12], scale: [.11, .075, .12], color: light },
-    { position: [.12, .065, .12], scale: [.11, .075, .12], color: light },
-    { position: [.18, .25, -.19], scale: [.085, .17, .075], rotation: [0, 0, -.7], color: fur },
-  ];
-  for (const sign of [-1, 1]) {
-    parts.push(kitten
-      ? { position: [sign * .20, .78, .01], scale: [.11, .145, .10], cone: true, color: fur }
-      : { position: [sign * .27, .57, -.005], scale: [.10, .23, .09], rotation: [0, 0, sign * .25], color: '#8d624f' });
-    if (kitten) parts.push({ position: [sign * .20, .79, .075], scale: [.065, .09, .035], cone: true, color: '#ed83a7' });
-  }
-  return parts;
-}
-
-/** Batch each animal part across all occupied tiles, keeping large boards cheap. */
-function AnimalPieces({ round, animal, reducedMotion }: { round: Round; animal: Animal; reducedMotion: boolean }) {
-  const occupied = useMemo(() => round.board.flatMap((cell, index) => cell === animal ? [index] : []), [round.board, animal]);
-  const parts = useMemo(() => animalParts(animal), [animal]);
+/** Batch glossy crosses and rings, keeping even a full 15×15 board cheap. */
+function SymbolPieces({ round, seat, reducedMotion }: { round: Round; seat: Animal; reducedMotion: boolean }) {
+  const symbol = SYMBOL_BY_SEAT[seat];
+  const occupied = useMemo(() => round.board.flatMap((cell, index) => cell === seat ? [index] : []), [round.board, seat]);
+  const rotations = useMemo<Vec3[]>(() => symbol === 'X'
+    ? [[0, Math.PI / 4, 0], [0, -Math.PI / 4, 0]] : [[-Math.PI / 2, 0, 0]], [symbol]);
   const meshes = useRef<(InstancedMesh | null)[]>([]);
   const born = useRef(new Map<number, number>());
   const object = useMemo(() => new Object3D(), []);
-  const sphere = useMemo(() => new SphereGeometry(1, 12, 8), []);
-  const cone = useMemo(() => new ConeGeometry(1, 2, 12), []);
-  useEffect(() => () => { sphere.dispose(); cone.dispose(); }, [sphere, cone]);
+  const geometry = useMemo(() => symbol === 'X'
+    ? new RoundedBoxGeometry(.76, .16, .17, 3, .075)
+    : new TorusGeometry(.255, .075, 12, 32), [symbol]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
   useFrame(({ clock }) => {
     const now = clock.elapsedTime;
     occupied.forEach((index, instance) => {
       if (!born.current.has(index)) born.current.set(index, now);
       const age = now - born.current.get(index)!;
-      const growth = reducedMotion ? 1 : Math.min(1, age / .22);
+      const growth = reducedMotion ? 1 : 1 - Math.pow(1 - Math.min(1, age / .28), 3);
       const bounce = reducedMotion ? 0 : (age < .5 ? Math.sin(age / .5 * Math.PI) * .22 : Math.sin(now * 2 + index) * .012);
       const x = index % round.size - (round.size - 1) / 2;
       const z = Math.floor(index / round.size) - (round.size - 1) / 2;
-      parts.forEach((part, p) => {
-        object.position.set(x + part.position[0] * growth, .14 + bounce + part.position[1] * growth, z + part.position[2] * growth);
-        object.scale.set(part.scale[0] * growth, part.scale[1] * growth, part.scale[2] * growth);
-        object.rotation.set(...(part.rotation ?? [0, 0, 0]));
+      rotations.forEach((rotation, p) => {
+        object.position.set(x, .20 + bounce, z);
+        object.scale.setScalar(growth);
+        object.rotation.set(...rotation);
         object.updateMatrix();
         meshes.current[p]?.setMatrixAt(instance, object.matrix);
       });
     });
     meshes.current.forEach(mesh => { if (mesh) mesh.instanceMatrix.needsUpdate = true; });
   });
-  return <group>{parts.map((part, p) => <instancedMesh key={p} ref={mesh => { meshes.current[p] = mesh; }}
-    args={[part.cone ? cone : sphere, undefined, round.board.length]} count={occupied.length} frustumCulled={false}
+  return <group>{rotations.map((_, p) => <instancedMesh key={p} name={`${symbol}-pieces`} ref={mesh => { meshes.current[p] = mesh; }}
+    args={[geometry, undefined, round.board.length]} count={occupied.length} frustumCulled={false}
     raycast={() => {}}>
-    <meshStandardMaterial color={part.color} roughness={.72} />
+    <meshPhysicalMaterial color={symbol === 'X' ? '#eb649a' : '#459ee8'} roughness={.23} metalness={.1} clearcoat={.85} clearcoatRoughness={.15} />
   </instancedMesh>)}</group>;
 }
 
@@ -144,7 +121,7 @@ export default function Board3D(props: BoardProps) {
       <meshStandardMaterial color="#b2dcca" roughness={.8} />
     </mesh>
     <Tiles {...props} />
-    <AnimalPieces round={props.round} animal="kitten" reducedMotion={props.reducedMotion} />
-    <AnimalPieces round={props.round} animal="puppy" reducedMotion={props.reducedMotion} />
+    <SymbolPieces round={props.round} seat="kitten" reducedMotion={props.reducedMotion} />
+    <SymbolPieces round={props.round} seat="puppy" reducedMotion={props.reducedMotion} />
   </Canvas>;
 }

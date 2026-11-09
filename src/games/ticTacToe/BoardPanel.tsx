@@ -44,7 +44,7 @@ export function BoardPanel({ round, enabled, reducedMotion, onMove }: {
     {show3D ? <>
       <div className={`ttt-scene ${enabled ? 'playable' : ''}`}>
         <SceneBoundary onFailure={() => setSupported(false)}>
-          <Suspense fallback={<div className="ttt-scene-loading">Dein 3D-Spielfeld wird aufgebaut … 🐾</div>}>
+          <Suspense fallback={<div className="ttt-scene-loading">Dein 3D-Spielfeld wird aufgebaut … ✨</div>}>
             <Board3D round={round} enabled={enabled} reducedMotion={reducedMotion} zoom={zoom} onMove={onMove} onFailure={() => setSupported(false)} />
           </Suspense>
         </SceneBoundary>

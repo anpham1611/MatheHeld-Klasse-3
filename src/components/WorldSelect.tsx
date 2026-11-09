@@ -184,11 +184,11 @@ export const WorldSelect: React.FC<WorldSelectProps> = ({
     {
       id: 'super_intellect_tic_tac_toe' as GameScreen,
       title: 'Super Intellect Tic Tac Toe',
-      desc: 'Kätzchen gegen Hündchen! Plane schlaue Reihen auf deinem bunten 3D-Spielfeld.',
-      icon: '🐱🐶',
+      desc: 'X oder O? Wähle dein Symbol und plane schlaue Reihen auf deinem bunten 3D-Spielfeld.',
+      icon: '❌⭕',
       bgGradient: 'from-sky-500 via-indigo-500 to-pink-500',
       borderColor: 'border-pink-200',
-      badge: '🐾 3D · STRATEGIE · PFOTEN-DUELL',
+      badge: '✨ 3D · STRATEGIE · X/O-DUELL',
       score: undefined,
     },
   ];

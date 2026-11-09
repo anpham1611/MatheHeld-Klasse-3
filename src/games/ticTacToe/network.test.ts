@@ -157,3 +157,13 @@ test('existing pieces cannot move or disappear in a newer snapshot of the same r
   assert.equal(session.getState().snapshot?.game.board[1], null);
   session.dispose();
 });
+
+test('room creation forwards symbol preference but server assignment remains authoritative', async () => {
+  const { OnlineSession } = api();
+  const fake = fakeTransport();
+  const session = new OnlineSession(fake.transport, () => 1000);
+  await session.create(3, 'O');
+  assert.equal(fake.commands[0].payload.preferredSymbol, 'O');
+  assert.equal(session.getState().snapshot?.you, 'kitten');
+  session.dispose();
+});

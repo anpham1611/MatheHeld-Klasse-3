@@ -1,4 +1,5 @@
 import { createRound, findWinningLine, otherAnimal, validSize, type Animal, type Cell, type Result, type Round } from './engine';
+import type { GameSymbol } from './symbols';
 
 export type NetworkCommand = 'create_room' | 'join_room' | 'make_move' | 'request_rematch' | 'leave_room' | 'request_state';
 export type NetworkEvent = 'room_state' | 'receive_move' | 'connection_status' | 'command_error';
@@ -31,6 +32,9 @@ export interface RoomSnapshot {
  * create_room, join_room and request_state must resolve a full RoomSnapshot.
  * Other commands may resolve a snapshot or acknowledge with undefined;
  * broadcasts must then supply the authoritative room_state/receive_move.
+ * create_room/join_room include preferredSymbol ('X' or 'O'). The server chooses
+ * the available seat; snapshot.you remains authoritative. Legacy kitten/puppy
+ * wire seats represent X/O respectively, with X always moving first.
  *
  * Server obligations: authorize membership from socket authentication, validate
  * moves and expectedRevision, deduplicate commandId, enforce the 15s deadline
@@ -216,14 +220,16 @@ export class OnlineSession {
       throw error;
     }
   }
-  create(size: number) {
+  create(size: number, preferredSymbol: GameSymbol = 'X') {
     createRound(size);
-    return this.enter('create_room', { size, target: size === 3 ? 3 : 5, turnSeconds: 15, timeoutPolicy: 'forfeit' });
+    if (preferredSymbol !== 'X' && preferredSymbol !== 'O') return Promise.reject(new Error('Ungültiges Symbol.'));
+    return this.enter('create_room', { size, target: size === 3 ? 3 : 5, turnSeconds: 15, timeoutPolicy: 'forfeit', preferredSymbol });
   }
-  join(roomCode: string) {
+  join(roomCode: string, preferredSymbol: GameSymbol = 'X') {
     const roomId = roomCode.trim();
     if (!text(roomId)) return Promise.reject(new Error('Bitte gib einen Raumcode ein.'));
-    return this.enter('join_room', { roomId }, roomId);
+    if (preferredSymbol !== 'X' && preferredSymbol !== 'O') return Promise.reject(new Error('Ungültiges Symbol.'));
+    return this.enter('join_room', { roomId, preferredSymbol }, roomId);
   }
 
   private async command(event: 'make_move' | 'request_rematch', extra: Record<string, unknown>) {

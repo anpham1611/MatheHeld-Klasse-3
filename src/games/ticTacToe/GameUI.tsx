@@ -2,10 +2,12 @@ import React, { useRef, useState } from 'react';
 import { Bot, Users, Sparkles } from 'lucide-react';
 import { validSize, type Round } from './engine';
 import type { Difficulty } from './ai';
+import { SYMBOL_BY_SEAT, type GameSymbol } from './symbols';
 
 export type GameMode = 'robot' | 'online';
-export const animalName = { kitten: 'Kätzchen', puppy: 'Hündchen' };
-export const animalEmoji = { kitten: '🐱', puppy: '🐶' };
+export function SymbolMark({ symbol }: { symbol: GameSymbol }) {
+  return <span aria-hidden="true" className={`ttt-symbol-mark ${symbol === 'X' ? 'symbol-x' : 'symbol-o'}`} />;
+}
 
 /** HTML grid is a complete renderer, not a decorative accessibility overlay. */
 export function AccessibleBoard({ round, enabled, winning, onMove }: {
@@ -38,11 +40,11 @@ export function AccessibleBoard({ round, enabled, winning, onMove }: {
           const win = winning.includes(index);
           return <button key={index} role="gridcell" ref={node => { cells.current[index] = node; }}
             type="button" tabIndex={focus === index ? 0 : -1} onFocus={() => setFocus(index)}
-            aria-label={`Zeile ${row + 1}, Spalte ${col + 1}: ${cell ? animalName[cell] : 'frei'}${win ? ', Gewinnfeld' : ''}`}
+            aria-label={`Zeile ${row + 1}, Spalte ${col + 1}: ${cell ? SYMBOL_BY_SEAT[cell] : 'frei'}${win ? ', Gewinnfeld' : ''}`}
             aria-disabled={!enabled || !!cell} onKeyDown={event => navigate(event, index)}
             onClick={() => { if (enabled && !cell) onMove(index); }}
             className={`ttt-cell ${cell ?? ''} ${win ? 'winner' : ''}`}>
-            <span aria-hidden="true" className={cell ? 'ttt-piece' : 'ttt-empty'}>{cell ? animalEmoji[cell] : '✦'}</span>
+            <span aria-hidden="true" className={cell ? 'ttt-piece' : 'ttt-empty'}>{cell ? <SymbolMark symbol={SYMBOL_BY_SEAT[cell]} /> : '✦'}</span>
           </button>;
         })}
       </div>)}
@@ -54,6 +56,8 @@ export function AccessibleBoard({ round, enabled, winning, onMove }: {
 interface SetupProps {
   mode: GameMode; size: number; difficulty: Difficulty; configured: boolean; busy: boolean;
   roomCode: string;
+  symbol: GameSymbol;
+  onSymbol: (symbol: GameSymbol) => void;
   onRoomCode: (code: string) => void;
   onMode: (mode: GameMode) => void;
   onSize: (size: number) => void;
@@ -77,6 +81,19 @@ export function SetupPanel(props: SetupProps) {
       <button type="button" disabled={busy} aria-pressed={mode === 'online'} className={`ttt-mode pink ${mode === 'online' ? 'selected' : ''}`}
         onClick={() => props.onMode('online')}><Users /><span>Mit Freunden<small>Gemeinsam online spielen</small></span></button>
     </div>
+    <fieldset disabled={busy} className="ttt-symbol-choice">
+      <legend>Welches Symbol möchtest du sein?</legend>
+      <div className="ttt-symbol-options">
+        {(['X', 'O'] as const).map(symbol => <button key={symbol} type="button"
+          aria-label={`Als ${symbol} spielen`} aria-pressed={props.symbol === symbol}
+          className={`ttt-symbol-option ${props.symbol === symbol ? 'selected' : ''}`}
+          onClick={() => props.onSymbol(symbol)}>
+          <SymbolMark symbol={symbol} /><span>Ich spiele {symbol}</span>
+        </button>)}
+      </div>
+      <p className="ttt-help">{mode === 'online' ? 'Dein Wunschsymbol. Der Server bestätigt die Zuteilung. X beginnt immer.'
+        : props.symbol === 'X' ? 'Du beginnst mit X.' : 'Der Roboter beginnt mit X. Du spielst O.'}</p>
+    </fieldset>
     <fieldset disabled={busy}>
       <legend>Wie groß ist dein Spielfeld?</legend>
       <div className="ttt-size-options">
@@ -92,7 +109,7 @@ export function SetupPanel(props: SetupProps) {
       </label>}
       {invalid && <p className="ttt-error">Wähle eine ganze Zahl von 5 bis 15.</p>}
     </fieldset>
-    <p className="ttt-rule"><span aria-hidden="true">💡</span> <strong>{size === 3 ? 3 : 5} Tiere in einer Reihe</strong> gewinnen. Auch senkrecht und diagonal!</p>
+    <p className="ttt-rule"><span aria-hidden="true">💡</span> <strong>{size === 3 ? 3 : 5} gleiche Zeichen in einer Reihe</strong> gewinnen. Auch senkrecht und diagonal!</p>
     {mode === 'robot' ? <>
       <fieldset disabled={busy}>
         <legend>Wie schlau ist dein Roboter?</legend>

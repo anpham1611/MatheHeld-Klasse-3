@@ -36,6 +36,17 @@
 .ttt-mode.selected { border-color: #8cbee2; background: #edf7ff; box-shadow: 0 3px 0 #d5eafa; }
 .ttt-mode.pink.selected { border-color: #e7a4bf; background: #fff0f6; box-shadow: 0 3px 0 #f7dce8; }
 .ttt-mode.pink > svg { color: #c97ea2; }
+.ttt-symbol-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ttt-symbol-option { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 65px; padding: 14px 10px; border: 2px solid #e1eaf2; border-radius: 16px; background: #fafdff; color: #536e87; font-size: 12px; }
+.ttt-symbol-option.selected { background: linear-gradient(135deg, #fff1f7, #edf7ff); border-color: #b4a1dd; box-shadow: 0 3px 0 #e7def5; }
+.ttt-symbol-options .ttt-symbol-option { font-size: 12px; gap: 8px; }
+.ttt-symbol-option > span:last-child { white-space: nowrap; }
+.ttt-symbol-mark { position: relative; display: inline-block; flex: 0 0 auto; width: 30px; height: 30px; vertical-align: middle; }
+.ttt-symbol-mark.symbol-x::before, .ttt-symbol-mark.symbol-x::after { content: ''; position: absolute; top: 2%; left: 39%; width: 22%; height: 96%; border-radius: 999px; background: linear-gradient(90deg, #dc4686, #ffadd1); box-shadow: 1px 2px 0 #b9417940; transform: rotate(45deg); }
+.ttt-symbol-mark.symbol-x::after { transform: rotate(-45deg); }
+.ttt-symbol-mark.symbol-o { border: 7px solid #71bdf0; border-top-color: #a7dbff; border-bottom-color: #3e8bcb; border-radius: 50%; box-shadow: 0 2px 0 #367db650, inset 0 1px 2px #367db630; }
+.ttt-cell .ttt-symbol-mark { width: clamp(26px, 5vw, 48px); height: clamp(26px, 5vw, 48px); }
+.ttt-cell .ttt-symbol-mark.symbol-o { border-width: clamp(6px, .9vw, 10px); }
 .ttt-size-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
 .ttt-size { border: 2px solid #e7edf3; background: #fafcff; color: #5c7289; border-radius: 13px; padding: 10px 2px; }
 .ttt-size strong { display: block; font-size: 18px; font-weight: 600; }

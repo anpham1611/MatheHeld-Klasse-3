@@ -512,7 +512,7 @@ export default function App({ ticTacToeTransport }: { ticTacToeTransport?: Onlin
       )}
 
       {screen === 'super_intellect_tic_tac_toe' && (
-        <Suspense fallback={<div className="grid min-h-[100dvh] place-items-center bg-sky-50 font-bold text-sky-800">Pfoten-Spiel wird geladen … 🐾</div>}>
+        <Suspense fallback={<div className="grid min-h-[100dvh] place-items-center bg-sky-50 font-bold text-sky-800">X/O-Spiel wird geladen … ✨</div>}>
           <SuperIntellectTicTacToe
             player={player}
             onBack={() => setScreen('world_map')}

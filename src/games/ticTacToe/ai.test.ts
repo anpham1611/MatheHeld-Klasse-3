@@ -28,24 +28,25 @@ test('Medium takes wins before blocks and blocks an immediate threat', () => {
   assert.equal(chooseMove(state, 'medium'), 5);
 });
 
-test('Hard on 3×3 never loses against any reachable human reply', () => {
+test('Hard on 3×3 never loses as either X or O against any reachable human reply', () => {
   const { createRound, playMove, chooseMove } = api();
   let outcomes = 0;
-  function visit(state: ReturnType<typeof createRound>) {
+  function visit(state: ReturnType<typeof createRound>, robot: 'kitten' | 'puppy') {
     if (state.result) {
-      assert.notEqual(state.result.winner, 'kitten');
+      if (state.result.winner) assert.equal(state.result.winner, robot);
       outcomes++;
       return;
     }
-    if (state.turn === 'puppy') {
+    if (state.turn === robot) {
       const move = chooseMove(state, 'hard');
       assert.notEqual(move, null);
-      visit(playMove(state, move!, 'puppy'));
+      visit(playMove(state, move!, robot), robot);
     } else {
-      state.board.forEach((cell, i) => { if (!cell) visit(playMove(state, i, 'kitten')); });
+      state.board.forEach((cell, i) => { if (!cell) visit(playMove(state, i, state.turn), robot); });
     }
   }
-  visit(createRound(3));
+  visit(createRound(3), 'kitten');
+  visit(createRound(3), 'puppy');
   assert.ok(outcomes > 100);
 });
 
