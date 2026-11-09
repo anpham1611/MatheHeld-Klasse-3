@@ -3,6 +3,7 @@ import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createRound } from './engine';
+import { BoardPanel } from './BoardPanel';
 
 const ui = await import('./GameUI').catch(() => undefined);
 function api() { assert.ok(ui, 'Game controls and accessible board must exist'); return ui; }
@@ -52,4 +53,10 @@ test('symbol selection exposes both choices and explains who moves first', () =>
   assert.ok(o.includes('aria-label="Als O spielen" aria-pressed="true"'));
   assert.ok(x.includes('Du beginnst mit X.'));
   assert.ok(o.includes('Der Roboter beginnt mit X. Du spielst O.'));
+});
+
+test('board starts with the accessible 2D grid and offers matrix fullscreen', () => {
+  const markup = renderToStaticMarkup(<BoardPanel round={createRound(3)} enabled reducedMotion={false} onMove={() => {}} />);
+  assert.equal((markup.match(/role="gridcell"/g) ?? []).length, 9);
+  assert.ok(markup.includes('aria-label="Spielfeld im Vollbild öffnen"'));
 });

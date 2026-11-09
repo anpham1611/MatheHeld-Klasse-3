@@ -90,6 +90,15 @@
 .ttt-board-toolbar > div { display: flex; align-items: center; gap: 3px; }
 .ttt-board-toolbar button { display: inline-flex; align-items: center; gap: 5px; border: 1px solid #e2ebf3; border-radius: 9px; padding: 7px; color: #66849c; background: #f8fcff; }
 .ttt-view-button { font-size: 10px; }
+.ttt-board-toolbar .ttt-fullscreen-button { font-size: 10px; }
+.ttt-board-panel.ttt-expanded { position: fixed; inset: 0; z-index: 100; width: 100%; height: 100dvh; max-width: none; padding: 18px; border-radius: 0; background: #f6fbff; display: flex; flex-direction: column; overflow: auto; }
+.ttt-expanded .ttt-board-toolbar { flex: 0 0 auto; font-size: 13px; }
+.ttt-expanded .ttt-board-toolbar button { min-height: 44px; }
+.ttt-fullscreen-status { display: flex; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 10px; margin: 4px 0 10px; color: #426d8d; }
+.ttt-fullscreen-clock { border-radius: 12px; background: #e3f2fb; padding: 5px 10px; font-variant-numeric: tabular-nums; }
+.ttt-expanded .ttt-scene { flex: 1; height: auto; min-height: 200px; }
+.ttt-expanded .ttt-grid-scroll { flex: 1; min-height: 0; }
+.ttt-expanded .ttt-html-grid { width: min(100%, calc(100dvh - 180px)); min-width: 0; margin-inline: auto; }
 .ttt-scene { width: 100%; height: clamp(330px, 42vw, 480px); background: radial-gradient(ellipse, #e7f5ed 0, #f8fcff 70%); border-radius: 20px; overflow: hidden; }
 .ttt-scene.playable canvas { cursor: pointer; }
 .ttt-scene-loading { display: grid; place-items: center; height: 100%; font-size: 13px; color: #77928a; }
@@ -120,6 +129,7 @@
 .ttt-room-info { margin-top: 20px; border-top: 1px solid #e5edf4; padding-top: 16px; }
 .ttt-room-info > span { display: flex; align-items: center; gap: 6px; font-size: 12px; }
 .ttt-room-info code { display: block; text-align: center; padding: 12px; background: #eef5ff; border-radius: 10px; margin: 10px 0; overflow-wrap: anywhere; }
+.ttt-room-info code { user-select: all; font-size: 19px; font-weight: 700; letter-spacing: 3px; }
 .ttt-room-info button { width: 100%; font-size: 12px; }
 .ttt-result { margin-top: 17px; padding: 22px; text-align: center; background: #fffdf3; }
 .ttt-result-icon { font-size: 40px; }

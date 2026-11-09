@@ -167,3 +167,12 @@ test('room creation forwards symbol preference but server assignment remains aut
   assert.equal(session.getState().snapshot?.you, 'kitten');
   session.dispose();
 });
+
+test('room codes can be entered in lowercase without rejecting the server response', async () => {
+  const { OnlineSession } = api();
+  const fake = fakeTransport();
+  const session = new OnlineSession(fake.transport, () => 1000);
+  await session.join(' room ');
+  assert.equal(session.getState().snapshot?.roomId, 'ROOM');
+  session.dispose();
+});

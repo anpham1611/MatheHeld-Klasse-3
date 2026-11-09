@@ -9,6 +9,7 @@ import { OnlineSession, type OnlineState, type OnlineTransport } from '../../gam
 import { SetupPanel, SymbolMark, type GameMode } from '../../games/ticTacToe/GameUI';
 import { SEAT_BY_SYMBOL, SYMBOL_BY_SEAT, type GameSymbol } from '../../games/ticTacToe/symbols';
 import { BoardPanel } from '../../games/ticTacToe/BoardPanel';
+import { createDefaultRoomTransport } from '../../games/ticTacToe/httpTransport';
 import '../../games/ticTacToe/ticTacToe.css';
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
   onBack: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
-  /** Authenticated host integration; absent means robot-only until configured. */
+  /** Optional host override; otherwise the built-in room-code API is used. */
   onlineTransport?: OnlineTransport;
 }
 
@@ -53,13 +54,13 @@ export function SuperIntellectTicTacToe({ player, onBack, isMuted, onToggleMute,
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (!onlineTransport) { setSession(null); setOnline(emptyOnline); return; }
-    const connected = new OnlineSession(onlineTransport);
+    const ownedTransport = onlineTransport ? null : createDefaultRoomTransport(player.name);
+    const connected = new OnlineSession(onlineTransport ?? ownedTransport!);
     setSession(connected);
     setOnline(connected.getState());
     const unsubscribe = connected.subscribe(() => setOnline(connected.getState()));
-    return () => { unsubscribe(); connected.dispose(); };
-  }, [onlineTransport]);
+    return () => { unsubscribe(); connected.dispose(); ownedTransport?.dispose(); };
+  }, [onlineTransport, player.name]);
 
   const snapshot = mode === 'online' ? online.snapshot : null;
   const active = mode === 'online' ? !!snapshot : started;
@@ -193,8 +194,10 @@ export function SuperIntellectTicTacToe({ player, onBack, isMuted, onToggleMute,
               {snapshot && <div className="ttt-room-info">
                 <span><Wifi size={16} /> Dein Raum</span><code>{snapshot.roomId}</code>
                 <button type="button" className="ttt-secondary" onClick={() => {
-                  void navigator.clipboard?.writeText(snapshot.roomId).then(() => setNotice('Raumcode kopiert!')).catch(() => setNotice('Markiere den Raumcode und kopiere ihn.'));
+                  if (!navigator.clipboard?.writeText) { setNotice('Markiere den Raumcode und kopiere ihn.'); return; }
+                  void navigator.clipboard.writeText(snapshot.roomId).then(() => setNotice('Raumcode kopiert!')).catch(() => setNotice('Markiere den Raumcode und kopiere ihn.'));
                 }}><Copy size={15} /> Raumcode kopieren</button>
+                {snapshot.phase === 'waiting' && <p className="ttt-help">Teile diesen Code. Dein Freund wählt „Mit Freunden“ und gibt ihn bei „Raum beitreten“ ein.</p>}
                 <p className="ttt-help">Online: 15 Sekunden pro Zug. Bei Zeitablauf verlierst du die Runde.</p>
               </div>}
               <button type="button" className="ttt-secondary ttt-settings" onClick={settings}><Settings2 size={16} />{snapshot ? 'Raum verlassen' : 'Einstellungen'}</button>
@@ -219,7 +222,7 @@ export function SuperIntellectTicTacToe({ player, onBack, isMuted, onToggleMute,
           {active && !game.result && snapshot?.phase !== 'waiting' && <div className={`ttt-timer ${seconds <= 5 ? 'urgent' : ''}`} aria-hidden="true"><div style={{ width: `${seconds / 15 * 100}%` }} /></div>}
           {aiError && mode === 'robot' && active && <button type="button" className="ttt-secondary" onClick={() => setAiAttempt(n => n + 1)}>Roboter erneut starten</button>}
           {active && mode === 'robot' && seconds === 0 && game.turn === you && !game.result && <p className="ttt-help">Ganz in Ruhe — du findest deinen nächsten Zug! 🌱</p>}
-          <BoardPanel key={roundKey} round={displayed} enabled={canMove} reducedMotion={reducedMotion} onMove={move} />
+          <BoardPanel key={roundKey} round={displayed} enabled={canMove} reducedMotion={reducedMotion} onMove={move} status={status} seconds={active && !game.result && snapshot?.phase !== 'waiting' ? seconds : undefined} />
           {active && game.result ? <section className="ttt-result ttt-card" aria-label="Rundenergebnis">
             <div className="ttt-result-icon" aria-hidden="true">{game.result.kind === 'draw' ? '🤝' : game.result.winner === you ? '🏆' : '🌱'}</div>
             <h2>{game.result.kind === 'draw' ? 'Zusammen richtig schlau!' : game.result.winner === you ? 'Hurra, du hast gewonnen!' : 'Jede Runde macht dich schlauer!'}</h2>

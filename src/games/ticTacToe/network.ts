@@ -22,7 +22,8 @@ export interface RoomSnapshot {
 
 /**
  * Inject this through SuperIntellectTicTacToe.onlineTransport.
- * Identity comes from the authenticated host, NEVER player.name.
+ * Identity comes from the authenticated host or a verified room credential,
+ * NEVER player.name.
  *
  * Socket.IO mapping (no dependency required by this game):
  * request: (event, payload) => socket.timeout(8000).emitWithAck(event, payload)
@@ -213,7 +214,7 @@ export class OnlineSession {
       const value = await this.transport.request(event, payload);
       if (this.disposed || generation !== this.generation) return;
       const snapshot = parseSnapshot(value, this.transport.userId);
-      if (!snapshot || (expectedRoom && snapshot.roomId !== expectedRoom)) throw new Error('Der Server hat keinen gültigen Raum geliefert.');
+      if (!snapshot || (expectedRoom && snapshot.roomId.toUpperCase() !== expectedRoom.toUpperCase())) throw new Error('Der Server hat keinen gültigen Raum geliefert.');
       this.accept(snapshot);
     } catch (error) {
       if (!this.disposed && generation === this.generation) this.update({ pending: false, error: error instanceof Error ? error.message : 'Verbindung fehlgeschlagen.' });

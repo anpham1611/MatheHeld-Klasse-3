@@ -15,8 +15,10 @@ import { BRICK_CATALOG, getBrickDimensions, getBrickPiece } from '../math/brickC
 import { BaseGridSize, blockFitsBaseGrid, blocksOverlap, DEFAULT_BASE_GRID_SIZE, isBaseGridSize } from '../math/brickBuilding.js';
 import type { VoxelBlock } from '../math/minecraftCurriculum.js';
 import { isValidCapturedPokemonCollection } from '../math/pokemonData.js';
+import { createTicTacToeRouter } from './ticTacToeRouter.js';
 
 export const app = express();
+app.use('/api/tic-tac-toe', createTicTacToeRouter());
 app.use(express.json());
 
 const VALID_BLOCK_TYPES: VoxelBlock['type'][] = ['dirt', 'wood', 'cobblestone', 'iron', 'fence', 'cake', 'chest', 'chicken'];
