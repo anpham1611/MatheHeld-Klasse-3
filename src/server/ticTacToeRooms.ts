@@ -1,10 +1,9 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createHash, randomInt, randomUUID } from 'node:crypto';
 import type { Client } from '@libsql/client';
 import { createRound, otherAnimal, playMove, type Animal, type Round } from '../games/ticTacToe/engine.js';
 import type { Participant, RoomSnapshot } from '../games/ticTacToe/network.js';
 
 const ROOM_LIFETIME = 2 * 60 * 60 * 1000;
-const CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const commands = new Set(['create_room', 'join_room', 'make_move', 'request_state', 'request_rematch', 'leave_room']);
 type Member = Participant & { keyHash: string };
 interface StoredRoom {
@@ -58,7 +57,7 @@ export class RoomService {
     if (preferred !== 'X' && preferred !== 'O') fail(400, 'Ungültiges Symbol.');
     await this.db.execute({ sql: 'DELETE FROM tic_tac_toe_rooms WHERE expires_at <= ?', args: [now] });
     for (let attempt = 0; attempt < 5; attempt++) {
-      const roomId = Array.from(randomBytes(8), byte => CODE_ALPHABET[byte & 31]).join('');
+      const roomId = randomInt(100_000_000).toString().padStart(8, '0');
       const seat: Animal = preferred === 'X' ? 'kitten' : 'puppy';
       const room: StoredRoom = {
         roomId, roundId: randomUUID(), roundNumber: 1, revision: 1, phase: 'waiting', game,
@@ -89,7 +88,8 @@ export class RoomService {
     await this.initialize();
     if (event === 'create_room') return this.create(actor, payload, this.now());
     const code = typeof payload.roomId === 'string' ? payload.roomId.trim().toUpperCase() : '';
-    if (!/^[A-Z2-9]{8}$/.test(code)) fail(400, 'Bitte gib den achtstelligen Raumcode ein.');
+    // Keep already shared legacy codes usable until their rooms expire.
+    if (!/^(?:[0-9]{8}|[A-Z2-9]{8})$/.test(code)) fail(400, 'Bitte gib den achtstelligen Raumcode ein.');
 
     // Optimistic database concurrency works with SQLite and hosted Turso, even
     // when join/move requests land on different Vercel instances.

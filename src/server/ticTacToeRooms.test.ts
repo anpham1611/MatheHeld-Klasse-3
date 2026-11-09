@@ -20,7 +20,7 @@ test('creates a shareable code and another device joins the same persisted room'
   const { db, call } = await fixture();
   try {
     const host = await call(0, 'create_room', { size: 5, preferredSymbol: 'O' });
-    assert.match(host.roomId, /^[A-Z2-9]{8}$/);
+    assert.match(host.roomId, /^[0-9]{8}$/);
     assert.equal(host.phase, 'waiting');
     assert.equal(host.you, 'puppy');
     assert.ok(parseSnapshot(host, credentials[0].slice(0, 32)));
@@ -36,6 +36,35 @@ test('creates a shareable code and another device joins the same persisted room'
     assert.equal(fresh.phase, 'playing');
     assert.ok(!JSON.stringify(fresh).includes(credentials[0]));
     assert.ok(!JSON.stringify(fresh).includes('keyHash'));
+  } finally { db.close(); }
+});
+
+async function setFixtureCode(db: ReturnType<typeof createClient>, previous: string, code: string) {
+  const rows = await db.execute({ sql: 'SELECT state_json FROM tic_tac_toe_rooms WHERE code = ?', args: [previous] });
+  const state = JSON.parse(String(rows.rows[0].state_json));
+  state.roomId = code;
+  await db.execute({ sql: 'UPDATE tic_tac_toe_rooms SET code = ?, state_json = ? WHERE code = ?', args: [code, JSON.stringify(state), previous] });
+}
+
+test('numeric room codes preserve leading zeros when joining', async () => {
+  const { db, call } = await fixture();
+  try {
+    const host = await call(0, 'create_room', { size: 3 });
+    await setFixtureCode(db, host.roomId, '01234567');
+    const joined = await call(1, 'join_room', { roomId: '01234567' });
+    assert.equal(joined.roomId, '01234567');
+    assert.equal(joined.phase, 'playing');
+  } finally { db.close(); }
+});
+
+test('existing alphanumeric room codes remain joinable after numeric generation is deployed', async () => {
+  const { db, call } = await fixture();
+  try {
+    const host = await call(0, 'create_room', { size: 3 });
+    await setFixtureCode(db, host.roomId, 'ABCD2345');
+    const joined = await call(1, 'join_room', { roomId: 'abcd2345' });
+    assert.equal(joined.roomId, 'ABCD2345');
+    assert.equal(joined.phase, 'playing');
   } finally { db.close(); }
 });
 

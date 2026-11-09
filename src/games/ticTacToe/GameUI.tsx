@@ -125,7 +125,7 @@ export function SetupPanel(props: SetupProps) {
       <p className="ttt-help">15 Sekunden pro Zug. Läuft die Zeit ab, gewinnt dein Gegenüber. Der Server entscheidet.</p>
       <button type="button" className="ttt-primary" disabled={!configured || busy || invalid} onClick={props.onCreate}>Raum erstellen</button>
       <label className="ttt-room-label">Oder mit Raumcode beitreten
-        <input disabled={!configured || busy} value={props.roomCode} maxLength={128} placeholder="Raumcode" autoComplete="off" autoCapitalize="characters" spellCheck={false}
+        <input disabled={!configured || busy} value={props.roomCode} maxLength={8} inputMode="numeric" placeholder="Raumcode" autoComplete="off" spellCheck={false}
           onChange={event => props.onRoomCode(event.target.value)} />
       </label>
       <button type="button" className="ttt-secondary" disabled={!configured || busy || !props.roomCode.trim()} onClick={props.onJoin}>Raum beitreten</button>

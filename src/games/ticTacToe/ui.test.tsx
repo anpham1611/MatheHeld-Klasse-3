@@ -60,3 +60,13 @@ test('board starts with the accessible 2D grid and offers matrix fullscreen', ()
   assert.equal((markup.match(/role="gridcell"/g) ?? []).length, 9);
   assert.ok(markup.includes('aria-label="Spielfeld im Vollbild öffnen"'));
 });
+
+test('room code entry offers a numeric keypad without dropping leading zeros', () => {
+  const { SetupPanel } = api();
+  const markup = renderToStaticMarkup(<SetupPanel mode="online" size={3} difficulty="easy" configured busy={false}
+    roomCode="01234567" onRoomCode={() => {}} onMode={() => {}} onSize={() => {}} onDifficulty={() => {}}
+    symbol="X" onSymbol={() => {}} onStart={() => {}} onCreate={() => {}} onJoin={() => {}} />);
+  assert.ok(markup.includes('inputMode="numeric"'));
+  assert.ok(markup.includes('maxLength="8"'));
+  assert.ok(markup.includes('value="01234567"'));
+});
